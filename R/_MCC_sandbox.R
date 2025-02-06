@@ -14,6 +14,6 @@ library(janitor)
 # Load data
 load(here("data/toy/January_2023/Data_December_2022/MCC_AgeCause_20221216.RData"))
 
-# Bind list together into data frame
+# Bind list together into data frame and perform data cleaning tasks
 dat <- bind_rows(dlist, .id = "column_label") %>%
     clean_names()
