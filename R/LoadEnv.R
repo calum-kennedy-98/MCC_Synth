@@ -28,7 +28,7 @@ scatter_plot_opts <- list(
     # Legend options
     legend.box = "vertical",
     legend.title = element_text(face = "bold"),
-    legend.text = element_text(size = 8),
+    legend.text = element_text(size = 12),
     
     # Facet options
     strip.background = element_blank(),
