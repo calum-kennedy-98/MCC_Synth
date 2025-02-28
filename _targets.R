@@ -60,4 +60,11 @@ tar_option_set(
 # Run the R scripts in the R/ folder with your custom functions:
 tar_source("functions.R")
 
-# Replace the target list below with your own
+# Define analysis pipeline -----------------------------------------------------
+
+list(
+  
+  # Path to raw MCC data
+  tar_target(data_mcc_raw, "data/toy/January_2023/Data_December_2022/MCCdata_20221216_R.RData",
+             format = "file")
+)
