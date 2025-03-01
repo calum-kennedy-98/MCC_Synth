@@ -17,7 +17,10 @@ library(crew)
 tar_option_set(
   packages = c(
     "here",
-    "ggplot2"
+    "janitor",
+    "dplyr",
+    "tibble",
+    "lubridate"
   ),
   format = "qs",
   memory = "transient",
@@ -65,6 +68,15 @@ tar_source("functions.R")
 list(
   
   # Path to raw MCC data
-  tar_target(data_mcc_raw, "data/toy/January_2023/Data_December_2022/MCCdata_20221216_R.RData",
-             format = "file")
+  tar_target(data_mcc_raw, here("data/toy/January_2023/Data_December_2022/MCCdata_20221216.RData"),
+             format = "file"),
+  
+  tar_target(data_mcc_merged, get_data_mcc(path_data_mcc = data_mcc_raw)),
+  
+  tar_target(data_mcc_for_scm, subset_data(data = data_mcc_merged, 
+                                           region == "South America",
+                                           year == 2014,
+                                           vars_to_select = c("column_label",
+                                                              "doy",
+                                                              "tmean")))
 )
