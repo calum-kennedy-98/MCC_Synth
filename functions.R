@@ -10,3 +10,5 @@
 source(here("R/load_env.R"))
 source(here("R/get_data_mcc.R"))
 source(here("R/subset_data.R"))
+source(here("R/utility_functions.R"))
+source(here("R/simulation/sim_data_scm.R"))

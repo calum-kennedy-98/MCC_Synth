@@ -5,7 +5,8 @@
 
 # Define function to load and process MCC data ---------------------------------
 
-get_data_mcc <- function(path_data_mcc){
+get_data_mcc <- function(path_data_mcc,
+                         id_var){
   
   # Load data
   load(path_data_mcc)
@@ -26,7 +27,8 @@ get_data_mcc <- function(path_data_mcc){
     mutate(
       cityname = factor(cityname),
       week = week(date)
-    )
+    ) %>%
+    mutate(id = cur_group_id(), .by = {{id_var}})
   
   # Return merged dataset
   return(data_mcc)
