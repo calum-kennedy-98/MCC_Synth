@@ -20,7 +20,10 @@ tar_option_set(
     "janitor",
     "dplyr",
     "tibble",
-    "lubridate"
+    "lubridate",
+    "mice",
+    "purrr",
+    "tibble"
   ),
   format = "qs",
   memory = "transient",
@@ -71,12 +74,29 @@ list(
   tar_target(data_mcc_raw, here("data/toy/January_2023/Data_December_2022/MCCdata_20221216.RData"),
              format = "file"),
   
-  tar_target(data_mcc_merged, get_data_mcc(path_data_mcc = data_mcc_raw)),
+  tar_target(data_mcc_merged, get_data_mcc(path_data_mcc = data_mcc_raw,
+                                           id_var = column_label)),
   
-  tar_target(data_mcc_for_scm, subset_data(data = data_mcc_merged, 
+  tar_target(data_mcc_scm, subset_data(data = data_mcc_merged, 
                                            region == "South America",
                                            year == 2014,
                                            vars_to_select = c("column_label",
+                                                              "id",
                                                               "doy",
-                                                              "tmean")))
+                                                              "tmean",
+                                                              "week"))),
+  
+  tar_target(data_mcc_scm_imp, impute_missing_data(data = data_mcc_scm,
+                                                   maxit = 5,
+                                                   m = 2,
+                                                   seed = 42)),
+  
+  tar_target(data_mcc_scm_simulated, sim_data_scm(data_mcc_scm_imp, 
+                                              column_label, 
+                                              doy, 
+                                              seed = 42, 
+                                              exposure_start_time = 180, 
+                                              exposure_end_time = 240,
+                                              exposure_amplitude = 30,
+                                              exposure_gamma = 10))
 )
