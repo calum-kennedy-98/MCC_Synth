@@ -23,25 +23,13 @@ tar_option_set(
     "lubridate",
     "mice",
     "purrr",
-    "tibble"
+    "tibble",
+    "Synth"
   ),
   format = "qs",
   memory = "transient",
   garbage_collection = TRUE
-  # Packages that your targets need for their tasks.
-  # format = "qs", # Optionally set the default storage format. qs is fast.
-  #
-  # Pipelines that take a long time to run may benefit from
-  # optional distributed computing. To use this capability
-  # in tar_make(), supply a {crew} controller
-  # as discussed at https://books.ropensci.org/targets/crew.html.
-  # Choose a controller that suits your needs. For example, the following
-  # sets a controller that scales up to a maximum of two workers
-  # which run as local R processes. Each worker launches when there is work
-  # to do and exits if 60 seconds pass with no tasks to run.
-  #
-  #   controller = crew::crew_controller_local(workers = 2, seconds_idle = 60)
-  #
+  # controller = crew::crew_controller_local()
   # Alternatively, if you want workers to run on a high-performance computing
   # cluster, select a controller from the {crew.cluster} package.
   # For the cloud, see plugin packages like {crew.aws.batch}.
@@ -78,8 +66,8 @@ list(
                                            id_var = column_label)),
   
   tar_target(data_mcc_scm, subset_data(data = data_mcc_merged, 
-                                           region == "South America",
-                                           year == 2014,
+                                           region == "Eastern Asia",
+                                           year == 2019,
                                            vars_to_select = c("column_label",
                                                               "id",
                                                               "doy",
@@ -91,12 +79,52 @@ list(
                                                    m = 2,
                                                    seed = 42)),
   
-  tar_target(data_mcc_scm_simulated, sim_data_scm(data_mcc_scm_imp, 
-                                              column_label, 
-                                              doy, 
-                                              seed = 42, 
-                                              exposure_start_time = 180, 
-                                              exposure_end_time = 240,
-                                              exposure_amplitude = 30,
-                                              exposure_gamma = 10))
+  tar_target(list_data_simulated, make_data_scm_list(n_sims = 100,
+                                                     data = data_mcc_scm_imp, 
+                                                     id_var = id, 
+                                                     time_var_mcc = doy, 
+                                                     exposure_start_time = 210, 
+                                                     exposure_end_time = 270, 
+                                                     exposure_amplitude = 20, 
+                                                     exposure_gamma = 10)),
+  
+  tar_target(results_synth_model_simulated, sim_synth_model(list_data_simulated = list_data_simulated, 
+                                                            id_var = id, 
+                                                            week_var = week, 
+                                                            special_predictors = list(list("y", 1:29, "mean")), 
+                                                            time_predictors_prior = 1:29, 
+                                                            dep_var = "y", 
+                                                            time_var_synth = "week", 
+                                                            time_optimise_ssr = 20:29, 
+                                                            time_plot = 1:50)),
+  
+  tar_target(results_tau_hat_synth, extract_tau_hat_synth_results(results_synth_model_simulated = results_synth_model_simulated,
+                                                                  id_var = id,
+                                                                  time_var = week)),
+  
+  tar_target(plot_diff_tau_hat_synth, (results_tau_hat_synth %>%
+                                         ggplot() +
+                                         geom_line(aes(x = t,
+                                                       y = diff_tau_hat,
+                                                       group = model),
+                                                   alpha = 0.05) +
+                                         geom_line(data = results_tau_hat_synth %>%
+                                                     summarise(diff_tau_hat = mean(diff_tau_hat, na.rm = TRUE),
+                                                               .by = t), aes(x = t,
+                                                                             y = diff_tau_hat),
+                                                   colour = "#0072B2",
+                                                   linewidth = 1) +
+                                         geom_hline(yintercept = 0) +
+                                         scatter_plot_opts
+               ) %>%
+               
+               ggsave("Output/simulation/figures/plot_diff_tau_hat_synth.png", ., height = 5, width = 8),
+             format = "file"),
+  
+  tar_target(plot_density_diff_tau_hat_synth, (results_tau_hat_synth %>%
+                                                 ggplot() +
+                                                 geom_density(aes(x = diff_tau_hat)) +
+                                                 scatter_plot_opts) %>%
+               
+               ggsave("Output/simulation/figures/plot_density_diff_tau_hat_synth.png", ., height = 5, width = 8))
 )
