@@ -19,6 +19,13 @@ sim_data_scm <- function(data_mcc_scm,
   # Set seed
   set.seed(seed)
   
+  # Drop ids with missing time points (ie. n data points < max data points by group)
+  data_mcc_scm <- data_mcc_scm %>% 
+    group_by({{id_var}}) %>% 
+    mutate(n = n()) %>%
+    ungroup() %>%
+    filter(n == max(n)) 
+  
   # Extract unique row IDs to pass to function below
   id_vec <- distinct(data_mcc_scm, {{id_var}}) %>% deframe()
   
@@ -26,8 +33,8 @@ sim_data_scm <- function(data_mcc_scm,
   n_units <- nrow(distinct(data_mcc_scm, {{id_var}}))
   n_periods <- nrow(distinct(data_mcc_scm, {{time_var}}))
   
-  pollution_time_trend <- arima.sim(list(order = c(1,0,0), ar = .99),
-                          n = n_periods)
+  # Generate shared pollution time trend from a sine wave
+  pollution_time_trend <- sin(seq(1:n_periods)/n_periods*2*pi)*5
   
   # Simulate an acute air pollution exposure using a Cauchy-like distribution
   exposure <- generate_fat_tail(start_index = exposure_start_time,
@@ -38,27 +45,27 @@ sim_data_scm <- function(data_mcc_scm,
   list_data_unit_level <- map(id_vec, function(x){
     
     # Generate unobserved time-invariant factor a from negative exponential distribution
-    a <- rexp(1)
-    
-    pollution_intercept <- runif(1, 10, 20)
+    a <- rexp(1)*100
     
     # Generate baseline pollution as function of random intercept + an AR(1) process
-    e <- as.numeric(arima.sim(list(order = c(1,0,0), ar = .95), n = n_periods) + pollution_intercept + 0.5*pollution_time_trend)
+    pollution_intercept <- runif(1, 10, 20)
+    
+    e <- as.numeric(arima.sim(list(order = c(1,0,0), ar = .95), n = n_periods) + pollution_intercept + pollution_time_trend)
     
     # Set 'natural value' of pollution
     e_natural <- e
     
-    temp <- data_mcc_scm$tmean[data_mcc_scm["id"] == x]
+    # Get mean temperature by location to centre temperature effects
+    temp <- data_mcc_scm %>% 
+      filter({{id_var}} == x) %>% 
+      select(tmean) %>% deframe()
     temp_mean <- mean(temp, na.rm = TRUE)
     
     # If unit is the first unit by id, add the acute exposure to the pollution level
     if(x == min(id_vec)) e[exposure_start_time:exposure_end_time] <- e[exposure_start_time:exposure_end_time] + exposure
-  
-    # Add column to specify treated/untreated observations
     
-    
-    # Draw initial at-risk population from uniform distribution
-    u1 <- runif(1, 50, 500)
+    # Draw initial at-risk population from exponential distribution
+    u1 <- rexp(1) * 1000 + a
     
     # Precompute squared terms (vectorized)
     temp_squared_deviation <- (temp - temp_mean)^2
@@ -68,8 +75,8 @@ sim_data_scm <- function(data_mcc_scm,
     growth_rate_natural <- 0.05 + 0.0005 * temp_squared_deviation + 0.0001 * e_natural_squared
     
     # Vectorized u and y computations
-    error_u <- rnorm(n_periods, mean = 0, sd = 5)
-    error_y <- rnorm(n_periods, mean = 0, sd = 5)
+    error_u <- rnorm(n_periods, mean = 0, sd = 3)
+    error_y <- rnorm(n_periods, mean = 0, sd = 3)
     
     # Create vectors of length n_periods to store results
     u <- numeric(n_periods)
@@ -79,7 +86,7 @@ sim_data_scm <- function(data_mcc_scm,
     
     # Assign starting values
     u[1] <- u1
-    y[1] <- 0.05 * u[1] + 5 * a + error_y[1]
+    y[1] <- 0.05 * u[1] + a + error_y[1]
     u_natural[1] <- u1
     y_natural[1] <- 0.05 * u[1] + 5 * a + error_y[1]
     
@@ -95,11 +102,11 @@ sim_data_scm <- function(data_mcc_scm,
     
     # Combine results into a data frame
     data_unit_level <- data.frame(u = u, 
-                                       u_natural = u_natural,
-                                       y = y, 
-                                       y_natural = y_natural,
-                                       e = e,
-                                       e_natural = e_natural)
+                                  u_natural = u_natural,
+                                  y = y, 
+                                  y_natural = y_natural,
+                                  e = e,
+                                  e_natural = e_natural)
     
     return(data_unit_level)
     
