@@ -65,18 +65,18 @@ sim_data_scm <- function(data_mcc_scm,
     if(x == min(id_vec)) e[exposure_start_time:exposure_end_time] <- e[exposure_start_time:exposure_end_time] + exposure
     
     # Draw initial at-risk population from exponential distribution
-    u1 <- rexp(1) * 1000 + a
+    u1 <- 500 * rexp(1) + 5 * a
     
     # Precompute squared terms (vectorized)
     temp_squared_deviation <- (temp - temp_mean)^2
     e_squared <- e^2
     e_natural_squared <- e_natural^2
-    growth_rate <- 0.05 + 0.0005 * temp_squared_deviation + 0.0001 * e_squared
-    growth_rate_natural <- 0.05 + 0.0005 * temp_squared_deviation + 0.0001 * e_natural_squared
+    growth_rate <- 0.2 + 0.0002 * temp_squared_deviation + 0.0002 * e_squared
+    growth_rate_natural <- 0.2 + 0.0002 * temp_squared_deviation + 0.0002 * e_natural_squared
     
     # Vectorized u and y computations
-    error_u <- rnorm(n_periods, mean = 0, sd = 3)
-    error_y <- rnorm(n_periods, mean = 0, sd = 3)
+    error_u <- rnorm(n_periods, mean = 0, sd = u1/500) # Standard deviation of error scales with u1
+    error_y <- rnorm(n_periods, mean = 0, sd = u1/500)
     
     # Create vectors of length n_periods to store results
     u <- numeric(n_periods)
@@ -86,27 +86,29 @@ sim_data_scm <- function(data_mcc_scm,
     
     # Assign starting values
     u[1] <- u1
-    y[1] <- 0.05 * u[1] + a + error_y[1]
+    y[1] <- growth_rate[1] * u[1] + error_y[1]
     u_natural[1] <- u1
-    y_natural[1] <- 0.05 * u[1] + 5 * a + error_y[1]
+    y_natural[1] <- growth_rate[1] * u_natural[1] + error_y[1]
     
     # Loop over n_periods to generate data
     for(t in 2:n_periods){
       
       # Update observed u_t and y_t based on previous values
-      u[t] <- u[t-1] - y[t-1] + growth_rate[t] * u[1] + error_u[t]
+      u[t] <- u[t-1] - y[t-1] + growth_rate[t-1] * u[1] + error_u[t]
       y[t] <- growth_rate[t] * u[t] + error_y[t]
-      u_natural[t] <- u_natural[t-1] - y_natural[t-1] + growth_rate_natural[t] * u_natural[1] + error_u[t]
+      u_natural[t] <- u_natural[t-1] - y_natural[t-1] + growth_rate_natural[t-1] * u_natural[1] + error_u[t]
       y_natural[t] <- growth_rate_natural[t] * u_natural[t] + error_y[t]
     }
     
     # Combine results into a data frame
-    data_unit_level <- data.frame(u = u, 
-                                  u_natural = u_natural,
-                                  y = y, 
+    data_unit_level <- data.frame(y = y, 
                                   y_natural = y_natural,
+                                  u = u, 
+                                  u_natural = u_natural,
                                   e = e,
-                                  e_natural = e_natural)
+                                  e_natural = e_natural,
+                                  growth_rate = growth_rate,
+                                  temp_squared_deviation = temp_squared_deviation)
     
     return(data_unit_level)
     

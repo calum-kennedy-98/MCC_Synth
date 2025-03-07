@@ -85,7 +85,7 @@ list(
                                                      time_var_mcc = doy, 
                                                      exposure_start_time = 210, 
                                                      exposure_end_time = 270, 
-                                                     exposure_amplitude = 20, 
+                                                     exposure_amplitude = 0, 
                                                      exposure_gamma = 10)),
   
   tar_target(results_synth_model_simulated, sim_synth_model(list_data_simulated = list_data_simulated, 

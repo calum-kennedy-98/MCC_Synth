@@ -40,7 +40,9 @@ extract_tau_hat_synth_results <- function(results_synth_model_simulated,
     diff_tau_hat <- tau_hat - tau
     
     # Generate dataframe of results
-    results <- data.frame(tau,
+    results <- data.frame(y_obs,
+                          y_pred,
+                          tau,
                           tau_hat,
                           diff_tau_hat,
                           model = rep(x, t_max),

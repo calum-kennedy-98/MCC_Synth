@@ -34,8 +34,12 @@ sim_synth_model <- function(list_data_simulated,
     # Aggregate data to weekly level to pass to synth
     data_weekly <- data %>% summarise(y = mean(y, na.rm = TRUE),
                                       e = mean(e, na.rm = TRUE),
+                                      u = mean(u, na.rm = TRUE),
                                       y_natural = mean(y_natural, na.rm = TRUE),
                                       e_natural = mean(e_natural, na.rm = TRUE),
+                                      u_natural = mean(u_natural, na.rm = TRUE),
+                                      growth_rate = mean(growth_rate, na.rm = TRUE),
+                                      temp_squared_deviation = mean(temp_squared_deviation, na.rm = TRUE),
                                       .by = c({{week_var}}, {{id_var}}))
     
     # Run synth command and get output
