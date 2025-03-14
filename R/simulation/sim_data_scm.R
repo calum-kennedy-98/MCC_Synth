@@ -24,7 +24,7 @@ sim_data_scm <- function(data_mcc_scm,
     group_by({{id_var}}) %>% 
     mutate(n = n()) %>%
     ungroup() %>%
-    filter(n == max(n)) 
+    filter(n == max(n))
   
   # Extract unique row IDs to pass to function below
   id_vec <- distinct(data_mcc_scm, {{id_var}}) %>% deframe()
@@ -43,6 +43,12 @@ sim_data_scm <- function(data_mcc_scm,
                                 gamma = exposure_gamma)
   
   list_data_unit_level <- map(id_vec, function(x){
+    
+    # Generate treated indicator
+    treated_unit <- ifelse(x == min(id_vec), rep(1, n_periods), rep(0, n_periods))
+    
+    # Generate pre/post treatment indicators (first equal to 1 at time of initial exposure)
+    treated_time <- c(rep(0, exposure_start_time - 1), rep(1, n_periods - exposure_start_time + 1))
     
     # Generate unobserved time-invariant factor a from negative exponential distribution
     a <- rexp(1)*100
@@ -71,8 +77,8 @@ sim_data_scm <- function(data_mcc_scm,
     temp_squared_deviation <- (temp - temp_mean)^2
     e_squared <- e^2
     e_natural_squared <- e_natural^2
-    growth_rate <- 0.2 + 0.0002 * temp_squared_deviation + 0.0002 * e_squared
-    growth_rate_natural <- 0.2 + 0.0002 * temp_squared_deviation + 0.0002 * e_natural_squared
+    growth_rate <- 0.2 + 0.0001 * temp_squared_deviation + 0.0001 * e_squared
+    growth_rate_natural <- 0.2 + 0.0001 * temp_squared_deviation + 0.0001 * e_natural_squared
     
     # Vectorized u and y computations
     error_u <- rnorm(n_periods, mean = 0, sd = u1/500) # Standard deviation of error scales with u1
@@ -101,7 +107,9 @@ sim_data_scm <- function(data_mcc_scm,
     }
     
     # Combine results into a data frame
-    data_unit_level <- data.frame(y = y, 
+    data_unit_level <- data.frame(treated_unit = treated_unit,
+                                  treated_time = treated_time,
+                                  y = y, 
                                   y_natural = y_natural,
                                   u = u, 
                                   u_natural = u_natural,

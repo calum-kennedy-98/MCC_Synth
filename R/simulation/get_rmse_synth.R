@@ -30,8 +30,13 @@ get_rmse_synth <- function(list_synth_output,
     
     # Get RMSE of prediction error
     rmse <- sqrt(mean((y_pred - y_natural)^2))
-  })
+  }) 
+    
+    # Combine list elements into df
+    rmse_df <- bind_rows(lapply(rmse_list, as.data.frame)) %>%
+      rename("rmse" = "X[[i]]") %>%
+      mutate(model = row_number())
   
-  # Return mean of resulting list
-  return(mean(unlist(rmse_list)))
+  # Return list
+  return(rmse_df)
 }

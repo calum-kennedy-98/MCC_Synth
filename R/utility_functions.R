@@ -29,3 +29,19 @@ impute_missing_data <- function(data,
   
   return(data_complete)
 }
+
+# Generic function to map another function to a list of inputs
+map_func <- function(func,
+                     list,
+                     ...){
+  
+  results <- map(list, function(x) {
+    
+    output <- func(x,
+                   ...)
+    
+  })
+  
+  return(results)
+  
+}
