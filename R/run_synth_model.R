@@ -11,6 +11,7 @@
 # Define function to run synth model -------------------------------------------
 
 run_synth_model <- function(data,
+                            predictors,
                             special_predictors,
                             time_predictors_prior,
                             dep_var,
@@ -23,6 +24,7 @@ run_synth_model <- function(data,
   
   # Generate 'dataprep.out' object from 'Synth' package
   data_prepared <- dataprep(foo = data,
+                            predictors = predictors,
                             special.predictors = special_predictors,
                             time.predictors.prior = time_predictors_prior,
                             dependent = dep_var,
@@ -34,7 +36,8 @@ run_synth_model <- function(data,
                             time.plot = time_plot)
   
   # Generate synth object
-  synth_out <- synth(data_prepared, optimxmethod = "BFGS")
+  synth_out <- synth(data_prepared, 
+                     optimxmethod = "BFGS")
   
   # Return list of data_prepared and synth_out
   synth_output <- list(data = data,

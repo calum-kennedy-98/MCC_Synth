@@ -23,8 +23,9 @@ tar_option_set(
     "lubridate",
     "mice",
     "purrr",
-    "tibble",
-    "Synth"
+    "optimx",
+    "Synth",
+    "glmnet"
   ),
   format = "qs",
   memory = "transient",
@@ -59,7 +60,7 @@ tar_source("functions.R")
 list(
   
   # Path to raw MCC data
-  tar_target(data_mcc_raw, here("data/toy/January_2023/Data_December_2022/MCCdata_20221216.RData"),
+  tar_target(data_mcc_raw, here("data/main/Data_March_2025/Main/MCCdata_20250307.RData"),
              format = "file"),
   
   tar_target(data_mcc_merged, get_data_mcc(path_data_mcc = data_mcc_raw,
@@ -90,7 +91,8 @@ list(
   
   tar_target(results_synth_model_simulated, sim_synth_model(list_data_simulated = list_data_simulated, 
                                                             id_var = id, 
-                                                            week_var = week, 
+                                                            week_var = week,
+                                                            predictors = NULL,
                                                             special_predictors = list(list("y", 1:29, "mean")), 
                                                             time_predictors_prior = 1:29, 
                                                             dep_var = "y", 
@@ -102,29 +104,21 @@ list(
                                                                   id_var = id,
                                                                   time_var = week)),
   
-  tar_target(plot_diff_tau_hat_synth, (results_tau_hat_synth %>%
-                                         ggplot() +
-                                         geom_line(aes(x = t,
-                                                       y = diff_tau_hat,
-                                                       group = model),
-                                                   alpha = 0.05) +
-                                         geom_line(data = results_tau_hat_synth %>%
-                                                     summarise(diff_tau_hat = mean(diff_tau_hat, na.rm = TRUE),
-                                                               .by = t), aes(x = t,
-                                                                             y = diff_tau_hat),
-                                                   colour = "#0072B2",
-                                                   linewidth = 1) +
-                                         geom_hline(yintercept = 0) +
-                                         scatter_plot_opts
-               ) %>%
-               
-               ggsave("Output/simulation/figures/plot_diff_tau_hat_synth.png", ., height = 5, width = 8),
-             format = "file"),
+  tar_target(results_synth_diagnostics, get_synth_diagnostics(results_synth_model_simulated = results_synth_model_simulated,
+                                                              id_var = id,
+                                                              time_var = week,
+                                                              start_index = 1,
+                                                              end_index = 29)),
   
-  tar_target(plot_density_diff_tau_hat_synth, (results_tau_hat_synth %>%
-                                                 ggplot() +
-                                                 geom_density(aes(x = diff_tau_hat)) +
-                                                 scatter_plot_opts) %>%
-               
-               ggsave("Output/simulation/figures/plot_density_diff_tau_hat_synth.png", ., height = 5, width = 8))
+  # Here have defined separate target for elastic net method - ultimately we
+  # probably want to combine these into some generic wrapper function (editing the 'sim_synth_model'
+  # function call)
+  tar_target(results_elastic_net_simulated, map(list_data_simulated, 
+                                                ~ optimise_synth_elastic_net(.,
+                                                                             alpha_init = 0.5,
+                                                                             lambda_init = 2,
+                                                                             outcome_var = y,
+                                                                             treated_id_var = treated_unit,
+                                                                             treated_time_var = treated_time,
+                                                                             time_var = week)))
 )
