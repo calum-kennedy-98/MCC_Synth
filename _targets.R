@@ -59,13 +59,19 @@ tar_source("functions.R")
 
 list(
   
-  # Path to raw MCC data
-  tar_target(data_mcc_raw, here("data/main/Data_March_2025/Main/MCCdata_20250307.RData"),
+  # Data cleaning and preparation
+  tar_target(path_data_mcc_raw, here("data/main/MCC/Main/MCCdata_20250307.RData"),
              format = "file"),
   
-  tar_target(data_mcc_merged, get_data_mcc(path_data_mcc = data_mcc_raw,
+  tar_target(path_data_lfs_raw, here("data/main/LFS_pollution/MCC_PM_O3_df.rds")),
+  
+  tar_target(data_mcc_merged, get_data_mcc(path_data_mcc = path_data_mcc_raw,
                                            id_var = column_label)),
   
+  tar_target(data_mcc_lfs, merge_data_mcc_lfs(data_mcc_merged,
+                                              path_data_lfs_raw)),
+  
+  # Simulation exercise
   tar_target(data_mcc_scm, subset_data(data = data_mcc_merged, 
                                            region == "Eastern Asia",
                                            year == 2019,
@@ -83,6 +89,7 @@ list(
   tar_target(list_data_simulated, make_data_scm_list(n_sims = 100,
                                                      data = data_mcc_scm_imp, 
                                                      id_var = id, 
+                                                     week_var = week, # May need to rethink this if go with moving averages 
                                                      time_var_mcc = doy, 
                                                      exposure_start_time = 210, 
                                                      exposure_end_time = 270, 
@@ -91,7 +98,6 @@ list(
   
   tar_target(results_synth_model_simulated, sim_synth_model(list_data_simulated = list_data_simulated, 
                                                             id_var = id, 
-                                                            week_var = week,
                                                             predictors = NULL,
                                                             special_predictors = list(list("y", 1:29, "mean")), 
                                                             time_predictors_prior = 1:29, 
