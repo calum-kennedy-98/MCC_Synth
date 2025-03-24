@@ -16,6 +16,7 @@ source(here("R/utility_functions.R"))
 source(here("R/run_synth_model.R"))
 source(here("R/get_hyperparam_loss_elastic_net.R"))
 source(here("R/predict_Y_post_elastic_net.R"))
+source(here("R/merge_data_mcc_lfs.R"))
 
 # Simulation functions
 

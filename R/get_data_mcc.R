@@ -19,16 +19,19 @@ get_data_mcc <- function(path_data_mcc,
     return(df)
   })
   
-  # Merge dlist items into single MCC dataset
+  # Merge dlist items into single MCC dataset and retain data from 2000-2019 only
   data_mcc <- bind_rows(dlist, .id = "column_label") %>%
     left_join(cities, by = c("column_label" = "city")) %>%
     clean_names() %>%
     as_tibble() %>%
+    filter(between(year, 2000, 2019)) %>%
     mutate(
       cityname = factor(cityname),
       week = week(date)
     ) %>%
-    mutate(id = cur_group_id(), .by = {{id_var}})
+    mutate(
+      id = cur_group_id(), .by = {{id_var}}
+      )
   
   # Return merged dataset
   return(data_mcc)

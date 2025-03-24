@@ -10,6 +10,7 @@
 make_data_scm_list <- function(n_sims,
                                data,
                                id_var,
+                               week_var,
                                time_var_mcc,
                                seed = x,
                                exposure_start_time,
@@ -32,6 +33,20 @@ make_data_scm_list <- function(n_sims,
                          exposure_end_time,
                          exposure_amplitude,
                          exposure_gamma)
+    
+    # Aggregate data to weekly level to pass to models (NOTE: we may want to consider moving averages instead)
+    data_weekly <- data %>% summarise(y = mean(y, na.rm = TRUE),
+                                      treated_unit = mean(treated_unit, na.rm = TRUE),
+                                      treated_time = ifelse(mean(treated_time, na.rm = TRUE) > 0, 1, 0), # Define week as 'treated' if ANY day in that week is treated
+                                      e = mean(e, na.rm = TRUE),
+                                      u = mean(u, na.rm = TRUE),
+                                      y_natural = mean(y_natural, na.rm = TRUE),
+                                      e_natural = mean(e_natural, na.rm = TRUE),
+                                      u_natural = mean(u_natural, na.rm = TRUE),
+                                      growth_rate = mean(growth_rate, na.rm = TRUE),
+                                      temp_squared_deviation = mean(temp_squared_deviation, na.rm = TRUE),
+                                      .by = c({{week_var}}, 
+                                              {{id_var}}))
     
   })
   return(list_data_simulated)
