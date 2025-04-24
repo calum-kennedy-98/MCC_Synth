@@ -3,7 +3,6 @@
 # Then follow the manual to check and run the pipeline:
 #   https://books.ropensci.org/targets/walkthrough.html#inspect-the-pipeline
 
-# Load packages required to define the pipeline:
 # Load packages required to define the pipeline
 library(targets)
 library(tarchetypes)
@@ -25,7 +24,12 @@ tar_option_set(
     "purrr",
     "optimx",
     "Synth",
-    "glmnet"
+    "synthdid",
+    "glmnet",
+    "stringr",
+    "tidylog",
+    "conflicted",
+    "slider"
   ),
   format = "qs",
   memory = "transient",
@@ -60,41 +64,85 @@ tar_source("functions.R")
 list(
   
   # Data cleaning and preparation
-  tar_target(path_data_mcc_raw, here("data/main/MCC/Main/MCCdata_20250307.RData"),
+  tar_target(path_data_mcc_raw, here("data/main/MCC/Main/MCCdata_20250307_R.RData"),
              format = "file"),
   
   tar_target(path_data_lfs_raw, here("data/main/LFS_pollution/MCC_PM_O3_df.rds")),
   
-  tar_target(data_mcc_merged, get_data_mcc(path_data_mcc = path_data_mcc_raw,
-                                           id_var = column_label)),
-  
-  tar_target(data_mcc_lfs, merge_data_mcc_lfs(data_mcc_merged,
-                                              path_data_lfs_raw)),
-  
-  # Simulation exercise
-  tar_target(data_mcc_scm, subset_data(data = data_mcc_merged, 
-                                           region == "Eastern Asia",
-                                           year == 2019,
-                                           vars_to_select = c("column_label",
-                                                              "id",
+  tar_target(data_mcc_cleaned, get_data_mcc(path_data_mcc = path_data_mcc_raw,
+                                           id_var = column_label,
+                                           vars_to_select = c("id",
+                                                              "column_label",
+                                                              "date",
+                                                              "year",
+                                                              "month",
+                                                              "week",
                                                               "doy",
+                                                              "dow",
+                                                              "nonext",
                                                               "tmean",
-                                                              "week"))),
+                                                              "all",
+                                                              "cvd",
+                                                              "resp",
+                                                              "accident",
+                                                              "cityname",
+                                                              "countryname",
+                                                              "region"))),
   
-  tar_target(data_mcc_scm_imp, impute_missing_data(data = data_mcc_scm,
+  tar_target(data_mcc_lfs, merge_data_mcc_lfs(data_mcc_cleaned,
+                                              path_data_lfs_raw,
+                                              n_lags_all = 2,
+                                              n_lags_fire_PM25 = 2,
+                                              id_var = column_label)),
+  
+  tar_target(data_mcc_lfs_with_treatment, generate_treatment_indicator(data = data_mcc_lfs,
+                                                                       id_var = column_label,
+                                                                       fire_pm_ma_var = pred_fire_PM25_ma,
+                                                                       fire_pm_var = "pred_fire_PM25",
+                                                                       quantile_threshold = 0.99,
+                                                                       n_days_above_threshold = 3,
+                                                                       n_days_below_threshold = 28)),
+  
+  tar_target(data_mcc_lfs_weekly, make_data_mcc_lfs_weekly(data_mcc_lfs = data_mcc_lfs_with_treatment,
+                                                           climatic_vars = c("tmean",
+                                                                             "pred_fire_PM25",
+                                                                             "pred_total_PM25",
+                                                                             "pred_nonfire_PM25"),
+                                                           mortality_vars = c("all",
+                                                                              "nonext",
+                                                                              "cvd",
+                                                                              "resp"))),
+  
+  # Simulation exercise --------------------------------------------------------
+  tar_target(data_for_simulation, subset_data(data = data_mcc_lfs_weekly, 
+                                           region == "Eastern Asia",
+                                           vars_to_select = c("column_label",
+                                                              "tmean",
+                                                              "year",
+                                                              "week",
+                                                              "pred_fire_PM25",
+                                                              "pred_nonfire_PM25",
+                                                              "all",
+                                                              "treated",
+                                                              "date")) %>%
+               
+               # Remove additional days at end of year as not relevant for simulation,
+               # and keep only data with non-missing temperature and mortality data
+               filter(week < 53,
+                      if_all(all, ~ !is.na(.)),
+                      if_all(tmean, ~ !is.na(.)))),
+  
+  tar_target(data_for_simulation_imp, impute_missing_data(data = data_for_simulation,
                                                    maxit = 5,
                                                    m = 2,
                                                    seed = 42)),
   
   tar_target(list_data_simulated, make_data_scm_list(n_sims = 100,
-                                                     data = data_mcc_scm_imp, 
-                                                     id_var = id, 
+                                                     data = data_for_simulation_imp, 
+                                                     id_var = column_label, 
                                                      week_var = week, # May need to rethink this if go with moving averages 
-                                                     time_var_mcc = doy, 
-                                                     exposure_start_time = 210, 
-                                                     exposure_end_time = 270, 
-                                                     exposure_amplitude = 0, 
-                                                     exposure_gamma = 10)),
+                                                     fire_pm_var = pred_fire_PM25,
+                                                     time_var_mcc = doy)),
   
   tar_target(results_synth_model_simulated, sim_synth_model(list_data_simulated = list_data_simulated, 
                                                             id_var = id, 
