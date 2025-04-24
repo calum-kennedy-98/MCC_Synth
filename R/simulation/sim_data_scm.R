@@ -1,4 +1,4 @@
-# Name of script: make_data_scm
+# Name of script: sim_data_scm
 # Description: Generates simulated dataset conforming to the assumed Structural Causal Model
 # Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
 # Created on: 26-02-2025
@@ -8,13 +8,10 @@
 # Define function to generate simulated dataset of covariates ------------------
 
 sim_data_scm <- function(data_mcc_scm,
-                          id_var,
-                          time_var,
-                          seed,
-                          exposure_start_time,
-                          exposure_end_time,
-                          exposure_amplitude,
-                          exposure_gamma){
+                         id_var,
+                         time_var,
+                         fire_pm_var,
+                         seed){
   
   # Set seed
   set.seed(seed)
@@ -33,52 +30,36 @@ sim_data_scm <- function(data_mcc_scm,
   n_units <- nrow(distinct(data_mcc_scm, {{id_var}}))
   n_periods <- nrow(distinct(data_mcc_scm, {{time_var}}))
   
-  # Generate shared pollution time trend from a sine wave
-  pollution_time_trend <- sin(seq(1:n_periods)/n_periods*2*pi)*5
-  
-  # Simulate an acute air pollution exposure using a Cauchy-like distribution
-  exposure <- generate_fat_tail(start_index = exposure_start_time,
-                                end_index = exposure_end_time,
-                                amplitude = exposure_amplitude,
-                                gamma = exposure_gamma)
-  
   list_data_unit_level <- map(id_vec, function(x){
     
     # Generate treated indicator
     treated_unit <- ifelse(x == min(id_vec), rep(1, n_periods), rep(0, n_periods))
     
-    # Generate pre/post treatment indicators (first equal to 1 at time of initial exposure)
-    treated_time <- c(rep(0, exposure_start_time - 1), rep(1, n_periods - exposure_start_time + 1))
-    
     # Generate unobserved time-invariant factor a from negative exponential distribution
     a <- rexp(1)*100
     
-    # Generate baseline pollution as function of random intercept + an AR(1) process
-    pollution_intercept <- runif(1, 10, 20)
-    
-    e <- as.numeric(arima.sim(list(order = c(1,0,0), ar = .95), n = n_periods) + pollution_intercept + pollution_time_trend)
-    
-    # Set 'natural value' of pollution
-    e_natural <- e
+    # Extract vector of fire PM2.5 levels for each location
+    fire_pm_25 <- data_mcc_scm %>%
+      filter({{id_var}} == x) %>%
+      select({{fire_pm_var}}) %>%
+      deframe()
     
     # Get mean temperature by location to centre temperature effects
     temp <- data_mcc_scm %>% 
       filter({{id_var}} == x) %>% 
-      select(tmean) %>% deframe()
+      select(tmean) %>% 
+      deframe()
     temp_mean <- mean(temp, na.rm = TRUE)
-    
-    # If unit is the first unit by id, add the acute exposure to the pollution level
-    if(x == min(id_vec)) e[exposure_start_time:exposure_end_time] <- e[exposure_start_time:exposure_end_time] + exposure
     
     # Draw initial at-risk population from exponential distribution
     u1 <- 500 * rexp(1) + 5 * a
     
     # Precompute squared terms (vectorized)
     temp_squared_deviation <- (temp - temp_mean)^2
-    e_squared <- e^2
-    e_natural_squared <- e_natural^2
-    growth_rate <- 0.2 + 0.0001 * temp_squared_deviation + 0.0001 * e_squared
-    growth_rate_natural <- 0.2 + 0.0001 * temp_squared_deviation + 0.0001 * e_natural_squared
+    fire_pm_25_squared <- fire_pm_25^2
+    #e_natural_squared <- e_natural^2
+    growth_rate <- 0.2 + 0.0001 * temp_squared_deviation + 0.0001 * fire_pm_25_squared
+    #growth_rate_natural <- 0.2 + 0.0001 * temp_squared_deviation + 0.0001 * e_natural_squared
     
     # Vectorized u and y computations
     error_u <- rnorm(n_periods, mean = 0, sd = u1/500) # Standard deviation of error scales with u1
@@ -87,14 +68,14 @@ sim_data_scm <- function(data_mcc_scm,
     # Create vectors of length n_periods to store results
     u <- numeric(n_periods)
     y <- numeric(n_periods)
-    u_natural <- numeric(n_periods)
-    y_natural <- numeric(n_periods)
+    #u_natural <- numeric(n_periods)
+    #y_natural <- numeric(n_periods)
     
     # Assign starting values
     u[1] <- u1
     y[1] <- growth_rate[1] * u[1] + error_y[1]
-    u_natural[1] <- u1
-    y_natural[1] <- growth_rate[1] * u_natural[1] + error_y[1]
+    #u_natural[1] <- u1
+    #y_natural[1] <- growth_rate[1] * u_natural[1] + error_y[1]
     
     # Loop over n_periods to generate data
     for(t in 2:n_periods){
@@ -102,19 +83,16 @@ sim_data_scm <- function(data_mcc_scm,
       # Update observed u_t and y_t based on previous values
       u[t] <- u[t-1] - y[t-1] + growth_rate[t-1] * u[1] + error_u[t]
       y[t] <- growth_rate[t] * u[t] + error_y[t]
-      u_natural[t] <- u_natural[t-1] - y_natural[t-1] + growth_rate_natural[t-1] * u_natural[1] + error_u[t]
-      y_natural[t] <- growth_rate_natural[t] * u_natural[t] + error_y[t]
+      #u_natural[t] <- u_natural[t-1] - y_natural[t-1] + growth_rate_natural[t-1] * u_natural[1] + error_u[t]
+      #y_natural[t] <- growth_rate_natural[t] * u_natural[t] + error_y[t]
     }
     
     # Combine results into a data frame
     data_unit_level <- data.frame(treated_unit = treated_unit,
-                                  treated_time = treated_time,
+                                  #treated_time = treated_time,
                                   y = y, 
-                                  y_natural = y_natural,
                                   u = u, 
-                                  u_natural = u_natural,
-                                  e = e,
-                                  e_natural = e_natural,
+                                  fire_pm_25 = fire_pm_25,
                                   growth_rate = growth_rate,
                                   temp_squared_deviation = temp_squared_deviation)
     

@@ -11,6 +11,8 @@
 
 source(here("R/load_env.R"))
 source(here("R/get_data_mcc.R"))
+source(here("R/generate_treatment_indicator.R"))
+source(here("R/make_data_mcc_lfs_weekly.R"))
 source(here("R/subset_data.R"))
 source(here("R/utility_functions.R"))
 source(here("R/run_synth_model.R"))
