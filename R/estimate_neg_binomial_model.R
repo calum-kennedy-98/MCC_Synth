@@ -19,7 +19,7 @@
 
 estimate_neg_binomial_model <- function(data,
                                         outcome_var,
-                                        year_var,
+                                        date_var,
                                         linear_predictors,
                                         time_var,
                                         temp_var,
@@ -28,7 +28,7 @@ estimate_neg_binomial_model <- function(data,
   
   # Find total degrees of freedom for time trends by multiplying per-year degrees
   # of freedom by N years
-  spline_df_time_trend <- spline_df_per_year * length(unique(data[[year_var]]))
+  spline_df_time_trend <- spline_df_per_year * length(unique(year(data[[date_var]])))
   
   # Convert function arguments to string and then to a formula to pass to glm.nb
   formula_string <- paste(outcome_var, "~", 

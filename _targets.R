@@ -1,7 +1,4 @@
-# Created by use_targets().
-# Follow the comments below to fill in this target script.
-# Then follow the manual to check and run the pipeline:
-#   https://books.ropensci.org/targets/walkthrough.html#inspect-the-pipeline
+# Comments here
 
 # Load packages required to define the pipeline
 library(targets)
@@ -11,6 +8,8 @@ library(here)
 library(ggplot2)
 library(viridis)
 library(crew)
+
+conflicted::conflict_prefer_all("tidylog", c("dplyr", "mice", "stats", "MASS"))
 
 # Set target options:
 tar_option_set(
@@ -29,12 +28,16 @@ tar_option_set(
     "stringr",
     "tidylog",
     "conflicted",
-    "slider"
+    "slider",
+    "MASS",
+    "splines",
+    "furrr"
   ),
   format = "qs",
   memory = "transient",
   garbage_collection = TRUE
-  # controller = crew::crew_controller_local()
+  #controller = crew_controller_local(workers = 10,
+                                     #seconds_idle = 10)
   # Alternatively, if you want workers to run on a high-performance computing
   # cluster, select a controller from the {crew.cluster} package.
   # For the cloud, see plugin packages like {crew.aws.batch}.
@@ -118,8 +121,7 @@ list(
                                            region == "Eastern Asia",
                                            vars_to_select = c("column_label",
                                                               "tmean",
-                                                              "year",
-                                                              "week",
+                                                              "week_id",
                                                               "pred_fire_PM25",
                                                               "pred_nonfire_PM25",
                                                               "all",
@@ -128,17 +130,24 @@ list(
                
                # Remove additional days at end of year as not relevant for simulation,
                # and keep only data with non-missing temperature and mortality data
-               filter(week < 53,
-                      if_all(all, ~ !is.na(.)),
+               filter(if_all(all, ~ !is.na(.)),
                       if_all(tmean, ~ !is.na(.)))),
   
-  tar_target(data_for_simulation_imp, impute_missing_data(data = data_for_simulation,
-                                                   maxit = 5,
-                                                   m = 2,
-                                                   seed = 42)),
+  tar_target(list_data_simulated_neg_binomial, make_list_data_negative_binomial_model(n_sims = 500, 
+                                                                                      data = data_for_simulation, 
+                                                                                      id_var = "column_label", 
+                                                                                      outcome_var = "all", 
+                                                                                      date_var = "date",
+                                                                                      linear_predictors = "pred_nonfire_PM25", 
+                                                                                      time_var = "week_id",
+                                                                                      temp_var = "tmean", 
+                                                                                      spline_df_per_year = 7, 
+                                                                                      spline_df_temp = 4)),
+  
+  # Old stuff below
   
   tar_target(list_data_simulated, make_data_scm_list(n_sims = 100,
-                                                     data = data_for_simulation_imp, 
+                                                     data = data_for_simulation, 
                                                      id_var = column_label, 
                                                      week_var = week, # May need to rethink this if go with moving averages 
                                                      fire_pm_var = pred_fire_PM25,

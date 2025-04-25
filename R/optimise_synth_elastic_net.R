@@ -100,7 +100,7 @@ optimise_synth_elastic_net <- function(data,
                 lambda = lambda_opt,
                 nlambda = 1)
   
-  # Get predictions on outcomes over the entire pre/post pe
+  # Get predictions on outcomes over the entire pre/post period
   Y1_hat <- predict(fit, Y0, type = "response")
   
   # Extract optimal model coefficients
