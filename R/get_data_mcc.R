@@ -36,6 +36,7 @@ get_data_mcc <- function(path_data_mcc,
       ) %>%
     mutate(
       cityname = factor(cityname),
+      column_label = factor(column_label),
       week = week(date)
     ) %>%
     mutate(

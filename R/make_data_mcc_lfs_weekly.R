@@ -17,6 +17,17 @@ make_data_mcc_lfs_weekly <- function(data_mcc_lfs,
   
   data_mcc_lfs_weekly <- data_mcc_lfs %>%
     
+    # Create unique week ID variable which carries over across years
+    mutate(
+      days_since_start = as.integer(date - min(date)),
+      week_id = days_since_start %/% 7 + 1
+    ) %>%
+    
+    # Retain only complete weeks for analysis
+    filter(n() == 7,
+           .by = c(column_label,
+                   week_id)) %>%
+    
     summarise(
       
       # Take mean of temperature and pollution variables
@@ -32,9 +43,8 @@ make_data_mcc_lfs_weekly <- function(data_mcc_lfs,
       date = min(date, na.rm = TRUE),
       
       .by = c(column_label,
-              week,
-              region,
-              year)
+              week_id,
+              region)
       )
   
   return(data_mcc_lfs_weekly)

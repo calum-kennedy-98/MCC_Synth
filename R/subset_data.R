@@ -26,7 +26,7 @@ subset_data <- function(data,
     filter(!!!conditions)
   
   if (!is.null(vars_to_select)) {
-    data <- data %>% select(all_of(vars_to_select))
+    data <- data %>% tidylog::select(all_of(vars_to_select))
   }
   
   return(data)
