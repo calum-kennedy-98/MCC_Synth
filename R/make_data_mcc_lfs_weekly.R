@@ -13,7 +13,8 @@
 
 make_data_mcc_lfs_weekly <- function(data_mcc_lfs,
                                      climatic_vars,
-                                     mortality_vars){
+                                     mortality_vars,
+                                     group_vars){
   
   data_mcc_lfs_weekly <- data_mcc_lfs %>%
     
@@ -25,8 +26,7 @@ make_data_mcc_lfs_weekly <- function(data_mcc_lfs,
     
     # Retain only complete weeks for analysis
     filter(n() == 7,
-           .by = c(column_label,
-                   week_id)) %>%
+           .by = group_vars) %>%
     
     summarise(
       
@@ -42,9 +42,7 @@ make_data_mcc_lfs_weekly <- function(data_mcc_lfs,
       # Extract start date of week
       date = min(date, na.rm = TRUE),
       
-      .by = c(column_label,
-              week_id,
-              region)
+      .by = group_vars
       )
   
   return(data_mcc_lfs_weekly)

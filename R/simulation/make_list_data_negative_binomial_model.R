@@ -15,35 +15,50 @@
 make_list_data_negative_binomial_model <- function(n_sims,
                                                    data,
                                                    id_var,
+                                                   treated_var,
                                                    outcome_var,
                                                    date_var,
                                                    linear_predictors,
-                                                   time_var,
+                                                   week_var,
                                                    temp_var,
                                                    spline_df_per_year,
                                                    spline_df_temp){
   
-  # Extract list of unique locations
-  unique_locations <- unique(data[[id_var]])
+  # Extract list of unique locations from data
+  unique_locations <- pull(distinct(data, {{id_var}}))
+  
+  # Extract list of location-specific datasets from main data
+  list_data_location_specific <- lapply(unique_locations, function(x){filter(data, {{id_var}} == x)})
+  
+  # Extract unit and time treatment probabilities
+  unit_time_treatment_probs <- estimate_assignment_probabilities(data = data,
+                                                                 treated_var = {{treated_var}},
+                                                                 id_var = {{id_var}},
+                                                                 week_var = {{week_var}})
+  
+  # Set quoted variables to pass to future_map
+  week_var_quo <- deparse(substitute(week_var))
+  outcome_var_quo <- deparse(substitute(outcome_var))
+  date_var_quo <- deparse(substitute(date_var))
+  temp_var_quo <- deparse(substitute(temp_var))
   
   # Set plan for parallel computing
   plan(multisession, workers = 10)
   
-  list_data_simulated_neg_binomial <- future_map(unique_locations, function(x){
+  list_data_simulated_neg_binomial <- future_map(list_data_location_specific, 
+                                                 .options = furrr_options(seed = NULL), 
+                                                 function(x){
     
     # Set ns function as global
     ns
     
-    # Extract location specific data to pass to negative binomial model
-    data_for_model <- data[data[[id_var]] == x,]
-    
     # Estimate negative binomial regression model and extract output
-    model <- estimate_neg_binomial_model(data_for_model,
-                                         outcome_var,
-                                         date_var,
+    model <- estimate_neg_binomial_model(data = x,
+                                         outcome_var_quo,
+                                         date_var_quo,
                                          linear_predictors,
-                                         time_var,
-                                         temp_var,
+                                         week_var_quo,
+                                         temp_var_quo,
                                          spline_df_per_year,
                                          spline_df_temp)
     
@@ -51,20 +66,42 @@ make_list_data_negative_binomial_model <- function(n_sims,
     # assuming an underlying negative binomial distribution (changing seed each time)
     list_data_simulated <- lapply(seq(1:n_sims),
                                   sim_data_negative_binomial_model,
-                                  data = data_for_model,
+                                  data = x,
                                   model = model)
-    
-    # Here we could adapt this to only simulate the subset of data we actually want
     
   })
   
-  # Generate final list of data frames by recombining location-specific data frames
-  list_data_transposed <- transpose(list_data_simulated_neg_binomial)
-  
-  list_data_out <- map(list_data_transposed, bind_rows)
-  
-  # Rest plan to sequential
+  # Reset plan to sequential
   plan(sequential)
+
+  # Generate final list of data frames by recombining location-specific data frames
+  list_data_transposed <- map(transpose(list_data_simulated_neg_binomial), bind_rows)
+  
+  # Set seed for reproducibility
+  set.seed(42)
+  
+  # For each data frame in list, sample treated unit and time using empirical treatment probabilities
+  # and subset data around the treatment time
+  list_data_out <- lapply(list_data_transposed, function(x) {
+
+    # Sample treated unit and treated time
+    treated_unit <- sample(unit_time_treatment_probs[["unit_names"]], 1, prob = unit_time_treatment_probs[["treatment_prob_unit"]])
+    treated_time <- sample(unit_time_treatment_probs[["week_ids"]], 1, prob = unit_time_treatment_probs[["treatment_prob_time"]])
+
+    # Subset data based on sampled treatment time and generate treatment assignment
+    # indicator for treated unit, then remove units with missing time periods
+    data_subset <- x %>%
+      filter(
+        between(
+          {{week_var}}, treated_time - 26, treated_time + 25
+          )
+      ) %>%
+      mutate(
+        treated = ifelse({{id_var}} == treated_unit, 1, 0),
+        post = ifelse({{week_var}} >= treated_time, 1, 0)
+      )
+    }
+  )
   
   return(list_data_out)
   

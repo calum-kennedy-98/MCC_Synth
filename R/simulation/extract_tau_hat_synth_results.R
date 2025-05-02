@@ -1,5 +1,8 @@
 # Name of script: extract_tau_hat_synth_results
-# Description: Function to extract true vs. predicted tau hats from synth model replications
+# Description: Function to extract estimated tau hats from a list of synthetic control
+# model outputs. The function takes inputs from a generic synthetic control model
+# class, assuming that the true observed outcome is "Y1", the predicted outcome
+# is "Y1_hat" and the first treated period is "first_treated_period"
 # Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
 # Created on: 05-03-2025
 # Latest update by: Calum Kennedy
@@ -7,48 +10,47 @@
 
 # Comments ---------------------------------------------------------------------
 
+# This function returns estimated period tau hats for a list of outputs from a
+# fitted synthetic control model. The true observed outcome is assumed to be "Y1",
+# the predicted outcome is "Y1_hat". The function returns a dataframe with four
+# columns: the model run indicator, time period, post-treatment indicator, and estimated
+# tau_hat
 
-# Define function to simulate n_sims runs of synth model -----------------------
+# Function ---------------------------------------------------------------------
 
-extract_tau_hat_synth_results <- function(results_synth_model_simulated,
-                                          id_var,
-                                          time_var){
+extract_tau_hat_synth_results <- function(results_synth_model_simulated){
   
-  # Vector of model runs to iterate over
+  # Generate ID for model run and add to list of outputs
   model_run <- seq(1:length(results_synth_model_simulated))
   
-  list_tau_hat <- map(model_run, function(x){
+  results_synth_model_simulated_with_id <- lapply(seq_along(results_synth_model_simulated),
+                                                  function(x) {
+                                                    c(results_synth_model_simulated[[x]], model_run = x)
+                                                  })
+  
+  # Get list of estimated period-specific tau hats from each model run
+  list_tau_hat <- lapply(results_synth_model_simulated_with_id, function(x){
     
-    # Get max t from dataprep object
-    t_max <- length(results_synth_model_simulated[[x]][["data_prepared"]][["Y1plot"]])
+    # Extract post-treatment true and predicted outcome
+    Y1 <- c(x[["Y1"]])
+    Y1_hat <- c(x[["Y1_hat"]])
     
-    # Extract true 'y_natural' and 'y_obs' vector from simulated data (treated unit is unit with smallest ID)
-    y_natural <- results_synth_model_simulated[[x]][["data"]] %>% filter({{id_var}} == min({{id_var}}) & {{time_var}} <= t_max) %>% pull(y_natural)
-    y_obs <- results_synth_model_simulated[[x]][["data"]] %>% filter({{id_var}} == min({{id_var}}) & {{time_var}} <= t_max) %>% pull(y)
+    # Estimate tau_hat
+    tau_hat <- Y1 - Y1_hat
     
-    # Extract optimal weights and do matrix/vector multiplication with control outcomes
-    # to get synthetic control predicted y_natural_pred
-    w_opt <- results_synth_model_simulated[[x]][["synth_out"]][["solution.w"]]
-    y_controls <- results_synth_model_simulated[[x]][["data_prepared"]][["Y0plot"]]
-    y_pred <- c(y_controls %*% w_opt)
+    # Generate vector of time periods
+    t <- seq(1:length(Y1))
     
-    # Estimate true vs predicted treatment effects
-    tau <- y_obs - y_natural
-    tau_hat <- y_obs - y_pred
+    # Generate post-treatment indicator
+    post <- c(rep(0, x[["first_treated_period"]] - 1), rep(1, length(Y1) - x[["first_treated_period"]] + 1))
     
-    # Get difference between tau and tau_hat
-    diff_tau_hat <- tau_hat - tau
+    # Return tibble of tau_hat, t_post, and model run
+    results <- tibble("model_run" = x[["model_run"]],
+                      "t" = t,
+                      "post" = post,
+                      "tau_hat" = tau_hat)
     
-    # Generate dataframe of results
-    results <- data.frame(y_obs,
-                          y_pred,
-                          tau,
-                          tau_hat,
-                          diff_tau_hat,
-                          model = rep(x, t_max),
-                          t = seq(1:t_max))
-    
-  })
+  }) 
   
   # Bind rows into one dataframe and return
   results_synth_tau_hat <- bind_rows(list_tau_hat)
