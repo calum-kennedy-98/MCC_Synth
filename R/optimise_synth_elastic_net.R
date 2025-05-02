@@ -18,8 +18,13 @@
 # pre-treatment outcomes Y as our predictors, and allow for a constant level shift
 # (intercept) between treated and synthetic control
 
-# We pass an arbitrary loss function to optimx, and return the set of parameters which
-# minimise the user-supplied loss function
+# @ param data, an input dataframe
+# @ param alpha, initial value for hyperparameter alpha
+# @ param lambda, initial value for hyperparameter lambda
+# @ param outcome_var, name of the outcome variable column
+# @ param treated_id_var, binary ID variable for the treated unit
+# @ param treated_time_var, binary ID variable for the treatment time
+# @ return a list with elements data, Y1, Y1_hat, W_opt, mu_opt (equal to 0), alpha_opt, lambda_opt, first_treated_period
 
 # We assume that the optimx function is performing minimisation, not maximisation
 
@@ -30,8 +35,7 @@ optimise_synth_elastic_net <- function(data,
                                   lambda_init,
                                   outcome_var,
                                   treated_id_var,
-                                  treated_time_var,
-                                  time_var){
+                                  treated_time_var){
   
   # Extract vector of outcomes for treated unit
   Y1 <- data %>% 
@@ -108,12 +112,14 @@ optimise_synth_elastic_net <- function(data,
   mu_opt <- fit[["a0"]]
   
   # Return list of final outputs
-  results <- list("Y1" = Y1,
+  results <- list("data" = data,
+                  "Y1" = Y1,
                   "Y1_hat" = Y1_hat,
                   "W_opt" = W_opt,
                   "mu_opt" = mu_opt,
                   "alpha_opt" = alpha_opt,
-                  "lambda_opt" = lambda_opt)
+                  "lambda_opt" = lambda_opt,
+                  "first_treated_period" = n_periods_pre + 1)
   
   return(results)
 } 
