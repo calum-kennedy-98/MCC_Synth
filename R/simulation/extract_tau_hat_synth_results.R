@@ -18,7 +18,8 @@
 
 # Function ---------------------------------------------------------------------
 
-extract_tau_hat_synth_results <- function(results_synth_model_simulated){
+extract_tau_hat_synth_results <- function(results_synth_model_simulated,
+                                          time_var){
   
   # Generate ID for model run and add to list of outputs
   model_run <- seq(1:length(results_synth_model_simulated))
@@ -42,7 +43,7 @@ extract_tau_hat_synth_results <- function(results_synth_model_simulated){
     t <- seq(1:length(Y1))
     
     # Generate post-treatment indicator
-    post <- c(rep(0, x[["first_treated_period"]] - 1), rep(1, length(Y1) - x[["first_treated_period"]] + 1))
+    post <- c(rep(0, x[["first_treated_period"]] - min(x[["data"]][[time_var]])), rep(1, max(x[["data"]][[time_var]]) - x[["first_treated_period"]] + 1))
     
     # Return tibble of tau_hat, t_post, and model run
     results <- tibble("model_run" = x[["model_run"]],

@@ -24,6 +24,9 @@ make_list_data_negative_binomial_model <- function(n_sims,
                                                    spline_df_per_year,
                                                    spline_df_temp){
   
+  # Set seed
+  set.seed(42)
+  
   # Extract list of unique locations from data
   unique_locations <- pull(distinct(data, {{id_var}}))
   
@@ -46,7 +49,7 @@ make_list_data_negative_binomial_model <- function(n_sims,
   plan(multisession, workers = 10)
   
   list_data_simulated_neg_binomial <- future_map(list_data_location_specific, 
-                                                 .options = furrr_options(seed = NULL), 
+                                                 .options = furrr_options(seed = TRUE), 
                                                  function(x){
     
     # Set ns function as global
@@ -64,10 +67,11 @@ make_list_data_negative_binomial_model <- function(n_sims,
     
     # Generate 'n_sims' simulations of outcome variable from the fitted model,
     # assuming an underlying negative binomial distribution (changing seed each time)
-    list_data_simulated <- lapply(seq(1:n_sims),
-                                  sim_data_negative_binomial_model,
-                                  data = x,
-                                  model = model)
+    list_data_simulated <- future_map(seq_len(n_sims), function(i){
+      sim_data_negative_binomial_model(
+        data = x,
+        model = model)
+      }, .options = furrr_options(seed = TRUE))
     
   })
   
@@ -76,9 +80,6 @@ make_list_data_negative_binomial_model <- function(n_sims,
 
   # Generate final list of data frames by recombining location-specific data frames
   list_data_transposed <- map(transpose(list_data_simulated_neg_binomial), bind_rows)
-  
-  # Set seed for reproducibility
-  set.seed(42)
   
   # For each data frame in list, sample treated unit and time using empirical treatment probabilities
   # and subset data around the treatment time

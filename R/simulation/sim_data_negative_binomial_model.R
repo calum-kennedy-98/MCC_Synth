@@ -12,13 +12,8 @@
 
 # Function ---------------------------------------------------------------------
 
-sim_data_negative_binomial_model <- function(seed,
-                                             data,
+sim_data_negative_binomial_model <- function(data,
                                              model){
-  
-    
-    # Set seed
-    set.seed(seed)
     
     # Extract model predicted values for the linear link function
     # and take exponential to find expected value of outcome variable distribution 
