@@ -34,6 +34,7 @@ optimise_synth_elastic_net <- function(data,
                                   alpha_init,
                                   lambda_init,
                                   outcome_var,
+                                  time_var,
                                   treated_id_var,
                                   treated_time_var){
   
@@ -53,6 +54,18 @@ optimise_synth_elastic_net <- function(data,
   # Extract dimension of time variable to reshape Y0
   n_periods <- length(Y1)
   n_periods_pre <- length(Y1_pre)
+  
+  # Generate vector of pre-treatment time periods - we need to extract the time
+  # vector only for one unit, since the panel is balanced by design
+  t_vec_pre_treatment <- data %>%
+    filter(
+      {{treated_time_var}} == 0,
+      {{treated_id_var}} == 1
+    ) %>%
+    pull({{time_var}})
+  
+  # Generate indicator for first treatment period
+  first_treated_period <- max(t_vec_pre_treatment) + 1
   
   # Extract matrix of outcomes for control units (T x J matrix, where T = n_periods
   # and J = n_controls)
@@ -82,7 +95,7 @@ optimise_synth_elastic_net <- function(data,
                                 upper = c(1, Inf),
                                 Y0_pre = Y0_pre,
                                 Y0_post = Y0_post,
-                                method = "L-BFGS-B")
+                                method = "L-BFGS-B") # Could maybe try a cv.glmnet or grid search here
   
   # Re-order results to find best solution (assume using minimisation in optimx)
   results_hyperparams <- results_hyperparams[order(results_hyperparams$value,decreasing=FALSE),]
@@ -90,9 +103,9 @@ optimise_synth_elastic_net <- function(data,
   # Retain optimal solution (first row in re-ordered results_opt)
   results_hyperparams <- results_hyperparams[1,]
   
-  # Extract optimal hyperparameters
-  alpha_opt <- as.numeric(results_hyperparams[["alpha"]])
-  lambda_opt <- as.numeric(results_hyperparams[["lambda"]])
+  # Extract optimal hyperparameters (if NA, return initial hyperparams)
+  alpha_opt <- ifelse(!is.na(results_hyperparams[["alpha"]]), as.numeric(results_hyperparams[["alpha"]]), alpha_init)
+  lambda_opt <- ifelse(!is.na(results_hyperparams[["lambda"]]), as.numeric(results_hyperparams[["lambda"]]), lambda_init)
   
   # Re-run optimisation to get optimal synthetic control weights for treated unit -------------
   # at the optimal level of the hyperparameters
@@ -119,7 +132,7 @@ optimise_synth_elastic_net <- function(data,
                   "mu_opt" = mu_opt,
                   "alpha_opt" = alpha_opt,
                   "lambda_opt" = lambda_opt,
-                  "first_treated_period" = n_periods_pre + 1)
+                  "first_treated_period" =  first_treated_period)
   
   return(results)
 } 

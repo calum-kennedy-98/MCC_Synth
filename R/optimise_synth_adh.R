@@ -110,7 +110,7 @@ optimise_synth_adh <- function(data,
   # Generate synth object
   synth_out <- synth(data_prepared, 
                      optimxmethod = "BFGS",
-                     Margin.ipop = 0.002)
+                     Margin.ipop = 0.005)
   
   # Extract optimal weights and intercept (mu = 0 by design)
   W_opt <- synth_out[["solution.w"]]

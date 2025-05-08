@@ -33,7 +33,8 @@ tar_option_set(
     "conflicted",
     "slider",
     "splines",
-    "furrr"
+    "furrr",
+    "rlang"
   ),
   format = "qs",
   memory = "transient",
@@ -145,7 +146,7 @@ list(
                filter(if_all(all, ~ !is.na(.)),
                       if_all(tmean, ~ !is.na(.)))),
   
-  tar_target(list_data_simulated_neg_binomial, make_list_data_negative_binomial_model(n_sims = 500, 
+  tar_target(list_data_simulated_neg_binomial, make_list_data_negative_binomial_model(n_sims = 100, 
                                                                                       data = data_for_simulation, 
                                                                                       id_var = column_label, 
                                                                                       treated_var = treated,
@@ -155,49 +156,38 @@ list(
                                                                                       week_var = week_id,
                                                                                       temp_var = tmean, 
                                                                                       spline_df_per_year = 7, 
-                                                                                      spline_df_temp = 4))
+                                                                                      spline_df_temp = 4)),
   
   # Get simulation results -----------------------------------------------------
   
+  # Results from elastic net
+  tar_target(results_synth_elastic_net_neg_binom, future_map(list_data_simulated_neg_binomial,
+                                                             ~ optimise_synth_elastic_net(.,
+                                                                                          alpha_init = 0.5,
+                                                                                          lambda_init = 2,
+                                                                                          outcome_var = outcome_pred,
+                                                                                          time_var = week_id,
+                                                                                          treated_id_var = treated,
+                                                                                          treated_time_var = post))),
   
-  # Old stuff below
+  # Results from ADH synth without covariates
+  tar_target(results_synth_adh_no_covars_neg_binom, future_map(list_data_simulated_neg_binomial,
+                                                             ~ optimise_synth_adh(.,
+                                                                                  id_var = column_label,
+                                                                                  outcome_var = outcome_pred,
+                                                                                  time_var = week_id,
+                                                                                  treated_id_var = treated,
+                                                                                  treated_time_var = post,
+                                                                                  predictors = NULL))),
   
-  # tar_target(list_data_simulated, make_data_scm_list(n_sims = 100,
-  #                                                    data = data_for_simulation, 
-  #                                                    id_var = column_label, 
-  #                                                    week_var = week, # May need to rethink this if go with moving averages 
-  #                                                    fire_pm_var = pred_fire_PM25,
-  #                                                    time_var_mcc = doy)),
-  # 
-  # tar_target(results_synth_model_simulated, sim_synth_model(list_data_simulated = list_data_simulated, 
-  #                                                           id_var = id, 
-  #                                                           predictors = NULL,
-  #                                                           special_predictors = list(list("y", 1:29, "mean")), 
-  #                                                           time_predictors_prior = 1:29, 
-  #                                                           dep_var = "y", 
-  #                                                           time_var_synth = "week", 
-  #                                                           time_optimise_ssr = 20:29, 
-  #                                                           time_plot = 1:50)),
-  # 
-  # tar_target(results_tau_hat_synth, extract_tau_hat_synth_results(results_synth_model_simulated = results_synth_model_simulated,
-  #                                                                 id_var = id,
-  #                                                                 time_var = week)),
-  # 
-  # tar_target(results_synth_diagnostics, get_synth_diagnostics(results_synth_model_simulated = results_synth_model_simulated,
-  #                                                             id_var = id,
-  #                                                             time_var = week,
-  #                                                             start_index = 1,
-  #                                                             end_index = 29)),
-  # 
-  # # Here have defined separate target for elastic net method - ultimately we
-  # # probably want to combine these into some generic wrapper function (editing the 'sim_synth_model'
-  # # function call)
-  # tar_target(results_elastic_net_simulated, map(list_data_simulated, 
-  #                                               ~ optimise_synth_elastic_net(.,
-  #                                                                            alpha_init = 0.5,
-  #                                                                            lambda_init = 2,
-  #                                                                            outcome_var = y,
-  #                                                                            treated_id_var = treated_unit,
-  #                                                                            treated_time_var = treated_time,
-  #                                                                            time_var = week)))
+  # Results from ADH synth with covariates
+  tar_target(results_synth_adh_covars_neg_binom, future_map(list_data_simulated_neg_binomial,
+                                                               ~ optimise_synth_adh(.,
+                                                                                    id_var = column_label,
+                                                                                    outcome_var = outcome_pred,
+                                                                                    time_var = week_id,
+                                                                                    treated_id_var = treated,
+                                                                                    treated_time_var = post,
+                                                                                    predictors = c("tmean", "pred_nonfire_PM25"))))
+  
 )
