@@ -14,4 +14,4 @@ module load glpk
 module load r/r-4.4.2_bc-3.20
 
 # Activate renv and run pipeline
-Rscript -e 'renv::restore(); targets::tar_make()'
+Rscript -e 'targets::tar_make()'
