@@ -30,7 +30,11 @@ optimise_synth_adh <- function(data,
                                time_var,
                                treated_id_var,
                                treated_time_var,
-                               predictors){
+                               predictors,
+                               optimxmethod,
+                               initial_margin,
+                               max_attempts,
+                               margin_increment){
   
   # Generate numeric ID column for synth
   data <- data %>%
@@ -107,10 +111,15 @@ optimise_synth_adh <- function(data,
                             controls.identifier = controls_id,
                             time.optimize.ssr = t_vec_pre_treatment)
   
-  # Generate synth object
-  synth_out <- synth(data_prepared, 
-                     optimxmethod = "BFGS",
-                     Margin.ipop = 0.005)
+  # Generate synth object using 'retry_synth' - available in 'utility_functions.R'
+  synth_out <- retry_synth(data_prepared, 
+                     optimxmethod = optimxmethod,
+                     initial_margin = initial_margin,
+                     max_attempts = max_attempts,
+                     margin_increment = margin_increment)
+  
+  # If optimisation succeeded, generate relevant outputs
+  if(!is.null(synth_out)){
   
   # Extract optimal weights and intercept (mu = 0 by design)
   W_opt <- synth_out[["solution.w"]]
@@ -119,13 +128,26 @@ optimise_synth_adh <- function(data,
   # Generate Y1_hat using Y0 and optimal weights
   Y1_hat <- c(Y0 %*% W_opt)
   
+  # If optimisation failed, return NA for missing outputs
+  } else {
+    
+    W_opt <- NA
+    mu_opt <- 0
+    Y1_hat <- rep(NA, n_periods)
+    
+  }
+  
+  # If predictors specified, set method as "adh_covars" else "adh_no_covars"
+  method <- ifelse(!is.null(predictors), "adh_covars", "adh_no_covars")
+  
   # Store results in list
   results <- list("data" = data,
                   "Y1" = Y1,
                   "Y1_hat" = Y1_hat,
                   "W_opt" = W_opt,
                   "mu_opt" = mu_opt,
-                  "first_treated_period" = first_treated_period)
+                  "first_treated_period" = first_treated_period,
+                  "method" = method)
   
   return(results)
   

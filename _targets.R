@@ -146,7 +146,7 @@ list(
                filter(if_all(all, ~ !is.na(.)),
                       if_all(tmean, ~ !is.na(.)))),
   
-  tar_target(list_data_simulated_neg_binomial, make_list_data_negative_binomial_model(n_sims = 100, 
+  tar_target(list_data_simulated_neg_binomial, make_list_data_negative_binomial_model(n_sims = 250, 
                                                                                       data = data_for_simulation, 
                                                                                       id_var = column_label, 
                                                                                       treated_var = treated,
@@ -178,7 +178,11 @@ list(
                                                                                   time_var = week_id,
                                                                                   treated_id_var = treated,
                                                                                   treated_time_var = post,
-                                                                                  predictors = NULL))),
+                                                                                  predictors = NULL,
+                                                                                  optimxmethod = c("Nelder-Mead", "BFGS"),
+                                                                                  initial_margin = 0.0005,
+                                                                                  max_attempts = 20,
+                                                                                  margin_increment = 0.0005))),
   
   # Results from ADH synth with covariates
   tar_target(results_synth_adh_covars_neg_binom, future_map(list_data_simulated_neg_binomial,
@@ -188,6 +192,23 @@ list(
                                                                                     time_var = week_id,
                                                                                     treated_id_var = treated,
                                                                                     treated_time_var = post,
-                                                                                    predictors = c("tmean", "pred_nonfire_PM25"))))
+                                                                                    predictors = c("tmean", "pred_nonfire_PM25"),
+                                                                                    optimxmethod = c("Nelder-Mead", "BFGS"),
+                                                                                    initial_margin = 0.0005,
+                                                                                    max_attempts = 20,
+                                                                                    margin_increment = 0.0005))),
+  
+  # Results from ADH synth on de-meaned outcomes
+  tar_target(results_synth_adh_demeaned_neg_binom, future_map(list_data_simulated_neg_binomial,
+                                                            ~ optimise_synth_demeaned(.,
+                                                                                 id_var = column_label,
+                                                                                 outcome_var = outcome_pred,
+                                                                                 time_var = week_id,
+                                                                                 treated_id_var = treated,
+                                                                                 treated_time_var = post,
+                                                                                 optimxmethod = c("Nelder-Mead", "BFGS"),
+                                                                                 initial_margin = 0.0005,
+                                                                                 max_attempts = 20,
+                                                                                 margin_increment = 0.0005)))
   
 )

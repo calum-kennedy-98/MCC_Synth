@@ -21,6 +21,7 @@ source(here("R/predict_Y_post_elastic_net.R"))
 source(here("R/merge_data_mcc_lfs.R"))
 source(here("R/optimise_synth_elastic_net.R"))
 source(here("R/optimise_synth_adh.R"))
+source(here("R/optimise_synth_demeaned.R"))
 source(here("R/estimate_neg_binomial_model.R"))
 
 # Simulation functions
