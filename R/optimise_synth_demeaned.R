@@ -1,15 +1,12 @@
-# Name of script: optimise_synth_adh
+# Name of script: optimise_synth_demeaned
 # Description: Function to find optimal synthetic control predictions using the
-# classical synthetic control method proposed by Abadie, Diamond, and Hainmueller (ADH)
-# The ADH synthetic control finds a convex combination of control units which best approximates
-# the pre-treatment trend in the treated units. Here, we do not allow an intercept term
-# and we constrain the weights to lie in the unit interval and sum to 1. The synthetic control
-# unit is therefore a projection of the treated unit outcomes onto the convex hull of the control
-# unit outcomes. 
+# classical synthetic control method proposed by Abadie, Diamond, and Hainmueller,
+# on demeaned pre-treatment data (this is equivalent to adding an intercept to
+# the original ADH method, proposed by Ferman and Pinto / Doudchenko and Imbens)
 # Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 01-05-2025
+# Created on: 18-05-2025
 # Latest update by: Calum Kennedy
-# Latest update on: 01-05-2025
+# Latest update on: 18-05-2025
 
 # Comments ---------------------------------------------------------------------
 
@@ -24,17 +21,16 @@
 
 # Function ---------------------------------------------------------------------
 
-optimise_synth_adh <- function(data,
-                               id_var,
-                               outcome_var,
-                               time_var,
-                               treated_id_var,
-                               treated_time_var,
-                               predictors,
-                               optimxmethod,
-                               initial_margin,
-                               max_attempts,
-                               margin_increment){
+optimise_synth_demeaned <- function(data,
+                                    id_var,
+                                    outcome_var,
+                                    time_var,
+                                    treated_id_var,
+                                    treated_time_var,
+                                    optimxmethod,
+                                    initial_margin,
+                                    max_attempts,
+                                    margin_increment){
   
   # Generate numeric ID column for synth
   data <- data %>%
@@ -61,6 +57,9 @@ optimise_synth_adh <- function(data,
     pull({{outcome_var}}) %>% 
     as.numeric()
   
+  # Generate pre-treatment average outcome for treated unit
+  Y1_bar_pre_treatment <- mean(Y1[1:length(t_vec_pre_treatment)])
+  
   # Store total number of periods 'n_periods'
   n_periods <- length(Y1)
   
@@ -70,6 +69,12 @@ optimise_synth_adh <- function(data,
     filter({{treated_id_var}} == 0) %>%
     pull({{outcome_var}}) %>%
     matrix(nrow = n_periods)
+  
+  # Extract vector of pre-treatment means for control units
+  Y0_bar_pre_treatment <- colMeans(Y0[1:length(t_vec_pre_treatment),])
+  
+  # Extract matrix of de-meaned outcomes for control units
+  Y0_demeaned <- t(t(Y0) - Y0_bar_pre_treatment)
   
   # Enquote variables to pass to dataprep function
   id_numeric_quo <- "id_numeric"
@@ -99,9 +104,16 @@ optimise_synth_adh <- function(data,
     distinct(id_numeric) %>%
     pull()
   
+  # De-mean outcome variable using pre-treatment averages
+  data_demeaned <- data %>% 
+    mutate(
+      {{outcome_var}} := {{outcome_var}} - mean({{outcome_var}}[{{treated_time_var}} == 0], na.rm = TRUE),
+      .by = {{id_var}}
+    )
+  
   # Prepare data to pass to synth
-  data_prepared <- dataprep(foo = data,
-                            predictors = predictors,
+  data_prepared <- dataprep(foo = data_demeaned,
+                            predictors = NULL,
                             special.predictors = list_outcome_predictors,
                             time.predictors.prior = t_vec_pre_treatment,
                             dependent = outcome_var_quo,
@@ -113,32 +125,29 @@ optimise_synth_adh <- function(data,
   
   # Generate synth object using 'retry_synth' - available in 'utility_functions.R'
   synth_out <- retry_synth(data_prepared, 
-                     optimxmethod = optimxmethod,
-                     initial_margin = initial_margin,
-                     max_attempts = max_attempts,
-                     margin_increment = margin_increment)
+                           optimxmethod = optimxmethod,
+                           initial_margin = initial_margin,
+                           max_attempts = max_attempts,
+                           margin_increment = margin_increment)
   
   # If optimisation succeeded, generate relevant outputs
   if(!is.null(synth_out)){
-  
-  # Extract optimal weights and intercept (mu = 0 by design)
-  W_opt <- synth_out[["solution.w"]]
-  mu_opt <- 0
-  
-  # Generate Y1_hat using Y0 and optimal weights
-  Y1_hat <- c(Y0 %*% W_opt)
-  
-  # If optimisation failed, return NA for missing outputs
+    
+    # Extract optimal weights and intercept (mu_opt = pre-treatment average for treated unit)
+    W_opt <- synth_out[["solution.w"]]
+    mu_opt <- Y1_bar_pre_treatment
+    
+    # Generate Y1_hat using Y0 and optimal weights
+    Y1_hat <- c(mu_opt + Y0_demeaned %*% W_opt)
+    
+    # If optimisation failed, return NA for missing outputs
   } else {
     
     W_opt <- NA
-    mu_opt <- 0
+    mu_opt <- Y1_bar_pre_treatment
     Y1_hat <- rep(NA, n_periods)
     
   }
-  
-  # If predictors specified, set method as "adh_covars" else "adh_no_covars"
-  method <- ifelse(!is.null(predictors), "adh_covars", "adh_no_covars")
   
   # Store results in list
   results <- list("data" = data,
@@ -147,7 +156,7 @@ optimise_synth_adh <- function(data,
                   "W_opt" = W_opt,
                   "mu_opt" = mu_opt,
                   "first_treated_period" = first_treated_period,
-                  "method" = method)
+                  "method" = "adh_demeaned")
   
   return(results)
   

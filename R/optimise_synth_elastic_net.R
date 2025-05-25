@@ -132,7 +132,8 @@ optimise_synth_elastic_net <- function(data,
                   "mu_opt" = mu_opt,
                   "alpha_opt" = alpha_opt,
                   "lambda_opt" = lambda_opt,
-                  "first_treated_period" =  first_treated_period)
+                  "first_treated_period" =  first_treated_period,
+                  "method" = "elastic_net")
   
   return(results)
 } 
