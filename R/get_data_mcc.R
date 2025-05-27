@@ -26,25 +26,46 @@ get_data_mcc <- function(path_data_mcc,
   data_mcc <- bind_rows(
     dlist, .id = "column_label"
     ) %>%
+    
+    # Left join to cities dataframe
     left_join(
       cities, by = c("column_label" = "city")
       ) %>%
+    
+    # Clean names and set as tibble
     clean_names() %>%
+    
     as_tibble() %>%
+    
+    # Keep data between 2000-2019
     filter(
       between(year, 2000, 2019)
       ) %>%
+    
+    # Set character columns to factors and arrays to numeric
     mutate(
-      cityname = factor(cityname),
-      column_label = factor(column_label),
-      week = week(date)
+      across(
+        where(is.character),
+        as.factor
+        ),
+      across(
+        where(is.array),
+        as.numeric
+        )
     ) %>%
+    
+    # Create unique day and week ID variable which carries over across years
     mutate(
-      id = cur_group_id(), .by = {{id_var}}
-      ) %>%
+      day_id = as.numeric(date - min(date)),
+      week_id = day_id %/% 7 + 1
+    ) %>%
+    
+    # Keep distinct unit-time paris (some duplicates in raw data)
     distinct(
       column_label, date, .keep_all = TRUE
       ) %>%
+    
+    # Select relevant columns
     select(
       vars_to_select
       )

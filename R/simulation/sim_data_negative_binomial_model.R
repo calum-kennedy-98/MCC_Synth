@@ -1,5 +1,5 @@
 # Name of script: sim_data_negative_binomial_model
-# Description: Simulates mortality data based on city-specific negative binomial time
+# Description: Simulates mortality data based on fitted negative binomial time
 # series models
 # Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
 # Created on: 24-04-2025
@@ -13,7 +13,7 @@
 # Function ---------------------------------------------------------------------
 
 sim_data_negative_binomial_model <- function(data,
-                                             model){
+                                        model){
     
     # Extract model predicted values for the linear link function
     # and take exponential to find expected value of outcome variable distribution 

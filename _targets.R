@@ -8,6 +8,7 @@ library(here)
 library(ggplot2)
 library(viridis)
 library(crew)
+library(future)
 
 # Conflict preferences
 conflicted::conflict_prefer_all("tidylog", c("dplyr", "mice", "stats", "MASS"))
@@ -62,8 +63,12 @@ tar_option_set(
   # Set other options as needed.
 )
 
-# Run the R scripts in the R/ folder with your custom functions:
+# Source functions
 tar_source("functions.R")
+
+# Set future plan - uncomment `multicore` if using HPC system
+plan(multisession)
+# plan(multicore)
 
 # Define analysis pipeline -----------------------------------------------------
 
@@ -77,13 +82,12 @@ list(
   
   tar_target(data_mcc_cleaned, get_data_mcc(path_data_mcc = path_data_mcc_raw,
                                            id_var = column_label,
-                                           vars_to_select = c("id",
-                                                              "column_label",
+                                           vars_to_select = c("column_label",
+                                                              "day_id",
+                                                              "week_id",
                                                               "date",
                                                               "year",
                                                               "month",
-                                                              "week",
-                                                              "doy",
                                                               "dow",
                                                               "nonext",
                                                               "tmean",
@@ -134,8 +138,8 @@ list(
                                                    as.Date("2000-01-01"), 
                                                    as.Date("2018-12-22")),
                                            vars_to_select = c("column_label",
-                                                              "tmean",
                                                               "week_id",
+                                                              "tmean",
                                                               "pred_fire_PM25",
                                                               "pred_nonfire_PM25",
                                                               "all",
@@ -146,14 +150,15 @@ list(
                filter(if_all(all, ~ !is.na(.)),
                       if_all(tmean, ~ !is.na(.)))),
   
-  tar_target(list_data_simulated_neg_binomial, make_list_data_negative_binomial_model(n_sims = 250, 
+  tar_target(list_data_simulated_neg_binomial, make_list_data_negative_binomial_model(n_sims = 10, 
                                                                                       data = data_for_simulation, 
-                                                                                      id_var = column_label, 
+                                                                                      unit_id_var = column_label, 
+                                                                                      time_id_var = week_id,
+                                                                                      week_id_var = week_id,
                                                                                       treated_var = treated,
                                                                                       outcome_var = all, 
                                                                                       date_var = date,
                                                                                       linear_predictors = "pred_nonfire_PM25", 
-                                                                                      week_var = week_id,
                                                                                       temp_var = tmean, 
                                                                                       spline_df_per_year = 7, 
                                                                                       spline_df_temp = 4)),
@@ -168,7 +173,9 @@ list(
                                                                                           outcome_var = outcome_pred,
                                                                                           time_var = week_id,
                                                                                           treated_id_var = treated,
-                                                                                          treated_time_var = post))),
+                                                                                          treated_time_var = post,
+                                                                                          n_periods_pre = 26,
+                                                                                          n_periods_post = 26))),
   
   # Results from ADH synth without covariates
   tar_target(results_synth_adh_no_covars_neg_binom, future_map(list_data_simulated_neg_binomial,
@@ -178,6 +185,8 @@ list(
                                                                                   time_var = week_id,
                                                                                   treated_id_var = treated,
                                                                                   treated_time_var = post,
+                                                                                  n_periods_pre = 26,
+                                                                                  n_periods_post = 26,
                                                                                   predictors = NULL,
                                                                                   optimxmethod = c("Nelder-Mead", "BFGS"),
                                                                                   initial_margin = 0.0005,
@@ -192,6 +201,8 @@ list(
                                                                                     time_var = week_id,
                                                                                     treated_id_var = treated,
                                                                                     treated_time_var = post,
+                                                                                    n_periods_pre = 26,
+                                                                                    n_periods_post = 26,
                                                                                     predictors = c("tmean", "pred_nonfire_PM25"),
                                                                                     optimxmethod = c("Nelder-Mead", "BFGS"),
                                                                                     initial_margin = 0.0005,
@@ -206,6 +217,8 @@ list(
                                                                                  time_var = week_id,
                                                                                  treated_id_var = treated,
                                                                                  treated_time_var = post,
+                                                                                 n_periods_pre = 26,
+                                                                                 n_periods_post = 26,
                                                                                  optimxmethod = c("Nelder-Mead", "BFGS"),
                                                                                  initial_margin = 0.0005,
                                                                                  max_attempts = 20,

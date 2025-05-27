@@ -21,7 +21,7 @@ estimate_neg_binomial_model <- function(data,
                                         outcome_var,
                                         date_var,
                                         linear_predictors,
-                                        time_var,
+                                        time_id_var,
                                         temp_var,
                                         spline_df_per_year,
                                         spline_df_temp){
@@ -33,7 +33,7 @@ estimate_neg_binomial_model <- function(data,
   # Convert function arguments to string and then to a formula to pass to glm.nb
   formula_string <- paste(outcome_var, "~", 
                           paste(linear_predictors, collapse = " + "), " + ", 
-                          paste("ns(", time_var, ", df = ", spline_df_time_trend, ") + ns(", temp_var, ", df = ", spline_df_temp, ")"))
+                          paste("ns(", time_id_var, ", df = ", spline_df_time_trend, ") + ns(", temp_var, ", df = ", spline_df_temp, ")"))
   
   fmla <- as.formula(formula_string)
   
