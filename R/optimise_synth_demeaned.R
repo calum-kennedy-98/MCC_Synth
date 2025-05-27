@@ -27,10 +27,28 @@ optimise_synth_demeaned <- function(data,
                                     time_var,
                                     treated_id_var,
                                     treated_time_var,
+                                    n_periods_pre,
+                                    n_periods_post,
                                     optimxmethod,
                                     initial_margin,
                                     max_attempts,
                                     margin_increment){
+  
+  # Extract first treated period and subset data to pre- / post-treatment intervals 
+  # based on `n_periods_pre` and `n_periods_post`
+  first_treated_period <- min(data %>%
+                                filter({{treated_time_var}} == 1) %>%
+                                pull({{time_var}})
+  )
+  
+  data <- data %>%
+    filter(
+      between(
+        {{time_var}}, 
+        first_treated_period - n_periods_pre, 
+        first_treated_period + n_periods_post - 1
+      )
+    )
   
   # Generate numeric ID column for synth
   data <- data %>%
@@ -47,9 +65,6 @@ optimise_synth_demeaned <- function(data,
       {{treated_id_var}} == 1
     ) %>%
     pull({{time_var}})
-  
-  # Generate indicator for first treatment period
-  first_treated_period <- max(t_vec_pre_treatment) + 1
   
   # Extract vector of outcomes for treated unit
   Y1 <- data %>% 

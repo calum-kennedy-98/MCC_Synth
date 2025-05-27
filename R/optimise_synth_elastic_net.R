@@ -36,7 +36,25 @@ optimise_synth_elastic_net <- function(data,
                                   outcome_var,
                                   time_var,
                                   treated_id_var,
-                                  treated_time_var){
+                                  treated_time_var,
+                                  n_periods_pre,
+                                  n_periods_post){
+  
+  # Extract first treated period and subset data to pre- / post-treatment intervals 
+  # based on `n_periods_pre` and `n_periods_post`
+  first_treated_period <- min(data %>%
+                                filter({{treated_time_var}} == 1) %>%
+                                pull({{time_var}})
+  )
+  
+  data <- data %>%
+    filter(
+      between(
+        {{time_var}}, 
+        first_treated_period - n_periods_pre, 
+        first_treated_period + n_periods_post - 1
+      )
+    )
   
   # Extract vector of outcomes for treated unit
   Y1 <- data %>% 
@@ -63,9 +81,6 @@ optimise_synth_elastic_net <- function(data,
       {{treated_id_var}} == 1
     ) %>%
     pull({{time_var}})
-  
-  # Generate indicator for first treatment period
-  first_treated_period <- max(t_vec_pre_treatment) + 1
   
   # Extract matrix of outcomes for control units (T x J matrix, where T = n_periods
   # and J = n_controls)
