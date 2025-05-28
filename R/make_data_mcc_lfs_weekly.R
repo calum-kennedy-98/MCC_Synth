@@ -29,7 +29,10 @@ make_data_mcc_lfs_weekly <- function(data_mcc_lfs,
       # Set 'treated' = 1 if any observation in that week is treated in daily data
       treated = ifelse(all(treated == 0), 0, 1),
       
-      # Extract start date of week
+      # Extract month, year and date indicators (in case where week split across month/year
+      # set equal to month/year with most days in it)
+      month = round(mean(month, na.rm = TRUE)),
+      year = round(mean(year, na.rm = TRUE)),
       date = min(date, na.rm = TRUE),
       
       .by = group_vars

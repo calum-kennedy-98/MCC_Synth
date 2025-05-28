@@ -129,7 +129,7 @@ list(
   # Make datasets for simulation exercise --------------------------------------------------------
   
   # Generate data for simulation (conditions to ensure that no missing data - Korea data only goes up 
-  # to 22/12/2018 and filter Taiwan since data only foes up to 2014 and there are only 3 locations)
+  # to 22/12/2018 and filter Taiwan since data only goes up to 2014 and there are only 3 locations)
   tar_target(data_for_simulation, subset_data(data = data_mcc_lfs_weekly, 
                                            region == "Eastern Asia",
                                            countryname != "Taiwan",
@@ -137,13 +137,15 @@ list(
                                                    as.Date("2000-01-01"), 
                                                    as.Date("2018-12-22")),
                                            vars_to_select = c("column_label",
+                                                              "countryname",
                                                               "week_id",
+                                                              "month",
+                                                              "year",
                                                               "tmean",
                                                               "pred_fire_PM25",
                                                               "pred_nonfire_PM25",
                                                               "all",
-                                                              "treated",
-                                                              "date")) %>%
+                                                              "treated")) %>%
                
                # Keep only data with non-missing temperature and mortality data
                filter(if_all(all, ~ !is.na(.)),
@@ -156,7 +158,7 @@ list(
                                                                                       week_id_var = week_id,
                                                                                       treated_var = treated,
                                                                                       outcome_var = all, 
-                                                                                      date_var = date,
+                                                                                      year_var = year,
                                                                                       linear_predictors = "pred_nonfire_PM25", 
                                                                                       temp_var = tmean, 
                                                                                       spline_df_per_year = 7, 

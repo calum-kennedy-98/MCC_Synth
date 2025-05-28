@@ -19,7 +19,7 @@ make_list_data_negative_binomial_model <- function(n_sims,
                                                    week_id_var,
                                                    treated_var,
                                                    outcome_var,
-                                                   date_var,
+                                                   year_var,
                                                    linear_predictors,
                                                    temp_var,
                                                    spline_df_per_year,
@@ -44,7 +44,7 @@ make_list_data_negative_binomial_model <- function(n_sims,
   # Set quoted variables to pass to future_map
   time_id_var_quo <- deparse(substitute(time_id_var))
   outcome_var_quo <- deparse(substitute(outcome_var))
-  date_var_quo <- deparse(substitute(date_var))
+  year_var_quo <- deparse(substitute(year_var))
   temp_var_quo <- deparse(substitute(temp_var))
   
   list_data_simulated_neg_binomial <- future_map(list_data_location_specific, 
@@ -57,7 +57,7 @@ make_list_data_negative_binomial_model <- function(n_sims,
     # Estimate negative binomial regression model and extract output
     model <- estimate_neg_binomial_model(data = x,
                                          outcome_var_quo,
-                                         date_var_quo,
+                                         year_var_quo,
                                          linear_predictors,
                                          time_id_var_quo,
                                          temp_var_quo,
