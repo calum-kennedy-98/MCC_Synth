@@ -66,9 +66,8 @@ tar_option_set(
 # Source functions
 tar_source("functions.R")
 
-# Set future plan - uncomment `multicore` if using HPC system
+# Set future plan to multisession
 plan(multisession)
-# plan(multicore)
 
 # Define analysis pipeline -----------------------------------------------------
 
@@ -150,7 +149,7 @@ list(
                filter(if_all(all, ~ !is.na(.)),
                       if_all(tmean, ~ !is.na(.)))),
   
-  tar_target(list_data_simulated_neg_binomial, make_list_data_negative_binomial_model(n_sims = 10, 
+  tar_target(list_data_simulated_neg_binomial, make_list_data_negative_binomial_model(n_sims = 250, 
                                                                                       data = data_for_simulation, 
                                                                                       unit_id_var = column_label, 
                                                                                       time_id_var = week_id,
