@@ -60,7 +60,7 @@ get_data_mcc <- function(path_data_mcc,
       week_id = day_id %/% 7 + 1
     ) %>%
     
-    # Keep distinct unit-time paris (some duplicates in raw data)
+    # Keep distinct unit-time pairs (some duplicates in raw data)
     distinct(
       column_label, date, .keep_all = TRUE
       ) %>%

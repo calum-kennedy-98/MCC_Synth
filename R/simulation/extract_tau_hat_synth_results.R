@@ -32,6 +32,9 @@ extract_tau_hat_synth_results <- function(results_synth_model_simulated,
   # Get list of estimated period-specific tau hats from each model run
   list_tau_hat <- lapply(results_synth_model_simulated_with_id, function(x){
     
+    # Extract method
+    method <- x[["method"]]
+    
     # Extract post-treatment true and predicted outcome
     Y1 <- c(x[["Y1"]])
     Y1_hat <- c(x[["Y1_hat"]])
@@ -45,11 +48,14 @@ extract_tau_hat_synth_results <- function(results_synth_model_simulated,
     # Generate post-treatment indicator
     post <- c(rep(0, x[["first_treated_period"]] - min(x[["data"]][[time_var]])), rep(1, max(x[["data"]][[time_var]]) - x[["first_treated_period"]] + 1))
     
-    # Return tibble of tau_hat, t_post, and model run
-    results <- tibble("model_run" = x[["model_run"]],
+    # Return tibble of results
+    results <- tibble("method" = method,
+                      "model_run" = x[["model_run"]],
                       "t" = t,
                       "post" = post,
-                      "tau_hat" = tau_hat)
+                      "tau_hat" = tau_hat,
+                      "Y1" = Y1,
+                      "Y1_hat" = Y1_hat)
     
   }) 
   
