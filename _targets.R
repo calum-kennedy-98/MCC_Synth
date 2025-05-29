@@ -151,7 +151,7 @@ list(
                filter(if_all(all, ~ !is.na(.)),
                       if_all(tmean, ~ !is.na(.)))),
   
-  tar_target(list_data_simulated_neg_binomial, make_list_data_negative_binomial_model(n_sims = 250, 
+  tar_target(list_data_simulated_neg_binomial, make_list_data_negative_binomial_model(n_sims = 500, 
                                                                                       data = data_for_simulation, 
                                                                                       unit_id_var = column_label, 
                                                                                       time_id_var = week_id,
@@ -223,6 +223,15 @@ list(
                                                                                  optimxmethod = c("Nelder-Mead", "BFGS"),
                                                                                  initial_margin = 0.0005,
                                                                                  max_attempts = 20,
-                                                                                 margin_increment = 0.0005)))
+                                                                                 margin_increment = 0.0005))),
+  
+  # Extract estimates for tau_hat from each synth specification
+  tar_target(data_tau_hat_neg_binom, map(list(results_synth_adh_no_covars_neg_binom,
+                                              results_synth_adh_covars_neg_binom,
+                                              results_synth_adh_demeaned_neg_binom,
+                                              results_synth_elastic_net_neg_binom), 
+                                         ~extract_tau_hat_synth_results(.,
+                                                                        time_var = "week_id")) %>%
+               bind_rows())
   
 )
