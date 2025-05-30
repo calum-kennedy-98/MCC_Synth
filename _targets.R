@@ -232,6 +232,26 @@ list(
                                               results_synth_elastic_net_neg_binom), 
                                          ~extract_tau_hat_synth_results(.,
                                                                         time_var = "week_id")) %>%
-               bind_rows())
+               bind_rows()),
+  
+  # Make output plots - simulation study ------------------------------------------------------------------------
+  tar_target(plot_density_tau_hat_neg_binom, (data_tau_hat_neg_binom %>%
+                                                
+                                                # Keep tau hat from post-treatment period only
+                                                filter(post == 1) %>%
+                                                
+                                                ggplot() + 
+                                                geom_density(
+                                                  aes(
+                                                    x = tau_hat, 
+                                                    colour = method
+                                                      ),
+                                                  linewidth = 1
+                                                  ) +
+                                                scatter_plot_opts
+                                              ) %>%
+               
+               ggsave("Output/Figures/Simulation/plot_density_tau_hat_neg_binom.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
+             format = "file")
   
 )
