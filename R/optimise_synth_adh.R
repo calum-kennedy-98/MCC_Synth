@@ -136,9 +136,15 @@ optimise_synth_adh <- function(data,
   # If optimisation succeeded, generate relevant outputs
   if(!is.null(synth_out)){
   
-  # Extract optimal weights and intercept (mu = 0 by design)
+  # Extract optimal weights, intercept, and weight matrix V (mu = 0 by design)
   W_opt <- synth_out[["solution.w"]]
   mu_opt <- 0
+  V_opt <- synth_out[["solution.v"]]
+  
+  # Rescale weights to remove very small weights (symptom of quadratic programming algos)
+  W_opt <- rescale_small_weights(W_opt,
+                                 tolerance = 1e-6,
+                                 scale = TRUE)
   
   # Generate Y1_hat using Y0 and optimal weights
   Y1_hat <- c(Y0 %*% W_opt)
@@ -161,6 +167,7 @@ optimise_synth_adh <- function(data,
                   "Y1_hat" = Y1_hat,
                   "W_opt" = W_opt,
                   "mu_opt" = mu_opt,
+                  "V_opt" = V_opt,
                   "first_treated_period" = first_treated_period,
                   "method" = method)
   

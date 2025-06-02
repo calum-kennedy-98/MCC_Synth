@@ -23,6 +23,9 @@ source(here("R/optimise_synth_elastic_net.R"))
 source(here("R/optimise_synth_adh.R"))
 source(here("R/optimise_synth_demeaned.R"))
 source(here("R/estimate_neg_binomial_model.R"))
+source(here("R/get_hyperparam_loss_penalised_sc.R"))
+source(here("R/get_penalised_sc_weights.R"))
+source(here("R/optimise_synth_penalised_sc.R"))
 
 # Simulation functions
 
