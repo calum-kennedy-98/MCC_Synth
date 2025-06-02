@@ -69,6 +69,9 @@ tar_source("functions.R")
 # Set future plan to multisession
 plan(multisession)
 
+# Set seed
+set.seed(42)
+
 # Define analysis pipeline -----------------------------------------------------
 
 list(
@@ -211,24 +214,22 @@ list(
                                                                                     margin_increment = 0.0005))),
   
   # Results from ADH synth on de-meaned outcomes
-  tar_target(results_synth_adh_demeaned_neg_binom, future_map(list_data_simulated_neg_binomial,
-                                                            ~ optimise_synth_demeaned(.,
-                                                                                 id_var = column_label,
-                                                                                 outcome_var = outcome_pred,
-                                                                                 time_var = week_id,
-                                                                                 treated_id_var = treated,
-                                                                                 treated_time_var = post,
-                                                                                 n_periods_pre = 26,
-                                                                                 n_periods_post = 26,
-                                                                                 optimxmethod = c("Nelder-Mead", "BFGS"),
-                                                                                 initial_margin = 0.0005,
-                                                                                 max_attempts = 20,
-                                                                                 margin_increment = 0.0005))),
+  tar_target(results_synth_penalised_neg_binom, future_map(list_data_simulated_neg_binomial,
+                                                            ~ optimise_synth_penalised_sc(.,
+                                                                                          lambda_init = 1,
+                                                                                          lower_bound__lambda = 1e-6,
+                                                                                          id_var = column_label,
+                                                                                          outcome_var = outcome_pred,
+                                                                                          time_var = week_id,
+                                                                                          treated_id_var = treated,
+                                                                                          treated_time_var = post,
+                                                                                          n_periods_pre = 26,
+                                                                                          n_periods_post = 26))),
   
   # Extract estimates for tau_hat from each synth specification
   tar_target(data_tau_hat_neg_binom, map(list(results_synth_adh_no_covars_neg_binom,
                                               results_synth_adh_covars_neg_binom,
-                                              results_synth_adh_demeaned_neg_binom,
+                                              results_synth_penalised_neg_binom,
                                               results_synth_elastic_net_neg_binom), 
                                          ~extract_tau_hat_synth_results(.,
                                                                         time_var = "week_id")) %>%
@@ -246,9 +247,12 @@ list(
                                                     x = tau_hat, 
                                                     colour = method
                                                       ),
-                                                  linewidth = 1
+                                                  linewidth = 0.5
                                                   ) +
-                                                scatter_plot_opts
+                                                geom_vline(xintercept = 0,
+                                                           linetype = "dashed") +
+                                                scatter_plot_opts +
+                                                scale_colour_manual(values = cbbPalette)
                                               ) %>%
                
                ggsave("Output/Figures/Simulation/plot_density_tau_hat_neg_binom.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),

@@ -81,3 +81,21 @@ retry_synth <- function(data_prepared,
   
   return(result)
 }
+
+# Auxiliary function to convert small weights to zero - symptomatic of some quadratic programming
+# routines that many weights end up being very small but non-zero. This function converts small
+# weights to zero and re-scales the remaining weights
+
+# @ param w, vector of weights
+# @ param tolerance, maximum weight allowed to be non-zero
+# @ param scale, if TRUE rescale so remaining non-zero weights sum to 1
+
+rescale_small_weights <- function(w, 
+                                  tolerance = 1e-6,
+                                  scale = TRUE){
+  
+  w_rescaled <- ifelse(w < tolerance, 0, w)
+  if(scale) w_rescaled <- w_rescaled / sum(w_rescaled)
+  
+  return(w_rescaled)
+}

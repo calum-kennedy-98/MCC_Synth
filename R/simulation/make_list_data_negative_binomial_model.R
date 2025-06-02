@@ -26,7 +26,7 @@ make_list_data_negative_binomial_model <- function(n_sims,
                                                    spline_df_temp){
   
   # Set seed
-  set.seed(42)
+  #set.seed(42)
   
   # Extract list of unique locations from data
   unique_locations <- pull(distinct(data, {{unit_id_var}}))
