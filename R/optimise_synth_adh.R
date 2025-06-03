@@ -154,6 +154,7 @@ optimise_synth_adh <- function(data,
     
     W_opt <- NA
     mu_opt <- 0
+    V_opt <- NA
     Y1_hat <- rep(NA, n_periods)
     
   }
