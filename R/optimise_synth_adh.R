@@ -38,6 +38,9 @@ optimise_synth_adh <- function(data,
                                max_attempts,
                                margin_increment){
   
+  # Set data to data.frame only - needed for synth function
+  data <- as.data.frame(data)
+  
   # Extract first treated period and subset data to pre- / post-treatment intervals 
   # based on `n_periods_pre` and `n_periods_post`
   first_treated_period <- min(data %>%

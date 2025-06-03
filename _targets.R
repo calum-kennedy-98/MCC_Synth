@@ -35,7 +35,8 @@ tar_option_set(
     "slider",
     "splines",
     "furrr",
-    "rlang"
+    "rlang",
+    "mvtnorm"
   ),
   format = "qs",
   memory = "transient",
@@ -154,38 +155,60 @@ list(
                filter(if_all(all, ~ !is.na(.)),
                       if_all(tmean, ~ !is.na(.)))),
   
-  tar_target(list_data_simulated_neg_binomial, make_list_data_negative_binomial_model(n_sims = 500, 
-                                                                                      data = data_for_simulation, 
-                                                                                      unit_id_var = column_label, 
-                                                                                      time_id_var = week_id,
-                                                                                      week_id_var = week_id,
-                                                                                      treated_var = treated,
-                                                                                      outcome_var = all, 
-                                                                                      year_var = year,
-                                                                                      linear_predictors = "pred_nonfire_PM25", 
-                                                                                      temp_var = tmean, 
-                                                                                      spline_df_per_year = 7, 
-                                                                                      spline_df_temp = 4)),
+  # List of simulated outcome data from negative binomial model
+  tar_target(list_outcome_sim_neg_binomial, make_list_data_negative_binomial_model(n_sims = 500, 
+                                                                                   data = data_for_simulation, 
+                                                                                   unit_id_var = column_label, 
+                                                                                   time_id_var = week_id,
+                                                                                   week_id_var = week_id,
+                                                                                   treated_var = treated,
+                                                                                   outcome_var = all, 
+                                                                                   year_var = year,
+                                                                                   linear_predictors = "pred_nonfire_PM25", 
+                                                                                   temp_var = tmean, 
+                                                                                   spline_df_per_year = 7, 
+                                                                                   spline_df_temp = 4)),
+  
+  # List of simulated outcome data from factor model
+  tar_target(list_outcome_sim_factor, make_list_sim_data_factor_model(n_sims = 500,
+                                                                  data = data_for_simulation,
+                                                                  unit_id_var = column_label, 
+                                                                  time_id_var = week_id,
+                                                                  week_id_var = week_id,
+                                                                  treated_var = treated,
+                                                                  outcome_var = all,
+                                                                  rank = 30)),
+  
+  # Generate final datasets for analysis
+  tar_target(list_data_simulated, make_list_data_simulated(data = data_for_simulation, 
+                                                           unit_id_var = column_label, 
+                                                           time_id_var = week_id,
+                                                           week_id_var = week_id,
+                                                           treated_var = treated,
+                                                           list_outcome_sim_neg_binomial = list_outcome_sim_neg_binomial,
+                                                           list_outcome_sim_factor = list_outcome_sim_factor)),
   
   # Get simulation results -----------------------------------------------------
   
-  # Results from elastic net
-  tar_target(results_synth_elastic_net_neg_binom, future_map(list_data_simulated_neg_binomial,
+  # Results for negative binomial model 
+  
+  # Elastic Net
+  tar_target(results_synth_elastic_net_neg_binom, future_map(list_data_simulated,
                                                              ~ optimise_synth_elastic_net(.,
                                                                                           alpha_init = 0.5,
                                                                                           lambda_init = 2,
-                                                                                          outcome_var = outcome_pred,
+                                                                                          outcome_var = outcome_pred_neg_binom,
                                                                                           time_var = week_id,
                                                                                           treated_id_var = treated,
                                                                                           treated_time_var = post,
                                                                                           n_periods_pre = 26,
                                                                                           n_periods_post = 26))),
   
-  # Results from ADH synth without covariates
-  tar_target(results_synth_adh_no_covars_neg_binom, future_map(list_data_simulated_neg_binomial,
+  # ADH synth without covariates
+  tar_target(results_synth_adh_no_covars_neg_binom, future_map(list_data_simulated,
                                                              ~ optimise_synth_adh(.,
                                                                                   id_var = column_label,
-                                                                                  outcome_var = outcome_pred,
+                                                                                  outcome_var = outcome_pred_neg_binom,
                                                                                   time_var = week_id,
                                                                                   treated_id_var = treated,
                                                                                   treated_time_var = post,
@@ -198,10 +221,10 @@ list(
                                                                                   margin_increment = 0.0005))),
   
   # Results from ADH synth with covariates
-  tar_target(results_synth_adh_covars_neg_binom, future_map(list_data_simulated_neg_binomial,
+  tar_target(results_synth_adh_covars_neg_binom, future_map(list_data_simulated,
                                                                ~ optimise_synth_adh(.,
                                                                                     id_var = column_label,
-                                                                                    outcome_var = outcome_pred,
+                                                                                    outcome_var = outcome_pred_neg_binom,
                                                                                     time_var = week_id,
                                                                                     treated_id_var = treated,
                                                                                     treated_time_var = post,
@@ -214,19 +237,79 @@ list(
                                                                                     margin_increment = 0.0005))),
   
   # Results from ADH synth on de-meaned outcomes
-  tar_target(results_synth_penalised_neg_binom, future_map(list_data_simulated_neg_binomial,
+  tar_target(results_synth_penalised_neg_binom, future_map(list_data_simulated,
                                                             ~ optimise_synth_penalised_sc(.,
                                                                                           lambda_init = 1,
-                                                                                          lower_bound__lambda = 1e-6,
-                                                                                          id_var = column_label,
-                                                                                          outcome_var = outcome_pred,
+                                                                                          lower_bound_lambda = 1e-6,
+                                                                                          outcome_var = outcome_pred_neg_binom,
                                                                                           time_var = week_id,
                                                                                           treated_id_var = treated,
                                                                                           treated_time_var = post,
                                                                                           n_periods_pre = 26,
                                                                                           n_periods_post = 26))),
   
-  # Extract estimates for tau_hat from each synth specification
+  # Results for factor model
+  
+  # Elastic Net
+  tar_target(results_synth_elastic_net_factor, future_map(list_data_simulated,
+                                                             ~ optimise_synth_elastic_net(.,
+                                                                                          alpha_init = 0.5,
+                                                                                          lambda_init = 2,
+                                                                                          outcome_var = outcome_pred_factor,
+                                                                                          time_var = week_id,
+                                                                                          treated_id_var = treated,
+                                                                                          treated_time_var = post,
+                                                                                          n_periods_pre = 26,
+                                                                                          n_periods_post = 26))),
+  
+  # ADH synth without covariates
+  tar_target(results_synth_adh_no_covars_factor, future_map(list_data_simulated,
+                                                               ~ optimise_synth_adh(.,
+                                                                                    id_var = column_label,
+                                                                                    outcome_var = outcome_pred_factor,
+                                                                                    time_var = week_id,
+                                                                                    treated_id_var = treated,
+                                                                                    treated_time_var = post,
+                                                                                    n_periods_pre = 26,
+                                                                                    n_periods_post = 26,
+                                                                                    predictors = NULL,
+                                                                                    optimxmethod = c("Nelder-Mead", "BFGS"),
+                                                                                    initial_margin = 0.0005,
+                                                                                    max_attempts = 20,
+                                                                                    margin_increment = 0.0005))),
+  
+  # Results from ADH synth with covariates
+  tar_target(results_synth_adh_covars_factor, future_map(list_data_simulated,
+                                                            ~ optimise_synth_adh(.,
+                                                                                 id_var = column_label,
+                                                                                 outcome_var = outcome_pred_factor,
+                                                                                 time_var = week_id,
+                                                                                 treated_id_var = treated,
+                                                                                 treated_time_var = post,
+                                                                                 n_periods_pre = 26,
+                                                                                 n_periods_post = 26,
+                                                                                 predictors = c("tmean", "pred_nonfire_PM25"),
+                                                                                 optimxmethod = c("Nelder-Mead", "BFGS"),
+                                                                                 initial_margin = 0.0005,
+                                                                                 max_attempts = 20,
+                                                                                 margin_increment = 0.0005))),
+  
+  # Results from ADH synth on de-meaned outcomes
+  tar_target(results_synth_penalised_factor, future_map(list_data_simulated,
+                                                           ~ optimise_synth_penalised_sc(.,
+                                                                                         lambda_init = 1,
+                                                                                         lower_bound_lambda = 1e-6,
+                                                                                         outcome_var = outcome_pred_factor,
+                                                                                         time_var = week_id,
+                                                                                         treated_id_var = treated,
+                                                                                         treated_time_var = post,
+                                                                                         n_periods_pre = 26,
+                                                                                         n_periods_post = 26))),
+  
+  # Get output from simulation study ----------------------------------------------------------------------------
+  
+  
+  # Extract estimates for tau_hat from negative binomial model
   tar_target(data_tau_hat_neg_binom, map(list(results_synth_adh_no_covars_neg_binom,
                                               results_synth_adh_covars_neg_binom,
                                               results_synth_penalised_neg_binom,
@@ -235,7 +318,17 @@ list(
                                                                         time_var = "week_id")) %>%
                bind_rows()),
   
+  tar_target(data_tau_hat_factor, map(list(results_synth_adh_no_covars_factor,
+                                              results_synth_adh_covars_factor,
+                                              results_synth_penalised_factor,
+                                              results_synth_elastic_net_factor), 
+                                         ~extract_tau_hat_synth_results(.,
+                                                                        time_var = "week_id")) %>%
+               bind_rows()),
+  
   # Make output plots - simulation study ------------------------------------------------------------------------
+  
+  # Density plot of tau hat from negative binomial model
   tar_target(plot_density_tau_hat_neg_binom, (data_tau_hat_neg_binom %>%
                                                 
                                                 # Keep tau hat from post-treatment period only
@@ -256,6 +349,29 @@ list(
                                               ) %>%
                
                ggsave("Output/Figures/Simulation/plot_density_tau_hat_neg_binom.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
-             format = "file")
+             format = "file"),
+  
+  # Density plot of tau hat from factor model
+  tar_target(plot_density_tau_hat_factor, (data_tau_hat_factor %>%
+                                                
+                                                # Keep tau hat from post-treatment period only
+                                                filter(post == 1) %>%
+                                                
+                                                ggplot() + 
+                                                geom_density(
+                                                  aes(
+                                                    x = tau_hat, 
+                                                    colour = method
+                                                  ),
+                                                  linewidth = 0.5
+                                                ) +
+                                                geom_vline(xintercept = 0,
+                                                           linetype = "dashed") +
+                                                scatter_plot_opts +
+                                                scale_colour_manual(values = cbbPalette)
+  ) %>%
+    
+    ggsave("Output/Figures/Simulation/plot_density_tau_hat_factor.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
+  format = "file")
   
 )

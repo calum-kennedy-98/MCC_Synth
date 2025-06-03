@@ -24,12 +24,8 @@ sim_data_negative_binomial_model <- function(data,
     
     # Draw real and counterfactual outcome series from negative binomial distribution
     # with specified mean and variance
-    outcome_pred <- unlist(lapply(outcome_exp_val, rnegbin, n = 1, theta = theta))
-    
-    # Append outcome predictions and counterfactual LFS air pollution exposures to the real data
-    data_out <- cbind(data, 
-                      outcome_pred)
+    outcome_pred <- as.numeric(unlist(lapply(outcome_exp_val, rnegbin, n = 1, theta = theta)))
   
-  return(data_out)
+  return(outcome_pred)
   
 }

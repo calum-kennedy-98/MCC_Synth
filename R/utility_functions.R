@@ -99,3 +99,47 @@ rescale_small_weights <- function(w,
   
   return(w_rescaled)
 }
+
+# Function to fit an AR(p) model to a matrix with rows as time series
+
+# @ param E, an error matrix 
+
+fit_ar_2 <- function(E){
+  
+  # Get n_periods
+  n_periods <- dim(E)[2]
+  
+  E_ts <- E[,3:n_periods]
+  E_lag_1 <- E[,2:(n_periods-1)]
+  E_lag_2 <- E[,1:(n_periods-2)]
+  
+  a_1 <- sum(diag(E_lag_1 %*% t(E_lag_1)))
+  a_2 <- sum(diag(E_lag_2 %*% t(E_lag_2)))
+  a_3 <- sum(diag(E_lag_1 %*% t(E_lag_2)))
+  
+  matrix_factor <- rbind(c(a_1,a_3),c(a_3,a_2))
+  
+  b_1 <- sum(diag(E_lag_1 %*% t(E_ts)))
+  b_2 <- sum(diag(E_lag_2 %*% t(E_ts)))
+  
+  ar_coef <- solve(matrix_factor) %*% c(b_1,b_2)
+  
+  return(ar_coef)
+}
+
+# FUnction to estimate correlation matrix of AR(2) model
+
+ar2_correlation_matrix <- function(ar_coef, n_periods) {
+  
+  result <- rep(0, n_periods)
+  result[1] <- 1
+  result[2] <- ar_coef[1]/(1-ar_coef[2])
+  for (t in 3:n_periods){
+    result[t] <-  ar_coef[1]*result[t-1] + ar_coef[2]*result[t-2] 
+  }
+  
+  index_matrix <- outer(1:n_periods, 1:n_periods, function(x,y){ abs(y-x)+1 })
+  cor_matrix <- matrix(result[index_matrix], ncol = n_periods, nrow = n_periods)
+  
+  return(cor_matrix)
+}
