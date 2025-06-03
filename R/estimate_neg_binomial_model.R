@@ -8,12 +8,6 @@
 
 # Comments ---------------------------------------------------------------------
 
-# Args: Data frame (time series on one unit), outcome variable, linear predictors for
-# negative binomial model, time variable and temperature variables to pass to GLM as natural cubic splines,
-# degrees of freedom per year for time trends (to multiply by total number of years) and degrees
-# of freedom for temperature splines function
-
-# Value: Fitted negative binomial regression model object
 
 # Function ---------------------------------------------------------------------
 
