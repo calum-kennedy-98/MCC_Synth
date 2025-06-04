@@ -36,7 +36,8 @@ tar_option_set(
     "splines",
     "furrr",
     "rlang",
-    "mvtnorm"
+    "mvtnorm",
+    "LowRankQP"
   ),
   format = "qs",
   memory = "transient",
