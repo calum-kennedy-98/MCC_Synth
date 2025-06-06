@@ -352,6 +352,34 @@ list(
                ggsave("Output/Figures/Simulation/plot_density_tau_hat_neg_binom.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
              format = "file"),
   
+  # Density plot of avg tau hat by simulation run
+  tar_target(plot_density_mean_tau_hat_neg_binom, (data_tau_hat_neg_binom %>%
+                                                
+                                                # Keep tau hat from post-treatment period only
+                                                filter(post == 1) %>%
+                                                
+                                                # Get mean tau hat by simulation run
+                                                summarise(tau_hat = mean(tau_hat, na.rm = TRUE),
+                                                          .by = c(model_run,
+                                                                  method)) %>%
+                                                
+                                                ggplot() + 
+                                                geom_density(
+                                                  aes(
+                                                    x = tau_hat, 
+                                                    colour = method
+                                                  ),
+                                                  linewidth = 0.5
+                                                ) +
+                                                geom_vline(xintercept = 0,
+                                                           linetype = "dashed") +
+                                                scatter_plot_opts +
+                                                scale_colour_manual(values = cbbPalette)
+  ) %>%
+    
+    ggsave("Output/Figures/Simulation/plot_density_mean_tau_hat_neg_binom.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
+  format = "file"),
+  
   # Density plot of tau hat from factor model
   tar_target(plot_density_tau_hat_factor, (data_tau_hat_factor %>%
                                                 
@@ -373,6 +401,34 @@ list(
   ) %>%
     
     ggsave("Output/Figures/Simulation/plot_density_tau_hat_factor.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
+  format = "file"),
+  
+  # Density plot of average tau hat in post-treatment period from factor model
+  tar_target(plot_density_mean_tau_hat_factor, (data_tau_hat_factor %>%
+                                             
+                                             # Keep tau hat from post-treatment period only
+                                             filter(post == 1) %>%
+                                               
+                                             # Get mean tau hat by simulation run
+                                             summarise(tau_hat = mean(tau_hat, na.rm = TRUE),
+                                                       .by = c(model_run,
+                                                               method)) %>%
+                                             
+                                             ggplot() + 
+                                             geom_density(
+                                               aes(
+                                                 x = tau_hat, 
+                                                 colour = method
+                                               ),
+                                               linewidth = 0.5
+                                             ) +
+                                             geom_vline(xintercept = 0,
+                                                        linetype = "dashed") +
+                                             scatter_plot_opts +
+                                             scale_colour_manual(values = cbbPalette)
+  ) %>%
+    
+    ggsave("Output/Figures/Simulation/plot_density_mean_tau_hat_factor.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
   format = "file")
   
 )
