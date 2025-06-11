@@ -26,6 +26,12 @@ optimise_synth_penalised_sc <- function(data,
                                         n_periods_pre,
                                         n_periods_post){
   
+  # Extract dimension of time variable
+  n_periods <- n_periods_pre + n_periods_post
+  
+  # Generate indicator for post-treatment period
+  post <- c(rep(0, n_periods_pre), rep(1, n_periods_post))
+  
   # Extract first treated period and subset data to pre- / post-treatment intervals 
   # based on `n_periods_pre` and `n_periods_post`
   first_treated_period <- min(data %>%
@@ -42,45 +48,26 @@ optimise_synth_penalised_sc <- function(data,
       )
     )
   
-  # Extract vector of outcomes for treated unit
-  Y1 <- data %>% 
+  # Extract vector of observed outcomes for treated unit
+  Y_treated <- data %>% 
     filter({{treated_id_var}} == 1) %>%
     pull({{outcome_var}}) %>% 
     as.numeric()
   
-  # Extract pre-treatment vector of outcomes for treated unit
-  Y1_pre <- data %>% 
-    filter({{treated_id_var}} == 1 &
-             {{treated_time_var}} == 0) %>%
-    pull({{outcome_var}}) %>% 
-    as.numeric()
-  
-  # Extract dimension of time variable to reshape Y0
-  n_periods <- length(Y1)
-  n_periods_pre <- length(Y1_pre)
-  
-  # Generate vector of pre-treatment time periods - we need to extract the time
-  # vector only for one unit, since the panel is balanced by design
-  t_vec_pre_treatment <- data %>%
-    filter(
-      {{treated_time_var}} == 0,
-      {{treated_id_var}} == 1
-    ) %>%
-    pull({{time_var}})
+  # Extract pre- and post-treatment vector of outcomes for treated unit
+  Y_treated_pre <- Y_treated[1:n_periods_pre]
+  Y_treated_post <- Y_treated[(n_periods_pre + 1):n_periods]
   
   # Extract matrix of outcomes for control units (T x J matrix, where T = n_periods
   # and J = n_controls)
-  Y0 <- data %>%
+  Y_controls <- data %>%
     filter({{treated_id_var}} == 0) %>%
     pull({{outcome_var}}) %>%
     matrix(nrow = n_periods)
   
-  # Extract matrix of control outcomes in pre-treatment period
-  Y0_pre <- Y0[1:n_periods_pre,]
-  
-  # Extract post-treatment vector of treated outcomes Y1_post and matrix of untreated outcomes Y0_post
-  Y1_post <- Y1[(n_periods_pre + 1):n_periods]
-  Y0_post <- Y0[(n_periods_pre + 1):n_periods,]
+  # Extract matrix of control outcomes in pre- and post-treatment period
+  Y_controls_pre <- Y_controls[1:n_periods_pre,]
+  Y_controls_post <- Y_controls[(n_periods_pre + 1):n_periods,]
   
   # Initialise starting value for lambda
   par <- c("lambda" = lambda_init)
@@ -90,8 +77,8 @@ optimise_synth_penalised_sc <- function(data,
                            get_hyperparam_loss_penalised_sc,
                            lower = lower_bound_lambda,
                            upper = Inf,
-                           Y0_pre = Y0_pre,
-                           Y0_post = Y0_post,
+                           Y_controls_pre = Y_controls_pre,
+                           Y_controls_post = Y_controls_post,
                            method = "L-BFGS-B") # Could maybe try a cv.glmnet or grid search here
   
   # Re-order results to find best solution (assume using minimisation in optimx)
@@ -107,20 +94,20 @@ optimise_synth_penalised_sc <- function(data,
   # at the optimal level of the hyperparameters
   
   # Run PSC algorithm at optimal parameters on the true treated unit during the pre-treatment period
-  W_opt <- get_penalised_sc_weights(Y1_pre,
-                                    Y0_pre,
+  W_opt <- get_penalised_sc_weights(Y_treated_pre,
+                                    Y_controls_pre,
                                     lambda_opt)
   
   # Get predictions on outcomes over the entire pre/post period
-  Y1_hat <- c(Y0 %*% W_opt)
+  Y0_treated_hat <- c(Y_controls %*% W_opt)
   
   # Set mu_opt (equal to 0 by design)
   mu_opt <- 0
   
   # Return list of final outputs
-  results <- list("data" = data,
-                  "Y1" = Y1,
-                  "Y1_hat" = Y1_hat,
+  results <- list("Y_treated" = Y_treated,
+                  "Y0_treated_hat" = Y0_treated_hat,
+                  "post" = post,
                   "W_opt" = W_opt,
                   "mu_opt" = mu_opt,
                   "lambda_opt" = lambda_opt,

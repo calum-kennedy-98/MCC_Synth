@@ -38,6 +38,12 @@ optimise_synth_adh <- function(data,
                                max_attempts,
                                margin_increment){
   
+  # Store total number of periods 'n_periods'
+  n_periods <- n_periods_pre + n_periods_post
+  
+  # Generate indicator for post-treatment period
+  post <- c(rep(0, n_periods_pre), rep(1, n_periods_post))
+  
   # Set data to data.frame only - needed for synth function
   data <- as.data.frame(data)
   
@@ -74,17 +80,14 @@ optimise_synth_adh <- function(data,
     pull({{time_var}})
   
   # Extract vector of outcomes for treated unit
-  Y1 <- data %>% 
+  Y_treated <- data %>% 
     filter({{treated_id_var}} == 1) %>%
     pull({{outcome_var}}) %>% 
     as.numeric()
   
-  # Store total number of periods 'n_periods'
-  n_periods <- length(Y1)
-  
   # Extract matrix of outcomes for control units (T x J matrix, where T = n_periods
   # and J = n_controls)
-  Y0 <- data %>%
+  Y_controls <- data %>%
     filter({{treated_id_var}} == 0) %>%
     pull({{outcome_var}}) %>%
     matrix(nrow = n_periods)
@@ -150,7 +153,7 @@ optimise_synth_adh <- function(data,
                                  scale = TRUE)
   
   # Generate Y1_hat using Y0 and optimal weights
-  Y1_hat <- c(Y0 %*% W_opt)
+  Y0_treated_hat <- c(Y_controls %*% W_opt)
   
   # If optimisation failed, return NA for missing outputs
   } else {
@@ -158,7 +161,7 @@ optimise_synth_adh <- function(data,
     W_opt <- NA
     mu_opt <- 0
     V_opt <- NA
-    Y1_hat <- rep(NA, n_periods)
+    Y0_treated_hat <- rep(NA, n_periods)
     
   }
   
@@ -167,8 +170,9 @@ optimise_synth_adh <- function(data,
   
   # Store results in list
   results <- list("data" = data,
-                  "Y1" = Y1,
-                  "Y1_hat" = Y1_hat,
+                  "Y_treated" = Y_treated,
+                  "Y0_treated_hat" = Y0_treated_hat,
+                  "post" = post,
                   "W_opt" = W_opt,
                   "mu_opt" = mu_opt,
                   "V_opt" = V_opt,
