@@ -10,16 +10,25 @@
 
 # Comments ---------------------------------------------------------------------
 
-# This function returns estimated period tau hats for a list of outputs from a
-# fitted synthetic control model. The true observed outcome is assumed to be "Y1",
-# the predicted outcome is "Y1_hat". The function returns a dataframe with four
-# columns: the model run indicator, time period, post-treatment indicator, and estimated
-# tau_hat
+
 
 # Function ---------------------------------------------------------------------
 
 extract_tau_hat_synth_results <- function(results_synth_model_simulated,
-                                          time_var){
+                                          treatment_effect_type,
+                                          constant_additive_effect = NULL,
+                                          constant_multiplicative_effect = NULL,
+                                          peak_height_param = NULL,
+                                          peak_scale_param = NULL){
+  
+  # Checks
+  if(!treatment_effect_type %in% c("placebo", "constant additive", "constant multiplicative", "dynamic")) stop("Please set treatment_effect_type to one of 'placebo', 
+                                                                           'constant additive', 'constant multiplicative' or 'dynamic'")
+  
+  if(treatment_effect_type == "constant additive" & !is.numeric(constant_additive_effect)) stop("Please specify a numeric value for 'constant_additive_treatment_effect")
+  if(treatment_effect_type == "constant multiplicative" & !is.numeric(constant_multiplicative_effect)) stop("Please specify a numeric value for 'constant_multiplicative_effect")
+  if(treatment_effect_type == "dynamic" & !is.numeric(peak_height_param)) stop("Please set a numeric value for 'peak_height_param'")
+  if(treatment_effect_type == "dynamic" & !is.numeric(peak_scale_param)) stop("Please set a numeric value for 'peak_scale_param'")
   
   # Generate ID for model run and add to list of outputs
   model_run <- seq(1:length(results_synth_model_simulated))
@@ -29,33 +38,64 @@ extract_tau_hat_synth_results <- function(results_synth_model_simulated,
                                                     c(results_synth_model_simulated[[x]], model_run = x)
                                                   })
   
-  # Get list of estimated period-specific tau hats from each model run
+  # Get list of outputs from each model run
   list_tau_hat <- lapply(results_synth_model_simulated_with_id, function(x){
     
     # Extract method
     method <- x[["method"]]
     
-    # Extract post-treatment true and predicted outcome
-    Y1 <- c(x[["Y1"]])
-    Y1_hat <- c(x[["Y1_hat"]])
+    # Extract true untreated potential outcomes Y0 and estimated Y0_hat for treated unit
+    Y0_treated <- x[["Y_treated"]]
+    Y0_treated_hat <- c(x[["Y0_treated_hat"]])
     
-    # Estimate tau_hat
-    tau_hat <- Y1 - Y1_hat
+    # Extract post-treatment indicator and vector of time ids
+    post <- x[["post"]]
+    t <- seq(1:length(post))
     
-    # Generate vector of time periods
-    t <- seq(1:length(Y1))
+    # Assign treatment effects based on treatment effect type - note required arguments
+    # differ by treatment effect mechanism 
+    if(treatment_effect_type == "placebo"){
+      
+      Y1_treated <- Y0_treated 
+      
+    } else if(treatment_effect_type == "constant additive"){
+      
+      Y1_treated <- Y0_treated + constant_additive_effect * post
+      
+    } else if(treatment_effect_type == "constant multiplicative"){
+      
+      Y1_treated <- round(Y0_treated + (constant_multiplicative_effect - 1) * post * Y0_treated)
+      
+    } else if(treatment_effect_type == "dynamic"){
+      
+      peak_location <- median(t[post == 1])
+      peak_height <- peak_height_param * mean(Y0_treated)
+      peak_scale <- peak_scale_param * mean(Y0_treated)
+      
+      treatment_effect_dynamic <- peak_height * dcauchy(t, 
+                                               location = peak_location, 
+                                               scale = peak_scale) /
+        dcauchy(peak_location, 
+                location = peak_location, 
+                scale = peak_scale)
+      
+      Y1_treated <- round(Y0_treated + treatment_effect_dynamic * post)
+    }
     
-    # Generate post-treatment indicator
-    post <- c(rep(0, x[["first_treated_period"]] - min(x[["data"]][[time_var]])), rep(1, max(x[["data"]][[time_var]]) - x[["first_treated_period"]] + 1))
+    # Extract true tau and estimated tau hat
+    tau <- Y1_treated - Y0_treated
+    tau_hat <- Y1_treated - Y0_treated_hat
     
     # Return tibble of results
     results <- tibble("method" = method,
                       "model_run" = x[["model_run"]],
                       "t" = t,
                       "post" = post,
+                      "tau" = tau,
                       "tau_hat" = tau_hat,
-                      "Y1" = Y1,
-                      "Y1_hat" = Y1_hat)
+                      "Y1_treated" = Y1_treated,
+                      "Y0_treated" = Y0_treated,
+                      "Y0_treated_hat" = Y0_treated_hat)
     
   }) 
   

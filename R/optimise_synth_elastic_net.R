@@ -40,6 +40,12 @@ optimise_synth_elastic_net <- function(data,
                                   n_periods_pre,
                                   n_periods_post){
   
+  # Extract dimension of time variable to reshape Y0
+  n_periods <- n_periods_pre + n_periods_post
+  
+  # Generate indicator for post-treatment period
+  post <- c(rep(0, n_periods_pre), rep(1, n_periods_post))
+  
   # Extract first treated period and subset data to pre- / post-treatment intervals 
   # based on `n_periods_pre` and `n_periods_post`
   first_treated_period <- min(data %>%
@@ -57,44 +63,25 @@ optimise_synth_elastic_net <- function(data,
     )
   
   # Extract vector of outcomes for treated unit
-  Y1 <- data %>% 
+  Y_treated <- data %>% 
     filter({{treated_id_var}} == 1) %>%
     pull({{outcome_var}}) %>% 
     as.numeric()
   
-  # Extract pre-treatment vector of outcomes for treated unit
-  Y1_pre <- data %>% 
-    filter({{treated_id_var}} == 1 &
-             {{treated_time_var}} == 0) %>%
-    pull({{outcome_var}}) %>% 
-    as.numeric()
-  
-  # Extract dimension of time variable to reshape Y0
-  n_periods <- length(Y1)
-  n_periods_pre <- length(Y1_pre)
-  
-  # Generate vector of pre-treatment time periods - we need to extract the time
-  # vector only for one unit, since the panel is balanced by design
-  t_vec_pre_treatment <- data %>%
-    filter(
-      {{treated_time_var}} == 0,
-      {{treated_id_var}} == 1
-    ) %>%
-    pull({{time_var}})
+  # Extract pre- and post-treatment vector of outcomes for treated unit
+  Y_treated_pre <- Y_treated[1:n_periods_pre]
+  Y_treated_post <- Y_treated[(n_periods_pre + 1):n_periods]
   
   # Extract matrix of outcomes for control units (T x J matrix, where T = n_periods
   # and J = n_controls)
-  Y0 <- data %>%
+  Y_controls <- data %>%
     filter({{treated_id_var}} == 0) %>%
     pull({{outcome_var}}) %>%
     matrix(nrow = n_periods)
   
-  # Extract matrix of control outcomes in pre-treatment period
-  Y0_pre <- Y0[1:n_periods_pre,]
-  
-  # Extract post-treatment vector of treated outcomes Y1_post and matrix of untreated outcomes Y0_post
-  Y1_post <- Y1[(n_periods_pre + 1):n_periods]
-  Y0_post <- Y0[(n_periods_pre + 1):n_periods,]
+  # Extract matrix of control outcomes in pre- and post-treatment period
+  Y_controls_pre <- Y_controls[1:n_periods_pre,]
+  Y_controls_post <- Y_controls[(n_periods_pre + 1):n_periods,]
   
   # Initialise starting values for hyperparameters
   alpha_init <- setNames(alpha_init, "alpha")
@@ -108,8 +95,8 @@ optimise_synth_elastic_net <- function(data,
                                 get_hyperparam_loss_elastic_net,
                                 lower = c(0, 0),
                                 upper = c(1, Inf),
-                                Y0_pre = Y0_pre,
-                                Y0_post = Y0_post,
+                                Y_controls_pre = Y_controls_pre,
+                                Y_controls_post = Y_controls_post,
                                 method = "L-BFGS-B") # Could maybe try a cv.glmnet or grid search here
   
   # Re-order results to find best solution (assume using minimisation in optimx)
@@ -126,23 +113,23 @@ optimise_synth_elastic_net <- function(data,
   # at the optimal level of the hyperparameters
   
   # Run glm model at optimal parameters on the true treated unit during the pre-treatment period
-  fit <- glmnet(Y0_pre, 
-                Y1_pre, 
+  fit <- glmnet(Y_controls_pre, 
+                Y_treated_pre, 
                 alpha = alpha_opt,
                 lambda = lambda_opt,
                 nlambda = 1)
   
-  # Get predictions on outcomes over the entire pre/post period
-  Y1_hat <- predict(fit, Y0, type = "response")
+  # Get predictions on untreated potential outcomes (Y0) over the entire pre/post period
+  Y0_treated_hat <- predict(fit, Y_controls, type = "response")
   
   # Extract optimal model coefficients
   W_opt <- fit[["beta"]]
   mu_opt <- fit[["a0"]]
   
   # Return list of final outputs
-  results <- list("data" = data,
-                  "Y1" = Y1,
-                  "Y1_hat" = Y1_hat,
+  results <- list("Y_treated" = Y_treated,
+                  "Y0_treated_hat" = Y0_treated_hat,
+                  "post" = post,
                   "W_opt" = W_opt,
                   "mu_opt" = mu_opt,
                   "alpha_opt" = alpha_opt,

@@ -33,8 +33,8 @@ make_list_data_simulated <- function(data,
   list_data_with_sims <- map2(
     list_outcome_sim_neg_binomial,
     list_outcome_sim_factor,
-    ~ data %>% mutate(outcome_pred_neg_binom = .x,
-                      outcome_pred_factor = .y)
+    ~ data %>% mutate(Y0_treated_neg_binom = .x,
+                      Y0_treated_factor = .y)
   )
   
   # For each data frame in list, sample treated unit and time using empirical treatment probabilities
