@@ -27,8 +27,8 @@ make_summary_table_synth_diagnostics <- function(data_synth_results,
   tbl_summary_stats <- data_synth_results %>%
     
     # Estimate error and squared error by method and model run
-    summarise(error = mean({{tau_hat_var}} - {{tau_var}}),
-              squared_error = mean(({{tau_hat_var}} - {{tau_var}})^2),
+    summarise(error = mean({{tau_hat_var}} - {{tau_var}}, na.rm = TRUE),
+              squared_error = mean(({{tau_hat_var}} - {{tau_var}})^2, na.rm = TRUE),
               .by = c(method,
                       model_run)) %>%
     
