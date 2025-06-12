@@ -27,15 +27,15 @@ make_summary_table_synth_diagnostics <- function(data_synth_results,
   tbl_summary_stats <- data_synth_results %>%
     
     # Estimate error and squared error by method and model run
-    summarise(error = mean({{tau_hat_var}} - {{tau_var}}, na.rm = TRUE),
-              squared_error = mean(({{tau_hat_var}} - {{tau_var}})^2, na.rm = TRUE),
+    summarise(error = mean({{tau_hat_var}} - {{tau_var}}),
+              squared_error = mean(({{tau_hat_var}} - {{tau_var}})^2),
               .by = c(method,
                       model_run)) %>%
     
     # Generate summary stats
-    summarise(indiv_rmse = sqrt(mean(squared_error)),
-              agg_rmse = sqrt(mean(error^2)),
-              abs_bias = abs(mean(error)),
+    summarise(indiv_rmse = sqrt(mean(squared_error, na.rm = TRUE)),
+              agg_rmse = sqrt(mean(error^2, na.rm = TRUE)),
+              abs_bias = abs(mean(error, na.rm = TRUE)),
               .by = method) %>%
     
     # Add column for DGP type
