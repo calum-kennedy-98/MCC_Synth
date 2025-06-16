@@ -26,6 +26,7 @@ source(here("R/estimate_factor_model.R"))
 source(here("R/get_hyperparam_loss_penalised_sc.R"))
 source(here("R/get_penalised_sc_weights.R"))
 source(here("R/optimise_synth_penalised_sc.R"))
+source(here("R/optimise_synth_denoised_outcome_natural_splines.R"))
 
 # Simulation functions
 

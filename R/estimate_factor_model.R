@@ -28,9 +28,9 @@ estimate_factor_model <- function(data,
   
   # Generate singular value decomposition of Y and extract first `rank' unit/time factors
   svd_Y <- svd(mat_Y)
-  factor_unit <- as.matrix(svd_Y$u[,1:rank] * sqrt(n_units))
-  factor_time <- as.matrix(svd_Y$v[,1:rank] * sqrt(n_periods))
-  magnitude <- svd_Y$d[1:rank] / sqrt(n_units * n_periods)
+  factor_unit <- as.matrix(svd_Y$u[,1:rank])
+  factor_time <- as.matrix(svd_Y$v[,1:rank])
+  magnitude <- svd_Y$d[1:rank]
   
   # Generate systematic component L
   L <- factor_unit %*% diag(magnitude, nrow = rank, ncol = rank) %*% t(factor_time)
