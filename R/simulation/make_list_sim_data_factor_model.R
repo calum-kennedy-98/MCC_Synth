@@ -40,16 +40,24 @@ make_list_sim_data_factor_model <- function(n_sims,
   E <- results_decomposition$E
   ar2_coef <- fit_ar_2(E)
   
-  # Estimate correlation matrix from AR(2) model and convert to covariance matrix
+  # Estimate correlation matrix from AR(2) model and estimate diagonal SD matrix to scale errors by location
   cor_mat <- ar2_correlation_matrix(ar2_coef, n_periods)
-  scale_sd <- norm(t(E) %*% E / n_units,'f') / norm(cor_mat, 'f')
-  cov_mat <- cor_mat * scale_sd
+  sd_mat <- diag(apply(E, 1, sd, na.rm = TRUE))
   
   # Generate list of vectors with outcomes simulated from latent factor model with rank == `rank'
   list_outcome_sim_factor_model <- future_map(seq_len(n_sims), function(i){
     
+    # Generate error matrix using AR(2) correlation matrix
+    err_mat <- rmvnorm(n_units, sigma = cor_mat)
+    
+    # Scale by location-specific standard deviation in the errors
+    err_mat_scaled <- sd_mat %*% err_mat 
+    
     # Simulate outcome matrix from factor model
-    mat_outcome_pred_factor_model <- L + rmvnorm(n_units, sigma = cov_mat)
+    mat_outcome_pred_factor_model <- L + err_mat_scaled
+    
+    # Set negative values to 0
+    mat_outcome_pred_factor_model <- pmax(mat_outcome_pred_factor_model, 0)
     
     # Transform to vector
     outcome_pred_factor_model <- round(as.vector(t(mat_outcome_pred_factor_model)))

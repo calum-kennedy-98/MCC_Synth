@@ -179,7 +179,7 @@ list(
                                                                   week_id_var = week_id,
                                                                   treated_var = treated,
                                                                   outcome_var = all,
-                                                                  rank = 30)),
+                                                                  rank = 4)),
   
   # Generate final combined simulated data with untreated potential outcomes Y0
   # We do not need to simulated treated potential outcomes Y1 here since the optimal
@@ -240,7 +240,7 @@ list(
                                                                                     max_attempts = 20,
                                                                                     margin_increment = 0.0005))),
   
-  # Results from ADH synth on de-meaned outcomes
+  # Results from penalised SC
   tar_target(results_synth_penalised_neg_binom, future_map(list_data_simulated,
                                                             ~ optimise_synth_penalised_sc(.,
                                                                                           lambda_init = 1,
@@ -251,6 +251,20 @@ list(
                                                                                           treated_time_var = post,
                                                                                           n_periods_pre = 26,
                                                                                           n_periods_post = 26))),
+  
+  # Results from penalised SC on de-noised outcome series
+  tar_target(results_synth_penalised_denoised_neg_binom, future_map(list_data_simulated,
+                                                                    ~ optimise_synth_denoised_outcome_natural_splines(.,
+                                                                                                                      unit_id_var = column_label,
+                                                                                                                      time_id_var = week_id,
+                                                                                                                      outcome_var = Y0_treated_neg_binom,
+                                                                                                                      spline_df = 140,
+                                                                                                                      lambda_init = 1,
+                                                                                                                      lower_bound_lambda = 1e-6,
+                                                                                                                      treated_id_var = treated,
+                                                                                                                      treated_time_var = post,
+                                                                                                                      n_periods_pre = 26,
+                                                                                                                      n_periods_post= 26))),
   
   # Results for factor model 
   
@@ -298,7 +312,7 @@ list(
                                                                                  max_attempts = 20,
                                                                                  margin_increment = 0.0005))),
   
-  # Results from ADH synth on de-meaned outcomes
+  # Results from penalised SC
   tar_target(results_synth_penalised_factor, future_map(list_data_simulated,
                                                            ~ optimise_synth_penalised_sc(.,
                                                                                          lambda_init = 1,
@@ -310,6 +324,20 @@ list(
                                                                                          n_periods_pre = 26,
                                                                                          n_periods_post = 26))),
   
+  # Results from penalised SC on de-noised outcome series
+  tar_target(results_synth_penalised_denoised_factor, future_map(list_data_simulated,
+                                                                    ~ optimise_synth_denoised_outcome_natural_splines(.,
+                                                                                                                      unit_id_var = column_label,
+                                                                                                                      time_id_var = week_id,
+                                                                                                                      outcome_var = Y0_treated_factor,
+                                                                                                                      spline_df = 140,
+                                                                                                                      lambda_init = 1,
+                                                                                                                      lower_bound_lambda = 1e-6,
+                                                                                                                      treated_id_var = treated,
+                                                                                                                      treated_time_var = post,
+                                                                                                                      n_periods_pre = 26,
+                                                                                                                      n_periods_post= 26))),
+  
   # Extract results across simulations and assign treatment effects ------------
   
   # Placebo study
@@ -318,7 +346,8 @@ list(
   tar_target(data_tau_hat_neg_binom_placebo, map(list(results_synth_adh_no_covars_neg_binom,
                                               results_synth_adh_covars_neg_binom,
                                               results_synth_penalised_neg_binom,
-                                              results_synth_elastic_net_neg_binom), 
+                                              results_synth_elastic_net_neg_binom,
+                                              results_synth_penalised_denoised_factor), 
                                          ~extract_tau_hat_synth_results(.,
                                                                         treatment_effect_type = "placebo")) %>%
                bind_rows()),
@@ -326,7 +355,8 @@ list(
   tar_target(data_tau_hat_factor_placebo, map(list(results_synth_adh_no_covars_factor,
                                               results_synth_adh_covars_factor,
                                               results_synth_penalised_factor,
-                                              results_synth_elastic_net_factor), 
+                                              results_synth_elastic_net_factor,
+                                              results_synth_penalised_denoised_factor), 
                                          ~extract_tau_hat_synth_results(.,
                                                                         treatment_effect_type = "placebo")) %>%
                bind_rows()),
