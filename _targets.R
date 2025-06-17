@@ -347,7 +347,7 @@ list(
                                               results_synth_adh_covars_neg_binom,
                                               results_synth_penalised_neg_binom,
                                               results_synth_elastic_net_neg_binom,
-                                              results_synth_penalised_denoised_factor), 
+                                              results_synth_penalised_denoised_neg_binom), 
                                          ~extract_tau_hat_synth_results(.,
                                                                         treatment_effect_type = "placebo")) %>%
                bind_rows()),
