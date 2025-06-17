@@ -130,7 +130,7 @@ fit_ar_2 <- function(E){
 # FUnction to estimate correlation matrix of AR(2) model
 
 ar2_correlation_matrix <- function(ar_coef, n_periods) {
-  
+
   result <- rep(0, n_periods)
   result[1] <- 1
   result[2] <- ar_coef[1]/(1-ar_coef[2])
