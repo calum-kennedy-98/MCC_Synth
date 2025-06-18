@@ -370,11 +370,6 @@ list(
                                                 
                                                   # Keep tau hat from post-treatment period only
                                                   filter(post == 1) %>%
-                                                  
-                                                  # Generate normalised tau_hat across model runs to plot
-                                                  mutate(tau_hat_normalised = (tau_hat - tau) / sd(tau_hat), 
-                                                         .by = c(method,
-                                                                 model_run)) %>%
                                                 
                                                 make_density_plot_synth_results(density_var = tau_hat_normalised,
                                                                                 method_var = method,
@@ -391,11 +386,6 @@ list(
                                                      # Keep tau hat from post-treatment period only
                                                      filter(post == 1) %>%
                                                      
-                                                     # Generate normalised tau_hat across model runs to plot
-                                                     mutate(tau_hat_normalised = (tau_hat - tau) / sd(tau_hat), 
-                                                            .by = c(method,
-                                                                    model_run)) %>%
-                                                     
                                                      make_density_plot_synth_results(density_var = tau_hat_normalised,
                                                                                      method_var = method,
                                                                                      model_run_var = model_run,
@@ -405,14 +395,104 @@ list(
                ggsave("Output/Figures/Simulation/plot_density_tau_hat_factor_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
              format = "file"),
   
+  # Density plot of mean normalised tau hat from negative binomial model - placebo effect
+  tar_target(plot_density_mean_tau_hat_neg_binom_placebo, (data_tau_hat_neg_binom_placebo %>%
+                                                          
+                                                          # Keep tau hat from post-treatment period only
+                                                          filter(post == 1) %>%
+                                                          
+                                                          # Generate mean tau hat by model run and method
+                                                          summarise(tau_hat_normalised = mean(tau_hat_normalised),
+                                                                    .by = c(method,
+                                                                            model_run)) %>%
+                                                          
+                                                          make_density_plot_synth_results(density_var = tau_hat_normalised,
+                                                                                          method_var = method,
+                                                                                          model_run_var = model_run,
+                                                                                          palette = cbbPalette)
+  ) %>%
+    
+    ggsave("Output/Figures/Simulation/plot_density_mean_tau_hat_neg_binom_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
+  format = "file"),
+  
+  # Density plot of mean normalised tau hat from factor model - placebo effect
+  tar_target(plot_density_mean_tau_hat_factor_placebo, (data_tau_hat_factor_placebo %>%
+                                                     
+                                                     # Keep tau hat from post-treatment period only
+                                                     filter(post == 1) %>%
+                                                     
+                                                     # Generate mean tau hat by model run and method
+                                                     summarise(tau_hat_normalised = mean(tau_hat_normalised),
+                                                               .by = c(method,
+                                                                       model_run)) %>%
+                                                     
+                                                     make_density_plot_synth_results(density_var = tau_hat_normalised,
+                                                                                     method_var = method,
+                                                                                     model_run_var = model_run,
+                                                                                     palette = cbbPalette)
+  ) %>%
+    
+    ggsave("Output/Figures/Simulation/plot_density_mean_tau_hat_factor_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
+  format = "file"),
+  
   # Summary tables of synth diagnostics by treatment effect type and method -------------------------------------------------------------
-  tar_target(tbl_summary_synth_diagnostics_placebo, bind_rows(make_summary_table_synth_diagnostics(data_tau_hat_neg_binom_placebo, 
-                                                                                                   tau_hat, 
-                                                                                                   tau, 
-                                                                                                   "negative binomial"), 
-                                                              make_summary_table_synth_diagnostics(data_tau_hat_factor_placebo, 
-                                                                                                   tau_hat, 
-                                                                                                   tau, 
-                                                                                                   "factor")))
+  tar_target(tbl_summary_synth_diagnostics_placebo, 
+             
+             bind_rows(make_summary_table_synth_diagnostics(data_tau_hat_neg_binom_placebo, 
+                                                            tau_hat, 
+                                                            tau, 
+                                                            "negative_binomial"), 
+                       make_summary_table_synth_diagnostics(data_tau_hat_factor_placebo,
+                                                            tau_hat, 
+                                                            tau, 
+                                                            "factor")) %>%
+               
+               # Pivot wider
+               pivot_wider(
+                 names_from = dgp_type,
+                 values_from = c(indiv_rmse,
+                                 agg_rmse,
+                                 abs_bias),
+                 names_glue = "{.value}_{dgp_type}"
+               ) %>%
+               
+               # Set as gt object and format
+               gt() %>%
+               
+               tab_spanner(
+                 label = "Negative Binomial",
+                 columns = c(
+                   indiv_rmse_negative_binomial,
+                   agg_rmse_negative_binomial,
+                   abs_bias_negative_binomial
+                 )
+               ) %>%
+               
+               tab_spanner(
+                 label = "Factor",
+                 columns = c(
+                   indiv_rmse_factor,
+                   agg_rmse_factor,
+                   abs_bias_factor
+                 )
+               ) %>%
+               
+               cols_label(
+                 method = "Method",
+                 indiv_rmse_negative_binomial = "Individual RMSE",
+                 agg_rmse_negative_binomial = "Aggregate RMSE",
+                 abs_bias_negative_binomial = "Absolute Bias",
+                 indiv_rmse_factor = "Individual RMSE",
+                 agg_rmse_factor = "Aggregate RMSE",
+                 abs_bias_factor = "Absolute Bias"
+               ) %>%
+               
+               fmt_number(
+                 column = -method,
+                 decimals = 2
+               ) %>%
+               
+               gtsave("Output/Tables/Simulation/tbl_summary_synth_diagnostics_placebo.tex"),
+             format = "file")
 
 )

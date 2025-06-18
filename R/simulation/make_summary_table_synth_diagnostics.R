@@ -21,7 +21,7 @@ make_summary_table_synth_diagnostics <- function(data_synth_results,
                                                  dgp_type){
   
   # Checks
-  if(!dgp_type %in% c("negative binomial", "factor")) stop("Please set dgp_type equal to 'negative binomial' or 'factor'")
+  if(!dgp_type %in% c("negative_binomial", "factor")) stop("Please set dgp_type equal to 'negative_binomial' or 'factor'")
   
   # Generate summary statistics by method and DGP
   tbl_summary_stats <- data_synth_results %>%
