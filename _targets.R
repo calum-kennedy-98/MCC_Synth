@@ -376,7 +376,7 @@ list(
                                                                                 model_run_var = model_run,
                                                                                 palette = cbbPalette) +
                                                   
-                                                  labs(x = "Tau hat",
+                                                  labs(x = "Tau hat (normalised)",
                                                        y = "Density")
                                                 ) %>%
                
@@ -394,7 +394,7 @@ list(
                                                                                      model_run_var = model_run,
                                                                                      palette = cbbPalette) +
                                                      
-                                                     labs(x = "Tau hat",
+                                                     labs(x = "Tau hat (normalised)",
                                                           y = "Density")
                                                    ) %>%
                
@@ -417,7 +417,7 @@ list(
                                                                                           model_run_var = model_run,
                                                                                           palette = cbbPalette) +
                                                             
-                                                            labs(x = "Mean tau hat",
+                                                            labs(x = "Mean tau hat (normalised)",
                                                                  y = "Density")
   ) %>%
     
@@ -440,7 +440,7 @@ list(
                                                                                      model_run_var = model_run,
                                                                                      palette = cbbPalette) +
                                                        
-                                                       labs(x = "Mean tau hat",
+                                                       labs(x = "Mean tau hat (normalised)",
                                                             y = "Density")
   ) %>%
     
@@ -487,6 +487,51 @@ list(
   ) %>%
     
     ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_factor.png", ., height = 5, width = 8, create.dir = TRUE),
+  format = "file"
+  ),
+  
+  # Scatter plots of relative bias in SC predicted Y0_hat
+  tar_target(plot_abs_relative_bias_tau_hat_neg_binom, (data_tau_hat_neg_binom_placebo %>%
+                                                          
+                                                          mutate(rel_bias_Y0_hat = (Y0_treated_hat - Y0_treated)/Y0_treated) %>% 
+                                                          
+                                                          summarise(abs_rel_bias_Y0_hat = abs(mean(rel_bias_Y0_hat, na.rm = TRUE)), 
+                                                                    mean_Y0_treated = mean(Y0_treated, na.rm = TRUE),
+                                                                    .by = c(model_run, method)) %>%
+                                                          
+                                                          ggplot() +
+                                                          
+                                                          geom_point(aes(x = mean_Y0_treated,
+                                                                         y = abs_rel_bias_Y0_hat)) +
+                                                          
+                                                          facet_wrap(~method) +
+                                                          
+                                                          scatter_plot_opts
+                                                        ) %>%
+               
+               ggsave("Output/plot_abs_relative_bias_tau_hat_neg_binom.png", ., height = 5, width = 8, create.dir = TRUE),
+             format = "file"
+             ),
+  
+  tar_target(plot_abs_relative_bias_tau_hat_factor, (data_tau_hat_factor_placebo %>%
+               
+               mutate(rel_bias_Y0_hat = (Y0_treated_hat - Y0_treated)/Y0_treated) %>% 
+               
+               summarise(abs_rel_bias_Y0_hat = abs(mean(rel_bias_Y0_hat, na.rm = TRUE)), 
+                         mean_Y0_treated = mean(Y0_treated, na.rm = TRUE),
+                         .by = c(model_run, method)) %>%
+               
+               ggplot() +
+               
+               geom_point(aes(x = mean_Y0_treated,
+                              y = abs_rel_bias_Y0_hat)) +
+               
+               facet_wrap(~method) +
+               
+               scatter_plot_opts
+  ) %>%
+    
+    ggsave("Output/plot_abs_relative_bias_tau_hat_factor.png", ., height = 5, width = 8, create.dir = TRUE),
   format = "file"
   ),
   

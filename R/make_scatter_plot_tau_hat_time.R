@@ -40,8 +40,8 @@ make_scatter_plot_tau_hat_time <- function(data,
                linetype = "dashed") +
     
     # Vertical line at t = 0 (first treated period)
-    geom_vline(aes(xintercept = 0,
-                   linetype = "dashed")) +
+    geom_vline(aes(xintercept = 0),
+                   linetype = "dashed") +
     
     # Optional facet wrap
     facet_wrap(vars({{facet_var}})) +
