@@ -27,6 +27,7 @@ source(here("R/get_hyperparam_loss_penalised_sc.R"))
 source(here("R/get_penalised_sc_weights.R"))
 source(here("R/optimise_synth_penalised_sc.R"))
 source(here("R/optimise_synth_denoised_outcome_natural_splines.R"))
+source(here("R/make_scatter_plot_tau_hat_time.R"))
 
 # Simulation functions
 
