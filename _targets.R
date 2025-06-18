@@ -374,7 +374,10 @@ list(
                                                 make_density_plot_synth_results(density_var = tau_hat_normalised,
                                                                                 method_var = method,
                                                                                 model_run_var = model_run,
-                                                                                palette = cbbPalette)
+                                                                                palette = cbbPalette) +
+                                                  
+                                                  labs(x = "Tau hat",
+                                                       y = "Density")
                                                 ) %>%
                
                ggsave("Output/Figures/Simulation/plot_density_tau_hat_neg_binom_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
@@ -389,7 +392,10 @@ list(
                                                      make_density_plot_synth_results(density_var = tau_hat_normalised,
                                                                                      method_var = method,
                                                                                      model_run_var = model_run,
-                                                                                     palette = cbbPalette)
+                                                                                     palette = cbbPalette) +
+                                                     
+                                                     labs(x = "Tau hat",
+                                                          y = "Density")
                                                    ) %>%
                
                ggsave("Output/Figures/Simulation/plot_density_tau_hat_factor_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
@@ -409,7 +415,10 @@ list(
                                                           make_density_plot_synth_results(density_var = tau_hat_normalised,
                                                                                           method_var = method,
                                                                                           model_run_var = model_run,
-                                                                                          palette = cbbPalette)
+                                                                                          palette = cbbPalette) +
+                                                            
+                                                            labs(x = "Mean tau hat",
+                                                                 y = "Density")
   ) %>%
     
     ggsave("Output/Figures/Simulation/plot_density_mean_tau_hat_neg_binom_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
@@ -429,7 +438,10 @@ list(
                                                      make_density_plot_synth_results(density_var = tau_hat_normalised,
                                                                                      method_var = method,
                                                                                      model_run_var = model_run,
-                                                                                     palette = cbbPalette)
+                                                                                     palette = cbbPalette) +
+                                                       
+                                                       labs(x = "Mean tau hat",
+                                                            y = "Density")
   ) %>%
     
     ggsave("Output/Figures/Simulation/plot_density_mean_tau_hat_factor_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
@@ -438,8 +450,8 @@ list(
   # Scatter plots of estimated tau hat coefficients against time by method (averaging across model runs)
   tar_target(plot_scatter_tau_hat_time_by_method_neg_binom, (data_tau_hat_neg_binom_placebo %>%
                                                                
-                                                               summarise(mean_tau_hat = mean(tau_hat), 
-                                                                         se_tau_hat = sd(tau_hat) / sqrt(n()), 
+                                                               summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
+                                                                         se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
                                                                          .by = c(t, method)) %>%
                                                                
                                                                # Make scatter plot with facet wrap by method
@@ -447,7 +459,10 @@ list(
                                                                                               se_var = se_tau_hat, 
                                                                                               time_var = t, 
                                                                                               facet_var = method, 
-                                                                                              palette = cbbPalette)
+                                                                                              palette = cbbPalette) +
+                                                               
+                                                               labs(x = "Time (centred)",
+                                                                    y = "Tau hat (mean)")
                                                              ) %>%
                
                ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_neg_binom.png", ., height = 5, width = 8, create.dir = TRUE),
@@ -456,8 +471,8 @@ list(
   
   tar_target(plot_scatter_tau_hat_time_by_method_factor, (data_tau_hat_factor_placebo %>%
                                                                
-                                                               summarise(mean_tau_hat = mean(tau_hat), 
-                                                                         se_tau_hat = sd(tau_hat) / sqrt(n()), 
+                                                               summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
+                                                                         se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
                                                                          .by = c(t, method)) %>%
                                                                
                                                                # Make scatter plot with facet wrap by method
@@ -465,7 +480,10 @@ list(
                                                                                               se_var = se_tau_hat, 
                                                                                               time_var = t, 
                                                                                               facet_var = method, 
-                                                                                              palette = cbbPalette)
+                                                                                              palette = cbbPalette) +
+                                                            
+                                                            labs(x = "Time (centred)",
+                                                                 y = "Tau hat (mean)")
   ) %>%
     
     ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_factor.png", ., height = 5, width = 8, create.dir = TRUE),

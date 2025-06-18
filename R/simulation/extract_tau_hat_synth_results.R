@@ -48,9 +48,9 @@ extract_tau_hat_synth_results <- function(results_synth_model_simulated,
     Y0_treated <- x[["Y_treated"]]
     Y0_treated_hat <- c(x[["Y0_treated_hat"]])
     
-    # Extract post-treatment indicator and vector of time ids
+    # Extract post-treatment indicator and vector of time ids (re-centred so t = 0 is first treated period)
     post <- x[["post"]]
-    t <- seq(1:length(post))
+    t <- 0:(length(post) - 1) - length(post[post == 0])
     
     # Assign treatment effects based on treatment effect type - note required arguments
     # differ by treatment effect mechanism 
