@@ -435,6 +435,43 @@ list(
     ggsave("Output/Figures/Simulation/plot_density_mean_tau_hat_factor_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
   format = "file"),
   
+  # Scatter plots of estimated tau hat coefficients against time by method (averaging across model runs)
+  tar_target(plot_scatter_tau_hat_time_by_method_neg_binom, (data_tau_hat_neg_binom_placebo %>%
+                                                               
+                                                               summarise(mean_tau_hat = mean(tau_hat), 
+                                                                         se_tau_hat = sd(tau_hat) / sqrt(n()), 
+                                                                         .by = c(t, method)) %>%
+                                                               
+                                                               # Make scatter plot with facet wrap by method
+                                                               make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
+                                                                                              se_var = se_tau_hat, 
+                                                                                              time_var = t, 
+                                                                                              facet_var = method, 
+                                                                                              palette = cbbPalette)
+                                                             ) %>%
+               
+               ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_neg_binom.png", ., height = 5, width = 8, create.dir = TRUE),
+             format = "file"
+             ),
+  
+  tar_target(plot_scatter_tau_hat_time_by_method_factor, (data_tau_hat_factor_placebo %>%
+                                                               
+                                                               summarise(mean_tau_hat = mean(tau_hat), 
+                                                                         se_tau_hat = sd(tau_hat) / sqrt(n()), 
+                                                                         .by = c(t, method)) %>%
+                                                               
+                                                               # Make scatter plot with facet wrap by method
+                                                               make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
+                                                                                              se_var = se_tau_hat, 
+                                                                                              time_var = t, 
+                                                                                              facet_var = method, 
+                                                                                              palette = cbbPalette)
+  ) %>%
+    
+    ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_factor.png", ., height = 5, width = 8, create.dir = TRUE),
+  format = "file"
+  ),
+  
   # Summary tables of synth diagnostics by treatment effect type and method -------------------------------------------------------------
   tar_target(tbl_summary_synth_diagnostics_placebo, 
              
