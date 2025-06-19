@@ -615,7 +615,8 @@ list(
                  names_from = dgp_type,
                  values_from = c(indiv_rmse,
                                  agg_rmse,
-                                 abs_bias),
+                                 indiv_abs_bias,
+                                 agg_abs_bias),
                  names_glue = "{.value}_{dgp_type}"
                ) %>%
                
@@ -627,7 +628,8 @@ list(
                  columns = c(
                    indiv_rmse_negative_binomial,
                    agg_rmse_negative_binomial,
-                   abs_bias_negative_binomial
+                   indiv_abs_bias_negative_binomial,
+                   agg_abs_bias_negative_binomial
                  )
                ) %>%
                
@@ -636,18 +638,21 @@ list(
                  columns = c(
                    indiv_rmse_factor,
                    agg_rmse_factor,
-                   abs_bias_factor
+                   indiv_abs_bias_factor,
+                   agg_abs_bias_factor
                  )
                ) %>%
                
                cols_label(
                  method = "Method",
-                 indiv_rmse_negative_binomial = "Individual RMSE",
+                 indiv_rmse_negative_binomial = "Indiv RMSE",
                  agg_rmse_negative_binomial = "Aggregate RMSE",
-                 abs_bias_negative_binomial = "Absolute Bias",
-                 indiv_rmse_factor = "Individual RMSE",
+                 indiv_abs_bias_negative_binomial = "Indiv |Bias|",
+                 agg_abs_bias_negative_binomial = "Aggregate |Bias|",
+                 indiv_rmse_factor = "Indiv RMSE",
                  agg_rmse_factor = "Aggregate RMSE",
-                 abs_bias_factor = "Absolute Bias"
+                 indiv_abs_bias_factor = "Indiv |Bias|",
+                 agg_abs_bias_factor = "Aggregate |Bias|"
                ) %>%
                
                fmt_number(
