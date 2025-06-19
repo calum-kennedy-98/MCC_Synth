@@ -415,41 +415,37 @@ list(
   
   # Placebo study
   
-  # Density plot of tau hat from negative binomial model - placebo effect
-  tar_target(plot_density_tau_hat_neg_binom_placebo, (data_tau_hat_neg_binom_placebo %>%
-                                                
-                                                  # Keep tau hat from post-treatment period only
-                                                  filter(post == 1) %>%
-                                                
-                                                make_density_plot_synth_results(density_var = tau_hat_normalised,
-                                                                                method_var = method,
-                                                                                model_run_var = model_run,
-                                                                                palette = cbbPalette) +
-                                                  
-                                                  labs(x = "Tau hat (normalised)",
-                                                       y = "Density")
-                                                ) %>%
-               
-               ggsave("Output/Figures/Simulation/plot_density_tau_hat_neg_binom_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
-             format = "file"),
-  
-  # Density plot of tau hat from factor model - placebo effect
-  tar_target(plot_density_tau_hat_factor_placebo, (data_tau_hat_factor_placebo %>%
-                                                
-                                                     # Keep tau hat from post-treatment period only
-                                                     filter(post == 1) %>%
-                                                     
-                                                     make_density_plot_synth_results(density_var = tau_hat_normalised,
-                                                                                     method_var = method,
-                                                                                     model_run_var = model_run,
-                                                                                     palette = cbbPalette) +
-                                                     
-                                                     labs(x = "Tau hat (normalised)",
-                                                          y = "Density")
-                                                   ) %>%
-               
-               ggsave("Output/Figures/Simulation/plot_density_tau_hat_factor_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
-             format = "file"),
+  # Density plot of tau hat from negative binomial model and factor model - placebo effect
+  tar_target(patchwork_density_tau_hat_placebo, (make_patchwork_plot(
+    
+    list = list(
+      
+      make_density_plot_synth_results(
+      data = data_tau_hat_neg_binom_placebo[data_tau_hat_neg_binom_placebo$post == 1, ],
+      density_var = tau_hat_normalised,
+      method_var = method,
+      model_run_var = model_run,
+      palette = cbbPalette) +
+        ggtitle("A: Negative Binomial") +
+        labs(x = "Tau hat (normalised)",
+             y = "Density"),
+      
+      make_density_plot_synth_results(
+        data = data_tau_hat_factor_placebo[data_tau_hat_factor_placebo$post == 1, ],
+        density_var = tau_hat_normalised,
+        method_var = method,
+        model_run_var = model_run,
+        palette = cbbPalette) +
+        ggtitle("B: Factor") +
+        labs(x = "Tau hat (normalised)",
+             y = "Density")
+      ),
+    ncol = 2,
+    guides = "collect"
+    )) %>%
+      
+      ggsave("Output/Figures/Simulation/patchwork_density_tau_hat_placebo.png", ., width = 8, height = 5, dpi = 700, create.dir = TRUE)
+    ),
   
   # Density plot of mean normalised tau hat from negative binomial model - placebo effect
   tar_target(plot_density_mean_tau_hat_neg_binom_placebo, (data_tau_hat_neg_binom_placebo %>%
