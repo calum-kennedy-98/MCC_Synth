@@ -143,5 +143,3 @@ ar2_correlation_matrix <- function(ar_coef, n_periods) {
   
   return(cor_matrix)
 }
-
-# Wrapper function

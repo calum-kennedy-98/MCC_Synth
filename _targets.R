@@ -38,7 +38,8 @@ tar_option_set(
     "rlang",
     "mvtnorm",
     "LowRankQP",
-    "gt"
+    "gt",
+    "patchwork"
   ),
   format = "qs",
   memory = "transient",
@@ -363,6 +364,55 @@ list(
   
   # Make output plots - simulation study ------------------------------------------------------------------------
   
+  tar_target(patchwork_plot_line_real_vs_sim_data, (make_patchwork_plot(list = list(make_line_plot_real_vs_sim_data(list_data = list_data_simulated, 
+                                                                                                                   location_var = column_label, 
+                                                                                                                   location_string = "toky.jap7220", 
+                                                                                                                   time_var = week_id, 
+                                                                                                                   min_time_var = 900, 
+                                                                                                                   outcome_var = all, 
+                                                                                                                   outcome_sim_var = Y0_treated_neg_binom) +
+                                                                                      ggtitle("A: Tokyo, Negative Binomial") +
+                                                                                      labs(x = "",
+                                                                                           y = "All-cause\nmortality"),
+                                                                                   make_line_plot_real_vs_sim_data(list_data = list_data_simulated, 
+                                                                                                                   location_var = column_label, 
+                                                                                                                   location_string = "toky.jap7220", 
+                                                                                                                   time_var = week_id, 
+                                                                                                                   min_time_var = 900, 
+                                                                                                                   outcome_var = all, 
+                                                                                                                   outcome_sim_var = Y0_treated_factor) + 
+                                                                                     ggtitle("B: Tokyo, Factor") +
+                                                                                     labs(x = "",
+                                                                                          y = ""),
+                                                                                   make_line_plot_real_vs_sim_data(list_data = list_data_simulated, 
+                                                                                                                   location_var = column_label, 
+                                                                                                                   location_string = "srwk.mal0019", 
+                                                                                                                   time_var = week_id, 
+                                                                                                                   min_time_var = 900, 
+                                                                                                                   outcome_var = all, 
+                                                                                                                   outcome_sim_var = Y0_treated_neg_binom) +
+                                                                                     ggtitle("C: Sarawak, Negative Binomial") +
+                                                                                     labs(x = "Week",
+                                                                                          y = ""),
+                                                                                   make_line_plot_real_vs_sim_data(list_data = list_data_simulated, 
+                                                                                                                   location_var = column_label, 
+                                                                                                                   location_string = "srwk.mal0019", 
+                                                                                                                   time_var = week_id, 
+                                                                                                                   min_time_var = 900, 
+                                                                                                                   outcome_var = all, 
+                                                                                                                   outcome_sim_var = Y0_treated_factor) +
+                                                                                     ggtitle("D: Sarawak, Factor") + 
+                                                                                     labs(x = "Week",
+                                                                                          y = "")
+                                                                                   ),
+                                                                       guides = "collect",
+                                                                       ncol = 2
+                                                                       )) %>%
+               
+               ggsave("Output/Figures/Simulation/patchwork_plot_line_real_vs_sim_data.png", ., height = 5, width = 8, dpi = 700, create.dir = TRUE),
+             format = "file"
+             ),
+  
   # Placebo study
   
   # Density plot of tau hat from negative binomial model - placebo effect
@@ -547,11 +597,22 @@ list(
              bind_rows(make_summary_table_synth_diagnostics(data_tau_hat_neg_binom_placebo, 
                                                             tau_hat, 
                                                             tau, 
+                                                            post,
                                                             "negative_binomial"), 
                        make_summary_table_synth_diagnostics(data_tau_hat_factor_placebo,
                                                             tau_hat, 
                                                             tau, 
+                                                            post,
                                                             "factor")) %>%
+               
+               # Mutate names of methods
+               mutate(method = case_when(
+                 method == "adh_no_covars" ~ "ADH",
+                 method == "elastic_net" ~ "DIFP",
+                 method == "penalised_sc" ~ "PSC",
+                 method == "penalised_sc_denoised" ~ "PSC (denoised)"
+               )
+               ) %>%
                
                # Pivot wider
                pivot_wider(
