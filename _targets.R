@@ -431,11 +431,7 @@ list(
                                                                                           palette = cbbPalette) +
                                                             
                                                             labs(x = "Mean tau hat (normalised)",
-                                                                 y = "Density") +
-                                                            scale_colour_manual(labels = c("adh_no_covars" = "ADH",
-                                                                                           "elastic_net" = "DIFP",
-                                                                                           "penalised_sc" = "PSC",
-                                                                                           "penalised_sc_denoised" = "PSC (denoised)"))
+                                                                 y = "Density") 
   ) %>%
     
     ggsave("Output/Figures/Simulation/plot_density_mean_tau_hat_neg_binom_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
@@ -458,11 +454,7 @@ list(
                                                                                      palette = cbbPalette) +
                                                        
                                                        labs(x = "Mean tau hat (normalised)",
-                                                            y = "Density") +
-                                                       scale_colour_manual(labels = c("adh_no_covars" = "ADH",
-                                                                                      "elastic_net" = "DIFP",
-                                                                                      "penalised_sc" = "PSC",
-                                                                                      "penalised_sc_denoised" = "PSC (denoised)"))
+                                                            y = "Density")
   ) %>%
     
     ggsave("Output/Figures/Simulation/plot_density_mean_tau_hat_factor_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
