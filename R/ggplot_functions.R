@@ -41,7 +41,7 @@ make_line_plot_real_vs_sim_data <- function(list_data,
     geom_line(aes(x = {{time_var}},
                   y = {{outcome_sim_var}},
                   group = model_run),
-              alpha = 0.05) + 
+              alpha = 0.005) + 
     
     scatter_plot_opts + 
     
