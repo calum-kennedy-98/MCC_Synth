@@ -225,22 +225,6 @@ list(
                                                                                   max_attempts = 20,
                                                                                   margin_increment = 0.0005))),
   
-  # Results from ADH synth with covariates
-  tar_target(results_synth_adh_covars_neg_binom, future_map(list_data_simulated,
-                                                               ~ optimise_synth_adh(.,
-                                                                                    id_var = column_label,
-                                                                                    outcome_var = Y0_treated_neg_binom,
-                                                                                    time_var = week_id,
-                                                                                    treated_id_var = treated,
-                                                                                    treated_time_var = post,
-                                                                                    n_periods_pre = 26,
-                                                                                    n_periods_post = 26,
-                                                                                    predictors = c("tmean", "pred_nonfire_PM25"),
-                                                                                    optimxmethod = c("Nelder-Mead", "BFGS"),
-                                                                                    initial_margin = 0.0005,
-                                                                                    max_attempts = 20,
-                                                                                    margin_increment = 0.0005))),
-  
   # Results from penalised SC
   tar_target(results_synth_penalised_neg_binom, future_map(list_data_simulated,
                                                             ~ optimise_synth_penalised_sc(.,
@@ -296,22 +280,6 @@ list(
                                                                                     initial_margin = 0.0005,
                                                                                     max_attempts = 20,
                                                                                     margin_increment = 0.0005))),
-  
-  # Results from ADH synth with covariates
-  tar_target(results_synth_adh_covars_factor, future_map(list_data_simulated,
-                                                            ~ optimise_synth_adh(.,
-                                                                                 id_var = column_label,
-                                                                                 outcome_var = Y0_treated_factor,
-                                                                                 time_var = week_id,
-                                                                                 treated_id_var = treated,
-                                                                                 treated_time_var = post,
-                                                                                 n_periods_pre = 26,
-                                                                                 n_periods_post = 26,
-                                                                                 predictors = c("tmean", "pred_nonfire_PM25"),
-                                                                                 optimxmethod = c("Nelder-Mead", "BFGS"),
-                                                                                 initial_margin = 0.0005,
-                                                                                 max_attempts = 20,
-                                                                                 margin_increment = 0.0005))),
   
   # Results from penalised SC
   tar_target(results_synth_penalised_factor, future_map(list_data_simulated,
@@ -406,6 +374,7 @@ list(
                                                                                           y = "")
                                                                                    ),
                                                                        guides = "collect",
+                                                                       legend_position = "bottom",
                                                                        ncol = 2
                                                                        )) %>%
                
@@ -428,7 +397,11 @@ list(
       palette = cbbPalette) +
         ggtitle("A: Negative Binomial") +
         labs(x = "Tau hat (normalised)",
-             y = "Density"),
+             y = "Density") +
+        scale_colour_manual(labels = c("adh_no_covars" = "ADH",
+                                       "elastic_net" = "DIFP",
+                                       "penalised_sc" = "PSC",
+                                       "penalised_sc_denoised" = "PSC (denoised)")),
       
       make_density_plot_synth_results(
         data = data_tau_hat_factor_placebo[data_tau_hat_factor_placebo$post == 1, ],
@@ -438,7 +411,11 @@ list(
         palette = cbbPalette) +
         ggtitle("B: Factor") +
         labs(x = "Tau hat (normalised)",
-             y = "Density")
+             y = "Density") +
+        scale_colour_manual(labels = c("adh_no_covars" = "ADH",
+                                       "elastic_net" = "DIFP",
+                                       "penalised_sc" = "PSC",
+                                       "penalised_sc_denoised" = "PSC (denoised)"))
       ),
     ncol = 2,
     guides = "collect"
@@ -464,7 +441,11 @@ list(
                                                                                           palette = cbbPalette) +
                                                             
                                                             labs(x = "Mean tau hat (normalised)",
-                                                                 y = "Density")
+                                                                 y = "Density") +
+                                                            scale_colour_manual(labels = c("adh_no_covars" = "ADH",
+                                                                                           "elastic_net" = "DIFP",
+                                                                                           "penalised_sc" = "PSC",
+                                                                                           "penalised_sc_denoised" = "PSC (denoised)"))
   ) %>%
     
     ggsave("Output/Figures/Simulation/plot_density_mean_tau_hat_neg_binom_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
@@ -487,7 +468,11 @@ list(
                                                                                      palette = cbbPalette) +
                                                        
                                                        labs(x = "Mean tau hat (normalised)",
-                                                            y = "Density")
+                                                            y = "Density") +
+                                                       scale_colour_manual(labels = c("adh_no_covars" = "ADH",
+                                                                                      "elastic_net" = "DIFP",
+                                                                                      "penalised_sc" = "PSC",
+                                                                                      "penalised_sc_denoised" = "PSC (denoised)"))
   ) %>%
     
     ggsave("Output/Figures/Simulation/plot_density_mean_tau_hat_factor_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
