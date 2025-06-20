@@ -395,11 +395,7 @@ list(
       palette = cbbPalette) +
         ggtitle("A: Negative Binomial") +
         labs(x = "Tau hat (normalised)",
-             y = "Density") +
-        scale_colour_manual(labels = c("adh_no_covars" = "ADH",
-                                       "elastic_net" = "DIFP",
-                                       "penalised_sc" = "PSC",
-                                       "penalised_sc_denoised" = "PSC (denoised)")),
+             y = "Density"),
       
       make_density_plot_synth_results(
         data = data_tau_hat_factor_placebo[data_tau_hat_factor_placebo$post == 1, ],
@@ -409,11 +405,7 @@ list(
         palette = cbbPalette) +
         ggtitle("B: Factor") +
         labs(x = "Tau hat (normalised)",
-             y = "Density") +
-        scale_colour_manual(labels = c("adh_no_covars" = "ADH",
-                                       "elastic_net" = "DIFP",
-                                       "penalised_sc" = "PSC",
-                                       "penalised_sc_denoised" = "PSC (denoised)"))
+             y = "Density")
       ),
     ncol = 2,
     guides = "collect"
