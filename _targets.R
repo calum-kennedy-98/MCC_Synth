@@ -372,7 +372,6 @@ list(
                                                                                           y = "")
                                                                                    ),
                                                                        guides = "collect",
-                                                                       legend_position = "bottom",
                                                                        ncol = 2
                                                                        )) %>%
                
@@ -408,7 +407,8 @@ list(
              y = "Density")
       ),
     ncol = 2,
-    guides = "collect"
+    guides = "collect",
+    legend_position = "bottom"
     )) %>%
       
       ggsave("Output/Figures/Simulation/patchwork_density_tau_hat_placebo.png", ., width = 8, height = 5, dpi = 700, create.dir = TRUE)
