@@ -313,7 +313,6 @@ list(
   
   # Negative binomial model
   tar_target(data_tau_hat_neg_binom_placebo, map(list(results_synth_adh_no_covars_neg_binom,
-                                              results_synth_adh_covars_neg_binom,
                                               results_synth_penalised_neg_binom,
                                               results_synth_elastic_net_neg_binom,
                                               results_synth_penalised_denoised_neg_binom), 
@@ -322,7 +321,6 @@ list(
                bind_rows()),
   
   tar_target(data_tau_hat_factor_placebo, map(list(results_synth_adh_no_covars_factor,
-                                              results_synth_adh_covars_factor,
                                               results_synth_penalised_factor,
                                               results_synth_elastic_net_factor,
                                               results_synth_penalised_denoised_factor), 
