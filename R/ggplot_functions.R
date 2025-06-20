@@ -35,7 +35,6 @@ make_line_plot_real_vs_sim_data <- function(list_data,
     
     geom_line(aes(x = {{time_var}},
                   y = {{outcome_var}}),
-              colour = "#0072b2",
               linewidth = 1) + 
     
     geom_line(aes(x = {{time_var}},
