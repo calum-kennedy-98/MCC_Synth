@@ -34,6 +34,7 @@ source(here("R/make_scatter_plot_tau_hat_time.R"))
 
 source(here("R/simulation/sim_data_scm.R"))
 source(here("R/simulation/make_list_data_simulated.R"))
+source(here("R/simulation/make_list_data_simulated_random_assignment.R"))
 source(here("R/simulation/get_synth_diagnostics.R"))
 source(here("R/simulation/make_data_scm_list.R"))
 source(here("R/simulation/extract_tau_hat_synth_results.R"))
