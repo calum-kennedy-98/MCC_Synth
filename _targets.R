@@ -193,9 +193,16 @@ list(
                                                            list_outcome_sim_neg_binomial = list_outcome_sim_neg_binomial,
                                                            list_outcome_sim_factor = list_outcome_sim_factor)),
   
+  # Generate final combined simulated data under random assignment
+  tar_target(list_data_simulated_random_assignment, make_list_data_simulated_random_assignment(data = data_for_simulation, 
+                                                           unit_id_var = column_label, 
+                                                           time_id_var = week_id,
+                                                           list_outcome_sim_neg_binomial = list_outcome_sim_neg_binomial,
+                                                           list_outcome_sim_factor = list_outcome_sim_factor)),
+  
   # Get optimal SC from simulations --------------------------------------------
   
-  # Negative binomial model
+  # Negative binomial model - assignment based on empirical distribution 
   
   # Elastic Net
   tar_target(results_synth_elastic_net_neg_binom, future_map(list_data_simulated,
@@ -251,7 +258,7 @@ list(
                                                                                                                       n_periods_pre = 26,
                                                                                                                       n_periods_post= 26))),
   
-  # Results for factor model 
+  # Results for factor model - assignment based on empirical distribution
   
   # Elastic Net
   tar_target(results_synth_elastic_net_factor, future_map(list_data_simulated,
@@ -307,11 +314,122 @@ list(
                                                                                                                       n_periods_pre = 26,
                                                                                                                       n_periods_post= 26))),
   
+  # Negative binomial model - random assignment
+  
+  # Elastic Net
+  tar_target(results_synth_elastic_net_neg_binom_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                             ~ optimise_synth_elastic_net(.,
+                                                                                          alpha_init = 0.5,
+                                                                                          lambda_init = 2,
+                                                                                          outcome_var = Y0_treated_neg_binom,
+                                                                                          time_var = week_id,
+                                                                                          treated_id_var = treated,
+                                                                                          treated_time_var = post,
+                                                                                          n_periods_pre = 26,
+                                                                                          n_periods_post = 26))),
+  
+  # ADH synth without covariates
+  tar_target(results_synth_adh_no_covars_neg_binom_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                               ~ optimise_synth_adh(.,
+                                                                                    id_var = column_label,
+                                                                                    outcome_var = Y0_treated_neg_binom,
+                                                                                    time_var = week_id,
+                                                                                    treated_id_var = treated,
+                                                                                    treated_time_var = post,
+                                                                                    n_periods_pre = 26,
+                                                                                    n_periods_post = 26,
+                                                                                    predictors = NULL,
+                                                                                    optimxmethod = c("Nelder-Mead", "BFGS"),
+                                                                                    initial_margin = 0.0005,
+                                                                                    max_attempts = 20,
+                                                                                    margin_increment = 0.0005))),
+  
+  # Results from penalised SC
+  tar_target(results_synth_penalised_neg_binom_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                           ~ optimise_synth_penalised_sc(.,
+                                                                                         lambda_init = 1,
+                                                                                         lower_bound_lambda = 1e-6,
+                                                                                         outcome_var = Y0_treated_neg_binom,
+                                                                                         time_var = week_id,
+                                                                                         treated_id_var = treated,
+                                                                                         treated_time_var = post,
+                                                                                         n_periods_pre = 26,
+                                                                                         n_periods_post = 26))),
+  
+  # Results from penalised SC on de-noised outcome series
+  tar_target(results_synth_penalised_denoised_neg_binom_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                                    ~ optimise_synth_denoised_outcome_natural_splines(.,
+                                                                                                                      unit_id_var = column_label,
+                                                                                                                      time_id_var = week_id,
+                                                                                                                      outcome_var = Y0_treated_neg_binom,
+                                                                                                                      spline_df = 140,
+                                                                                                                      lambda_init = 1,
+                                                                                                                      lower_bound_lambda = 1e-6,
+                                                                                                                      treated_id_var = treated,
+                                                                                                                      treated_time_var = post,
+                                                                                                                      n_periods_pre = 26,
+                                                                                                                      n_periods_post= 26))),
+  
+  # Factor model - random assignment
+  
+  # Elastic Net
+  tar_target(results_synth_elastic_net_factor_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                          ~ optimise_synth_elastic_net(.,
+                                                                                       alpha_init = 0.5,
+                                                                                       lambda_init = 2,
+                                                                                       outcome_var = Y0_treated_factor,
+                                                                                       time_var = week_id,
+                                                                                       treated_id_var = treated,
+                                                                                       treated_time_var = post,
+                                                                                       n_periods_pre = 26,
+                                                                                       n_periods_post = 26))),
+  
+  # ADH synth without covariates
+  tar_target(results_synth_adh_no_covars_factor_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                            ~ optimise_synth_adh(.,
+                                                                                 id_var = column_label,
+                                                                                 outcome_var = Y0_treated_factor,
+                                                                                 time_var = week_id,
+                                                                                 treated_id_var = treated,
+                                                                                 treated_time_var = post,
+                                                                                 n_periods_pre = 26,
+                                                                                 n_periods_post = 26,
+                                                                                 predictors = NULL,
+                                                                                 optimxmethod = c("Nelder-Mead", "BFGS"),
+                                                                                 initial_margin = 0.0005,
+                                                                                 max_attempts = 20,
+                                                                                 margin_increment = 0.0005))),
+  
+  # Results from penalised SC
+  tar_target(results_synth_penalised_factor_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                        ~ optimise_synth_penalised_sc(.,
+                                                                                      lambda_init = 1,
+                                                                                      lower_bound_lambda = 1e-6,
+                                                                                      outcome_var = Y0_treated_factor,
+                                                                                      time_var = week_id,
+                                                                                      treated_id_var = treated,
+                                                                                      treated_time_var = post,
+                                                                                      n_periods_pre = 26,
+                                                                                      n_periods_post = 26))),
+  
+  # Results from penalised SC on de-noised outcome series
+  tar_target(results_synth_penalised_denoised_factor_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                                 ~ optimise_synth_denoised_outcome_natural_splines(.,
+                                                                                                                   unit_id_var = column_label,
+                                                                                                                   time_id_var = week_id,
+                                                                                                                   outcome_var = Y0_treated_factor,
+                                                                                                                   spline_df = 140,
+                                                                                                                   lambda_init = 1,
+                                                                                                                   lower_bound_lambda = 1e-6,
+                                                                                                                   treated_id_var = treated,
+                                                                                                                   treated_time_var = post,
+                                                                                                                   n_periods_pre = 26,
+                                                                                                                   n_periods_post= 26))),
+  
   # Extract results across simulations and assign treatment effects ------------
   
-  # Placebo study
+  # Placebo study - empirical distribution assignment
   
-  # Negative binomial model
   tar_target(data_tau_hat_neg_binom_placebo, map(list(results_synth_adh_no_covars_neg_binom,
                                               results_synth_penalised_neg_binom,
                                               results_synth_elastic_net_neg_binom,
@@ -326,6 +444,24 @@ list(
                                               results_synth_penalised_denoised_factor), 
                                          ~extract_tau_hat_synth_results(.,
                                                                         treatment_effect_type = "placebo")) %>%
+               bind_rows()),
+  
+  # Random assignment
+  
+  tar_target(data_tau_hat_neg_binom_placebo_random_assignment, map(list(results_synth_adh_no_covars_neg_binom_random_assignment,
+                                                      results_synth_penalised_neg_binom_random_assignment,
+                                                      results_synth_elastic_net_neg_binom_random_assignment,
+                                                      results_synth_penalised_denoised_neg_binom_random_assignment), 
+                                                 ~extract_tau_hat_synth_results(.,
+                                                                                treatment_effect_type = "placebo")) %>%
+               bind_rows()),
+  
+  tar_target(data_tau_hat_factor_placebo_random_assignment, map(list(results_synth_adh_no_covars_factor_random_assignment,
+                                                   results_synth_penalised_factor_random_assignment,
+                                                   results_synth_elastic_net_factor_random_assignment,
+                                                   results_synth_penalised_denoised_factor_random_assignment), 
+                                              ~extract_tau_hat_synth_results(.,
+                                                                             treatment_effect_type = "placebo")) %>%
                bind_rows()),
   
   # Make output plots - simulation study ------------------------------------------------------------------------
@@ -381,6 +517,8 @@ list(
   
   # Placebo study
   
+  # Assignment based on empirical distribution
+  
   # Density plot of tau hat from negative binomial model and factor model - placebo effect
   tar_target(patchwork_density_tau_hat_placebo, (make_patchwork_plot(
     
@@ -414,6 +552,41 @@ list(
       ggsave("Output/Figures/Simulation/patchwork_density_tau_hat_placebo.png", ., width = 8, height = 5, dpi = 700, create.dir = TRUE)
     ),
   
+  # Random assignment
+  
+  # Density plot of tau hat from negative binomial model and factor model - placebo effect
+  tar_target(patchwork_density_tau_hat_placebo_random_assignment, (make_patchwork_plot(
+    
+    list = list(
+      
+      make_density_plot_synth_results(
+        data = data_tau_hat_neg_binom_placebo_random_assignment[data_tau_hat_neg_binom_placebo_random_assignment$post == 1, ],
+        density_var = tau_hat_normalised,
+        method_var = method,
+        model_run_var = model_run,
+        palette = cbbPalette) +
+        ggtitle("A: Negative Binomial") +
+        labs(x = "Tau hat (normalised)",
+             y = "Density"),
+      
+      make_density_plot_synth_results(
+        data = data_tau_hat_factor_placebo_random_assignment[data_tau_hat_factor_placebo_random_assignment$post == 1, ],
+        density_var = tau_hat_normalised,
+        method_var = method,
+        model_run_var = model_run,
+        palette = cbbPalette) +
+        ggtitle("B: Factor") +
+        labs(x = "Tau hat (normalised)",
+             y = "Density")
+    ),
+    ncol = 2,
+    guides = "collect",
+    legend_position = "bottom"
+  )) %>%
+    
+    ggsave("Output/Figures/Simulation/patchwork_density_tau_hat_placebo_random_assignment.png", ., width = 8, height = 5, dpi = 700, create.dir = TRUE)
+  ),
+  
   # Density plot of mean normalised tau hat from negative binomial model - placebo effect
   tar_target(plot_density_mean_tau_hat_neg_binom_placebo, (data_tau_hat_neg_binom_placebo %>%
                                                           
@@ -421,16 +594,16 @@ list(
                                                           filter(post == 1) %>%
                                                           
                                                           # Generate mean tau hat by model run and method
-                                                          summarise(tau_hat_normalised = mean(tau_hat_normalised),
+                                                          summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE),
                                                                     .by = c(method,
                                                                             model_run)) %>%
                                                           
-                                                          make_density_plot_synth_results(density_var = tau_hat_normalised,
+                                                          make_density_plot_synth_results(density_var = mean_tau_hat,
                                                                                           method_var = method,
                                                                                           model_run_var = model_run,
                                                                                           palette = cbbPalette) +
                                                             
-                                                            labs(x = "Mean tau hat (normalised)",
+                                                            labs(x = "Mean tau hat",
                                                                  y = "Density") 
   ) %>%
     
@@ -444,20 +617,66 @@ list(
                                                      filter(post == 1) %>%
                                                      
                                                      # Generate mean tau hat by model run and method
-                                                     summarise(tau_hat_normalised = mean(tau_hat_normalised),
+                                                     summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE),
                                                                .by = c(method,
                                                                        model_run)) %>%
                                                      
-                                                     make_density_plot_synth_results(density_var = tau_hat_normalised,
+                                                     make_density_plot_synth_results(density_var = mean_tau_hat,
                                                                                      method_var = method,
                                                                                      model_run_var = model_run,
                                                                                      palette = cbbPalette) +
                                                        
-                                                       labs(x = "Mean tau hat (normalised)",
+                                                       labs(x = "Mean tau hat",
                                                             y = "Density")
   ) %>%
     
     ggsave("Output/Figures/Simulation/plot_density_mean_tau_hat_factor_placebo.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
+  format = "file"),
+  
+  # Density plot of mean normalised tau hat from negative binomial model - placebo effect, random assignment
+  tar_target(plot_density_mean_tau_hat_neg_binom_placebo_random_assignment, (data_tau_hat_neg_binom_placebo_random_assignment %>%
+                                                             
+                                                             # Keep tau hat from post-treatment period only
+                                                             filter(post == 1) %>%
+                                                             
+                                                             # Generate mean tau hat by model run and method
+                                                             summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE),
+                                                                       .by = c(method,
+                                                                               model_run)) %>%
+                                                             
+                                                             make_density_plot_synth_results(density_var = mean_tau_hat,
+                                                                                             method_var = method,
+                                                                                             model_run_var = model_run,
+                                                                                             palette = cbbPalette) +
+                                                             
+                                                             labs(x = "Mean tau hat",
+                                                                  y = "Density") 
+  ) %>%
+    
+    ggsave("Output/Figures/Simulation/plot_density_mean_tau_hat_neg_binom_placebo_random_assignment.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
+  format = "file"),
+  
+  # Density plot of mean normalised tau hat from factor model - placebo effect, random assignment
+  tar_target(plot_density_mean_tau_hat_factor_placebo_random_assignment, (data_tau_hat_factor_placebo_random_assignment %>%
+                                                          
+                                                          # Keep tau hat from post-treatment period only
+                                                          filter(post == 1) %>%
+                                                          
+                                                          # Generate mean tau hat by model run and method
+                                                          summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE),
+                                                                    .by = c(method,
+                                                                            model_run)) %>%
+                                                          
+                                                          make_density_plot_synth_results(density_var = mean_tau_hat,
+                                                                                          method_var = method,
+                                                                                          model_run_var = model_run,
+                                                                                          palette = cbbPalette) +
+                                                          
+                                                          labs(x = "Mean tau hat",
+                                                               y = "Density")
+  ) %>%
+    
+    ggsave("Output/Figures/Simulation/plot_density_mean_tau_hat_factor_placebo_random_assignment.png", ., dpi = 700, width = 8, height = 5, create.dir = TRUE),
   format = "file"),
   
   # Scatter plots of estimated tau hat coefficients against time by method (averaging across model runs)
@@ -500,6 +719,49 @@ list(
   ) %>%
     
     ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_factor.png", ., height = 5, width = 8, create.dir = TRUE),
+  format = "file"
+  ),
+  
+  # Scatter plots of estimated tau hat coefficients against time by method (averaging across model runs)
+  tar_target(plot_scatter_tau_hat_time_by_method_neg_binom_random_assignment, (data_tau_hat_neg_binom_placebo_random_assignment %>%
+                                                               
+                                                               summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
+                                                                         se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
+                                                                         .by = c(t, method)) %>%
+                                                               
+                                                               # Make scatter plot with facet wrap by method
+                                                               make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
+                                                                                              se_var = se_tau_hat, 
+                                                                                              time_var = t, 
+                                                                                              facet_var = method, 
+                                                                                              palette = cbbPalette) +
+                                                               
+                                                               labs(x = "Time (centred)",
+                                                                    y = "Tau hat (mean)")
+  ) %>%
+    
+    ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_neg_binom_random_assignment.png", ., height = 5, width = 8, create.dir = TRUE),
+  format = "file"
+  ),
+  
+  tar_target(plot_scatter_tau_hat_time_by_method_factor_random_assignment, (data_tau_hat_factor_placebo_random_assignment %>%
+                                                            
+                                                            summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
+                                                                      se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
+                                                                      .by = c(t, method)) %>%
+                                                            
+                                                            # Make scatter plot with facet wrap by method
+                                                            make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
+                                                                                           se_var = se_tau_hat, 
+                                                                                           time_var = t, 
+                                                                                           facet_var = method, 
+                                                                                           palette = cbbPalette) +
+                                                            
+                                                            labs(x = "Time (centred)",
+                                                                 y = "Tau hat (mean)")
+  ) %>%
+    
+    ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_factor_random_assignment.png", ., height = 5, width = 8, create.dir = TRUE),
   format = "file"
   ),
   
@@ -628,6 +890,82 @@ list(
                ) %>%
                
                gtsave("Output/Tables/Simulation/tbl_summary_synth_diagnostics_placebo.tex"),
+             format = "file"),
+  
+  # Random assignment
+  tar_target(tbl_summary_synth_diagnostics_placebo_random_assignment, 
+             
+             bind_rows(make_summary_table_synth_diagnostics(data_tau_hat_neg_binom_placebo_random_assignment, 
+                                                            tau_hat, 
+                                                            tau, 
+                                                            post,
+                                                            "negative_binomial"), 
+                       make_summary_table_synth_diagnostics(data_tau_hat_factor_placebo_random_assignment,
+                                                            tau_hat, 
+                                                            tau, 
+                                                            post,
+                                                            "factor")) %>%
+               
+               # Mutate names of methods
+               mutate(method = case_when(
+                 method == "adh_no_covars" ~ "ADH",
+                 method == "elastic_net" ~ "DIFP",
+                 method == "penalised_sc" ~ "PSC",
+                 method == "penalised_sc_denoised" ~ "PSC (denoised)"
+               )
+               ) %>%
+               
+               # Pivot wider
+               pivot_wider(
+                 names_from = dgp_type,
+                 values_from = c(indiv_rmse,
+                                 agg_rmse,
+                                 indiv_abs_bias,
+                                 agg_abs_bias),
+                 names_glue = "{.value}_{dgp_type}"
+               ) %>%
+               
+               # Set as gt object and format
+               gt() %>%
+               
+               tab_spanner(
+                 label = "Negative Binomial",
+                 columns = c(
+                   indiv_rmse_negative_binomial,
+                   agg_rmse_negative_binomial,
+                   indiv_abs_bias_negative_binomial,
+                   agg_abs_bias_negative_binomial
+                 )
+               ) %>%
+               
+               tab_spanner(
+                 label = "Factor",
+                 columns = c(
+                   indiv_rmse_factor,
+                   agg_rmse_factor,
+                   indiv_abs_bias_factor,
+                   agg_abs_bias_factor
+                 )
+               ) %>%
+               
+               cols_label(
+                 method = "Method",
+                 indiv_rmse_negative_binomial = "Indiv RMSE",
+                 agg_rmse_negative_binomial = "Aggregate RMSE",
+                 indiv_abs_bias_negative_binomial = "Indiv |Bias|",
+                 agg_abs_bias_negative_binomial = "Aggregate |Bias|",
+                 indiv_rmse_factor = "Indiv RMSE",
+                 agg_rmse_factor = "Aggregate RMSE",
+                 indiv_abs_bias_factor = "Indiv |Bias|",
+                 agg_abs_bias_factor = "Aggregate |Bias|"
+               ) %>%
+               
+               fmt_number(
+                 column = -method,
+                 decimals = 2
+               ) %>%
+               
+               gtsave("Output/Tables/Simulation/tbl_summary_synth_diagnostics_placebo_random_assignment.tex"),
              format = "file")
 
 )

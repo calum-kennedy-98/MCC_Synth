@@ -1,8 +1,7 @@
 # Name of script: make_list_data_simulated
-# Description: Wrapper function to generate simulated data under several data
-# generating processes. Generates lists of predicted outcomes under different DGPs,
-# then makes list of simulated datasets comprised of true data merged with
-# simulated data
+# Description: Function to generate final dataset with outcomes simulated
+# from the specified DGPs and treatment assignments sampled from their empirical
+# distribution in the real data
 # Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
 # Created on: 03-06-2025
 # Latest update by: Calum Kennedy
