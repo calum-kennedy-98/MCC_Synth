@@ -16,11 +16,17 @@ make_list_data_simulated_random_assignment <- function(data,
                                      unit_id_var,
                                      time_id_var,
                                      list_outcome_sim_neg_binomial,
-                                     list_outcome_sim_factor){
+                                     list_outcome_sim_factor,
+                                     n_periods_pre,
+                                     n_periods_post){
   
-  # Extract unit and time vectors to assign to treatment
+  # Extract unit and time vectors to assign to treatment (restrict time_ids to ensure sufficient pre/post treatment periods)
   unit_ids <- pull(distinct(data, {{unit_id_var}}))
-  time_ids <- pull(distinct(data, {{time_id_var}}))
+  time_ids <- data %>% filter(between({{time_id_var}}, 
+                                      min({{time_id_var}}) + n_periods_pre, 
+                                      max({{time_id_var}}) - n_periods_post + 1)) %>%
+    distinct({{time_id_var}}) %>%
+    pull({{time_id_var}})
   
   
   # Generate list of simulated datasets alongside true data
