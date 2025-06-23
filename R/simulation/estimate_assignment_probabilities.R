@@ -17,7 +17,9 @@ estimate_assignment_probabilities <- function(data,
                                               treated_var,
                                               unit_id_var,
                                               time_id_var,
-                                              week_id_var) {
+                                              week_id_var,
+                                              n_periods_pre,
+                                              n_periods_post) {
   
   # Extract unit treatment probability
   data_treatment_prob_unit <- data %>%
@@ -41,7 +43,7 @@ estimate_assignment_probabilities <- function(data,
   # sufficient pre and post-periods for SC methods to work)
   data_treatment_prob_time <- data %>%
     filter(
-      between({{week_id_var}}, min({{week_id_var}} + 26), max({{week_id_var}} - 25))
+      between({{week_id_var}}, min({{week_id_var}} + n_periods_pre), max({{week_id_var}} - n_periods_post + 1))
     ) %>%
     summarise(
       n_events = sum({{treated_var}} == 1, na.rm = TRUE), .by = {{time_id_var}}

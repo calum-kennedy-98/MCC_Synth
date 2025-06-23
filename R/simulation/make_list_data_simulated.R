@@ -19,14 +19,18 @@ make_list_data_simulated <- function(data,
                                      week_id_var,
                                      treated_var,
                                      list_outcome_sim_neg_binomial,
-                                     list_outcome_sim_factor){
+                                     list_outcome_sim_factor,
+                                     n_periods_pre,
+                                     n_periods_post){
   
   # Extract unit and time treatment probabilities
   unit_time_treatment_probs <- estimate_assignment_probabilities(data = data,
                                                                  treated_var = {{treated_var}},
                                                                  unit_id_var = {{unit_id_var}},
                                                                  time_id_var = {{time_id_var}},
-                                                                 week_id_var = {{week_id_var}})
+                                                                 week_id_var = {{week_id_var}},
+                                                                 n_periods_pre = n_periods_pre,
+                                                                 n_periods_post = n_periods_post)
   
   # Generate list of simulated datasets alongside true data
   list_data_with_sims <- map2(
