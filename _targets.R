@@ -191,7 +191,7 @@ list(
                                                            week_id_var = week_id,
                                                            treated_var = treated,
                                                            list_outcome_sim_neg_binomial = list_outcome_sim_neg_binomial,
-                                                           list_outcome_sim_factor = list_outcome_sim_factor
+                                                           list_outcome_sim_factor = list_outcome_sim_factor,
                                                            n_periods_pre = 26,
                                                            n_periods_post = 26)),
   
