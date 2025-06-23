@@ -143,7 +143,7 @@ optimise_synth_denoised_outcome_natural_splines <- function(data,
   
   # Get predictions on outcomes over the entire pre/post period using the optimal weights
   # on the de-noised outcome series and the true matrix of outcomes for the control units
-  Y0_treated_hat <- c(Y_controls %*% W_opt)
+  Y0_treated_hat <- c(Y_controls_denoised %*% W_opt)
   
   # Set mu_opt (equal to 0 by design)
   mu_opt <- 0

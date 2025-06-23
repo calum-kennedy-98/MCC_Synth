@@ -159,7 +159,7 @@ list(
                       if_all(tmean, ~ !is.na(.)))),
   
   # List of simulated outcome data from negative binomial model - untreated potential outcome (Y(0))
-  tar_target(list_outcome_sim_neg_binomial, make_list_data_negative_binomial_model(n_sims = 11, 
+  tar_target(list_outcome_sim_neg_binomial, make_list_data_negative_binomial_model(n_sims = 500, 
                                                                                    data = data_for_simulation, 
                                                                                    unit_id_var = column_label, 
                                                                                    time_id_var = week_id,
@@ -173,7 +173,7 @@ list(
                                                                                    spline_df_temp = 4)),
   
   # List of simulated outcome data from factor model - untreated potential outcome (Y(0))
-  tar_target(list_outcome_sim_factor, make_list_sim_data_factor_model(n_sims = 11,
+  tar_target(list_outcome_sim_factor, make_list_sim_data_factor_model(n_sims = 500,
                                                                   data = data_for_simulation,
                                                                   unit_id_var = column_label, 
                                                                   time_id_var = week_id,
