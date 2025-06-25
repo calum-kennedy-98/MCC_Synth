@@ -48,11 +48,13 @@ map_func <- function(func,
 
 # Function to try synth optimisation with various levels of margin.ipop until success
 # Sometimes, there are problems with convergence for small values of margin.ipop
-retry_synth <- function(data_prepared, 
-                         optimxmethod,
-                         initial_margin,
-                         max_attempts,
-                         margin_increment) {
+retry_synth <- function(X1,
+                        X0,
+                        Z1,
+                        Z0,
+                        initial_margin,
+                        max_attempts,
+                        margin_increment) {
   
   attempts <- 0
   current_margin <- initial_margin
@@ -62,8 +64,10 @@ retry_synth <- function(data_prepared,
     attempts <- attempts + 1
     
     tryCatch({
-      result <- synth(data_prepared,
-                      optimxmethod = optimxmethod,
+      result <- synth(X1 = X1,
+                      X0 = X0,
+                      Z1 = Z1,
+                      Z0 = Z0,
                       Margin.ipop = current_margin)
       
       message(paste("Optimization succeeded with Margin.ipop =", current_margin))

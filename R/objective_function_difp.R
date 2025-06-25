@@ -1,4 +1,4 @@
-# Name of script: optimise_synth_elastic_net
+# Name of script: objective_function_difp
 # Description: Function to find optimal synthetic control predictions using the
 # elastic net penalty proposed by Doudchenko and Imbens. The hyperparameters are
 # selected via a modified cross validation procedure where each control unit is 
@@ -9,7 +9,7 @@
 # Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
 # Created on: 13-03-2025
 # Latest update by: Calum Kennedy
-# Latest update on: 13-03-2025
+# Latest update on: 25-06-2025
 
 # Comments ---------------------------------------------------------------------
 
@@ -30,58 +30,11 @@
 
 # Define function to manually find optimal synth using optimx ------------------
 
-optimise_synth_elastic_net <- function(data,
-                                  alpha_init,
-                                  lambda_init,
-                                  outcome_var,
-                                  time_var,
-                                  treated_id_var,
-                                  treated_time_var,
-                                  n_periods_pre,
-                                  n_periods_post){
-  
-  # Extract dimension of time variable to reshape Y0
-  n_periods <- n_periods_pre + n_periods_post
-  
-  # Generate indicator for post-treatment period
-  post <- c(rep(0, n_periods_pre), rep(1, n_periods_post))
-  
-  # Extract first treated period and subset data to pre- / post-treatment intervals 
-  # based on `n_periods_pre` and `n_periods_post`
-  first_treated_period <- min(data %>%
-                                filter({{treated_time_var}} == 1) %>%
-                                pull({{time_var}})
-  )
-  
-  data <- data %>%
-    filter(
-      between(
-        {{time_var}}, 
-        first_treated_period - n_periods_pre, 
-        first_treated_period + n_periods_post - 1
-      )
-    )
-  
-  # Extract vector of outcomes for treated unit
-  Y_treated <- data %>% 
-    filter({{treated_id_var}} == 1) %>%
-    pull({{outcome_var}}) %>% 
-    as.numeric()
-  
-  # Extract pre- and post-treatment vector of outcomes for treated unit
-  Y_treated_pre <- Y_treated[1:n_periods_pre]
-  Y_treated_post <- Y_treated[(n_periods_pre + 1):n_periods]
-  
-  # Extract matrix of outcomes for control units (T x J matrix, where T = n_periods
-  # and J = n_controls)
-  Y_controls <- data %>%
-    filter({{treated_id_var}} == 0) %>%
-    pull({{outcome_var}}) %>%
-    matrix(nrow = n_periods)
-  
-  # Extract matrix of control outcomes in pre- and post-treatment period
-  Y_controls_pre <- Y_controls[1:n_periods_pre,]
-  Y_controls_post <- Y_controls[(n_periods_pre + 1):n_periods,]
+objective_function_difp <- function(Y_treated_pre,
+                                    Y_controls_pre,
+                                    Y_controls_post,
+                                    alpha_init,
+                                    lambda_init){
   
   # Initialise starting values for hyperparameters
   alpha_init <- setNames(alpha_init, "alpha")
@@ -93,7 +46,7 @@ optimise_synth_elastic_net <- function(data,
   # Optimise hyperparameters for elastic net objective function using pseudo-treated units
   results_hyperparams <- optimx(hyper_params,
                                 get_hyperparam_loss_elastic_net,
-                                lower = c(0, 0),
+                                lower = c(0, 0.1), # Set minimum lambda for stability
                                 upper = c(1, Inf),
                                 Y_controls_pre = Y_controls_pre,
                                 Y_controls_post = Y_controls_post,
@@ -119,23 +72,15 @@ optimise_synth_elastic_net <- function(data,
                 lambda = lambda_opt,
                 nlambda = 1)
   
-  # Get predictions on untreated potential outcomes (Y0) over the entire pre/post period
-  Y0_treated_hat <- predict(fit, Y_controls, type = "response")
-  
   # Extract optimal model coefficients
   W_opt <- fit[["beta"]]
   mu_opt <- fit[["a0"]]
   
   # Return list of final outputs
-  results <- list("Y_treated" = Y_treated,
-                  "Y0_treated_hat" = Y0_treated_hat,
-                  "post" = post,
-                  "W_opt" = W_opt,
+  results <- list("W_opt" = W_opt,
                   "mu_opt" = mu_opt,
                   "alpha_opt" = alpha_opt,
-                  "lambda_opt" = lambda_opt,
-                  "first_treated_period" =  first_treated_period,
-                  "method" = "elastic_net")
+                  "lambda_opt" = lambda_opt)
   
   return(results)
 } 
