@@ -34,6 +34,9 @@ optimise_synth_demeaned <- function(data,
                                     max_attempts,
                                     margin_increment){
   
+  # Set to dataframe
+  data <- as.data.frame(data)
+  
   # Extract first treated period and subset data to pre- / post-treatment intervals 
   # based on `n_periods_pre` and `n_periods_post`
   first_treated_period <- min(data %>%
