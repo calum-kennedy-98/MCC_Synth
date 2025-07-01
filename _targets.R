@@ -884,7 +884,7 @@ list(
       
       make_density_plot_synth_results(
       data = data_tau_hat_neg_binom[data_tau_hat_neg_binom$post == 1, ],
-      density_var = tau_hat_normalised,
+      density_var = tau_hat,
       method_var = method,
       model_run_var = model_run,
       palette = cbbPalette) +
@@ -894,7 +894,7 @@ list(
       
       make_density_plot_synth_results(
         data = data_tau_hat_factor[data_tau_hat_factor$post == 1, ],
-        density_var = tau_hat_normalised,
+        density_var = tau_hat,
         method_var = method,
         model_run_var = model_run,
         palette = cbbPalette) +
@@ -918,7 +918,7 @@ list(
       
       make_density_plot_synth_results(
         data = data_tau_hat_neg_binom_demeaned[data_tau_hat_neg_binom_demeaned$post == 1, ],
-        density_var = tau_hat_normalised,
+        density_var = tau_hat,
         method_var = method,
         model_run_var = model_run,
         palette = cbbPalette) +
@@ -928,7 +928,7 @@ list(
       
       make_density_plot_synth_results(
         data = data_tau_hat_factor_demeaned[data_tau_hat_factor_demeaned$post == 1, ],
-        density_var = tau_hat_normalised,
+        density_var = tau_hat,
         method_var = method,
         model_run_var = model_run,
         palette = cbbPalette) +
@@ -952,7 +952,7 @@ list(
       
       make_density_plot_synth_results(
         data = data_tau_hat_neg_binom_demeaned_denoised[data_tau_hat_neg_binom_demeaned_denoised$post == 1, ],
-        density_var = tau_hat_normalised,
+        density_var = tau_hat,
         method_var = method,
         model_run_var = model_run,
         palette = cbbPalette) +
@@ -962,7 +962,7 @@ list(
       
       make_density_plot_synth_results(
         data = data_tau_hat_factor_demeaned_denoised[data_tau_hat_factor_demeaned_denoised$post == 1, ],
-        density_var = tau_hat_normalised,
+        density_var = tau_hat,
         method_var = method,
         model_run_var = model_run,
         palette = cbbPalette) +
@@ -987,7 +987,7 @@ list(
       
       make_density_plot_synth_results(
         data = data_tau_hat_neg_binom_random_assignment[data_tau_hat_neg_binom_random_assignment$post == 1, ],
-        density_var = tau_hat_normalised,
+        density_var = tau_hat,
         method_var = method,
         model_run_var = model_run,
         palette = cbbPalette) +
@@ -997,7 +997,7 @@ list(
       
       make_density_plot_synth_results(
         data = data_tau_hat_factor_random_assignment[data_tau_hat_factor_random_assignment$post == 1, ],
-        density_var = tau_hat_normalised,
+        density_var = tau_hat,
         method_var = method,
         model_run_var = model_run,
         palette = cbbPalette) +
@@ -1021,7 +1021,7 @@ list(
       
       make_density_plot_synth_results(
         data = data_tau_hat_neg_binom_demeaned_random_assignment[data_tau_hat_neg_binom_demeaned_random_assignment$post == 1, ],
-        density_var = tau_hat_normalised,
+        density_var = tau_hat,
         method_var = method,
         model_run_var = model_run,
         palette = cbbPalette) +
@@ -1031,7 +1031,7 @@ list(
       
       make_density_plot_synth_results(
         data = data_tau_hat_factor_demeaned_random_assignment[data_tau_hat_factor_demeaned_random_assignment$post == 1, ],
-        density_var = tau_hat_normalised,
+        density_var = tau_hat,
         method_var = method,
         model_run_var = model_run,
         palette = cbbPalette) +
@@ -1055,7 +1055,7 @@ list(
       
       make_density_plot_synth_results(
         data = data_tau_hat_neg_binom_demeaned_denoised_random_assignment[data_tau_hat_neg_binom_demeaned_denoised_random_assignment$post == 1, ],
-        density_var = tau_hat_normalised,
+        density_var = tau_hat,
         method_var = method,
         model_run_var = model_run,
         palette = cbbPalette) +
@@ -1065,7 +1065,7 @@ list(
       
       make_density_plot_synth_results(
         data = data_tau_hat_factor_demeaned_denoised_random_assignment[data_tau_hat_factor_demeaned_denoised_random_assignment$post == 1, ],
-        density_var = tau_hat_normalised,
+        density_var = tau_hat,
         method_var = method,
         model_run_var = model_run,
         palette = cbbPalette) +
