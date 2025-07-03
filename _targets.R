@@ -558,182 +558,6 @@ list(
                                                                                      time_var = week_id,
                                                                                      spline_df = NULL))),
   
-  # 9. De-meaned/de-noised outcomes, negative binomial model, assignment based on empirical distribution 
-  
-  # ADH
-  tar_target(results_synth_adh_neg_binom_demeaned_denoised, future_map(list_data_simulated,
-                                                              ~ optimise_synth(.,
-                                                                               demean_outcomes = TRUE,
-                                                                               denoise_outcomes = TRUE,
-                                                                               objective_function = "ADH",
-                                                                               n_periods_pre = 26,
-                                                                               n_periods_post = 26,
-                                                                               outcome_var = Y0_treated_neg_binom,
-                                                                               treated_id_var = treated,
-                                                                               treated_time_var = post,
-                                                                               time_var = week_id,
-                                                                               spline_df = 7))),
-  
-  # DIFP
-  tar_target(results_synth_difp_neg_binom_demeaned_denoised, future_map(list_data_simulated,
-                                                               ~ optimise_synth(.,
-                                                                                demean_outcomes = TRUE,
-                                                                                denoise_outcomes = TRUE,
-                                                                                objective_function = "DIFP",
-                                                                                n_periods_pre = 26,
-                                                                                n_periods_post = 26,
-                                                                                outcome_var = Y0_treated_neg_binom,
-                                                                                treated_id_var = treated,
-                                                                                treated_time_var = post,
-                                                                                time_var = week_id,
-                                                                                spline_df = 7))),
-  
-  # PSC
-  tar_target(results_synth_psc_neg_binom_demeaned_denoised, future_map(list_data_simulated,
-                                                              ~ optimise_synth(.,
-                                                                               demean_outcomes = TRUE,
-                                                                               denoise_outcomes = TRUE,
-                                                                               objective_function = "PSC",
-                                                                               n_periods_pre = 26,
-                                                                               n_periods_post = 26,
-                                                                               outcome_var = Y0_treated_neg_binom,
-                                                                               treated_id_var = treated,
-                                                                               treated_time_var = post,
-                                                                               time_var = week_id,
-                                                                               spline_df = 7))),
-  
-  # 10. De-meaned/de-noised outcomes, factor model, assignment based on empirical distribution
-  
-  # ADH
-  tar_target(results_synth_adh_factor_demeaned_denoised, future_map(list_data_simulated,
-                                                           ~ optimise_synth(.,
-                                                                            demean_outcomes = TRUE,
-                                                                            denoise_outcomes = TRUE,
-                                                                            objective_function = "ADH",
-                                                                            n_periods_pre = 26,
-                                                                            n_periods_post = 26,
-                                                                            outcome_var = Y0_treated_factor,
-                                                                            treated_id_var = treated,
-                                                                            treated_time_var = post,
-                                                                            time_var = week_id,
-                                                                            spline_df = 7))),
-  
-  # DIFP
-  tar_target(results_synth_difp_factor_demeaned_denoised, future_map(list_data_simulated,
-                                                            ~ optimise_synth(.,
-                                                                             demean_outcomes = TRUE,
-                                                                             denoise_outcomes = TRUE,
-                                                                             objective_function = "DIFP",
-                                                                             n_periods_pre = 26,
-                                                                             n_periods_post = 26,
-                                                                             outcome_var = Y0_treated_factor,
-                                                                             treated_id_var = treated,
-                                                                             treated_time_var = post,
-                                                                             time_var = week_id,
-                                                                             spline_df = 7))),
-  
-  # PSC
-  tar_target(results_synth_psc_factor_demeaned_denoised, future_map(list_data_simulated,
-                                                           ~ optimise_synth(.,
-                                                                            demean_outcomes = TRUE,
-                                                                            denoise_outcomes = TRUE,
-                                                                            objective_function = "PSC",
-                                                                            n_periods_pre = 26,
-                                                                            n_periods_post = 26,
-                                                                            outcome_var = Y0_treated_factor,
-                                                                            treated_id_var = treated,
-                                                                            treated_time_var = post,
-                                                                            time_var = week_id,
-                                                                            spline_df = 7))),
-  
-  # 11. De-meaned/de-noised outcomes, negative binomial model, random assignment 
-  
-  # ADH
-  tar_target(results_synth_adh_neg_binom_demeaned_denoised_random_assignment, future_map(list_data_simulated_random_assignment,
-                                                                                ~ optimise_synth(.,
-                                                                                                 demean_outcomes = TRUE,
-                                                                                                 denoise_outcomes = TRUE,
-                                                                                                 objective_function = "ADH",
-                                                                                                 n_periods_pre = 26,
-                                                                                                 n_periods_post = 26,
-                                                                                                 outcome_var = Y0_treated_neg_binom,
-                                                                                                 treated_id_var = treated,
-                                                                                                 treated_time_var = post,
-                                                                                                 time_var = week_id,
-                                                                                                 spline_df = 7))),
-  
-  # DIFP
-  tar_target(results_synth_difp_neg_binom_demeaned_denoised_random_assignment, future_map(list_data_simulated_random_assignment,
-                                                                                 ~ optimise_synth(.,
-                                                                                                  demean_outcomes = TRUE,
-                                                                                                  denoise_outcomes = TRUE,
-                                                                                                  objective_function = "DIFP",
-                                                                                                  n_periods_pre = 26,
-                                                                                                  n_periods_post = 26,
-                                                                                                  outcome_var = Y0_treated_neg_binom,
-                                                                                                  treated_id_var = treated,
-                                                                                                  treated_time_var = post,
-                                                                                                  time_var = week_id,
-                                                                                                  spline_df = 7))),
-  
-  # PSC
-  tar_target(results_synth_psc_neg_binom_demeaned_denoised_random_assignment, future_map(list_data_simulated_random_assignment,
-                                                                                ~ optimise_synth(.,
-                                                                                                 demean_outcomes = TRUE,
-                                                                                                 denoise_outcomes = TRUE,
-                                                                                                 objective_function = "PSC",
-                                                                                                 n_periods_pre = 26,
-                                                                                                 n_periods_post = 26,
-                                                                                                 outcome_var = Y0_treated_neg_binom,
-                                                                                                 treated_id_var = treated,
-                                                                                                 treated_time_var = post,
-                                                                                                 time_var = week_id,
-                                                                                                 spline_df = 7))),
-  
-  # 12. De-meaned/de-noised outcomes, factor model, random assignment
-  
-  # ADH
-  tar_target(results_synth_adh_factor_demeaned_denoised_random_assignment, future_map(list_data_simulated_random_assignment,
-                                                                             ~ optimise_synth(.,
-                                                                                              demean_outcomes = TRUE,
-                                                                                              denoise_outcomes = TRUE,
-                                                                                              objective_function = "ADH",
-                                                                                              n_periods_pre = 26,
-                                                                                              n_periods_post = 26,
-                                                                                              outcome_var = Y0_treated_factor,
-                                                                                              treated_id_var = treated,
-                                                                                              treated_time_var = post,
-                                                                                              time_var = week_id,
-                                                                                              spline_df = 7))),
-  
-  # DIFP
-  tar_target(results_synth_difp_factor_demeaned_denoised_random_assignment, future_map(list_data_simulated_random_assignment,
-                                                                              ~ optimise_synth(.,
-                                                                                               demean_outcomes = TRUE,
-                                                                                               denoise_outcomes = TRUE,
-                                                                                               objective_function = "DIFP",
-                                                                                               n_periods_pre = 26,
-                                                                                               n_periods_post = 26,
-                                                                                               outcome_var = Y0_treated_factor,
-                                                                                               treated_id_var = treated,
-                                                                                               treated_time_var = post,
-                                                                                               time_var = week_id,
-                                                                                               spline_df = 7))),
-  
-  # PSC
-  tar_target(results_synth_psc_factor_demeaned_denoised_random_assignment, future_map(list_data_simulated_random_assignment,
-                                                                             ~ optimise_synth(.,
-                                                                                              demean_outcomes = TRUE,
-                                                                                              denoise_outcomes = TRUE,
-                                                                                              objective_function = "PSC",
-                                                                                              n_periods_pre = 26,
-                                                                                              n_periods_post = 26,
-                                                                                              outcome_var = Y0_treated_factor,
-                                                                                              treated_id_var = treated,
-                                                                                              treated_time_var = post,
-                                                                                              time_var = week_id,
-                                                                                              spline_df = 7))),
-  
   # Extract results across simulations and assign treatment effects ------------
   
   # 1. Empirical distribution assignment
@@ -752,13 +576,6 @@ list(
                                                                         treatment_effect_type = "placebo")) %>%
                bind_rows()),
   
-  tar_target(data_tau_hat_neg_binom_demeaned_denoised, map(list(results_synth_adh_neg_binom_demeaned_denoised,
-                                                       results_synth_difp_neg_binom_demeaned_denoised,
-                                                       results_synth_psc_neg_binom_demeaned_denoised), 
-                                                  ~extract_tau_hat_synth_results(.,
-                                                                                 treatment_effect_type = "placebo")) %>%
-               bind_rows()),
-  
   tar_target(data_tau_hat_factor, map(list(results_synth_adh_factor,
                                               results_synth_difp_factor,
                                               results_synth_psc_factor), 
@@ -771,13 +588,6 @@ list(
                                            results_synth_psc_factor_demeaned), 
                                       ~extract_tau_hat_synth_results(.,
                                                                      treatment_effect_type = "placebo")) %>%
-               bind_rows()),
-  
-  tar_target(data_tau_hat_factor_demeaned_denoised, map(list(results_synth_adh_factor_demeaned_denoised,
-                                                    results_synth_difp_factor_demeaned_denoised,
-                                                    results_synth_psc_factor_demeaned_denoised), 
-                                               ~extract_tau_hat_synth_results(.,
-                                                                              treatment_effect_type = "placebo")) %>%
                bind_rows()),
   
   # 2. Random assignment
@@ -796,13 +606,6 @@ list(
                                                                                  treatment_effect_type = "placebo")) %>%
                bind_rows()),
   
-  tar_target(data_tau_hat_neg_binom_demeaned_denoised_random_assignment, map(list(results_synth_adh_neg_binom_demeaned_denoised_random_assignment,
-                                                                results_synth_difp_neg_binom_demeaned_denoised_random_assignment,
-                                                                results_synth_psc_neg_binom_demeaned_denoised_random_assignment), 
-                                                           ~extract_tau_hat_synth_results(.,
-                                                                                          treatment_effect_type = "placebo")) %>%
-               bind_rows()),
-  
   tar_target(data_tau_hat_factor_random_assignment, map(list(results_synth_adh_factor_random_assignment,
                                            results_synth_difp_factor_random_assignment,
                                            results_synth_psc_factor_random_assignment), 
@@ -815,13 +618,6 @@ list(
                                                     results_synth_psc_factor_demeaned_random_assignment), 
                                                ~extract_tau_hat_synth_results(.,
                                                                               treatment_effect_type = "placebo")) %>%
-               bind_rows()),
-  
-  tar_target(data_tau_hat_factor_demeaned_denoised_random_assignment, map(list(results_synth_adh_factor_demeaned_denoised_random_assignment,
-                                                             results_synth_difp_factor_demeaned_denoised_random_assignment,
-                                                             results_synth_psc_factor_demeaned_denoised_random_assignment), 
-                                                        ~extract_tau_hat_synth_results(.,
-                                                                                       treatment_effect_type = "placebo")) %>%
                bind_rows()),
   
   # Make output plots - simulation study ------------------------------------------------------------------------
@@ -889,7 +685,7 @@ list(
       model_run_var = model_run,
       palette = cbbPalette) +
         ggtitle("A: Negative Binomial") +
-        labs(x = "Tau hat (normalised)",
+        labs(x = "Tau hat",
              y = "Density") +
         xlim(-100,100),
       
@@ -900,7 +696,7 @@ list(
         model_run_var = model_run,
         palette = cbbPalette) +
         ggtitle("B: Factor") +
-        labs(x = "Tau hat (normalised)",
+        labs(x = "Tau hat",
              y = "Density") +
         xlim(-100,100)
       ),
@@ -925,7 +721,7 @@ list(
         model_run_var = model_run,
         palette = cbbPalette) +
         ggtitle("A: Negative Binomial") +
-        labs(x = "Tau hat (normalised)",
+        labs(x = "Tau hat",
              y = "Density") +
         xlim(-100,100),
       
@@ -936,7 +732,7 @@ list(
         model_run_var = model_run,
         palette = cbbPalette) +
         ggtitle("B: Factor") +
-        labs(x = "Tau hat (normalised)",
+        labs(x = "Tau hat",
              y = "Density") +
         xlim(-100,100)
     ),
@@ -946,42 +742,6 @@ list(
   )) %>%
     
     ggsave("Output/Figures/Simulation/patchwork_density_tau_hat_demeaned.png", ., width = 8, height = 5, dpi = 700, create.dir = TRUE)
-  ),
-  
-  # 3. Empirical distribution assignment, de-meaned + de-noised data
-  # Density plot of tau hat from negative binomial model and factor model - placebo effect
-  tar_target(patchwork_density_tau_hat_demeaned_denoised, (make_patchwork_plot(
-    
-    list = list(
-      
-      make_density_plot_synth_results(
-        data = data_tau_hat_neg_binom_demeaned_denoised[data_tau_hat_neg_binom_demeaned_denoised$post == 1, ],
-        density_var = tau_hat,
-        method_var = method,
-        model_run_var = model_run,
-        palette = cbbPalette) +
-        ggtitle("A: Negative Binomial") +
-        labs(x = "Tau hat (normalised)",
-             y = "Density") +
-        xlim(-100,100),
-      
-      make_density_plot_synth_results(
-        data = data_tau_hat_factor_demeaned_denoised[data_tau_hat_factor_demeaned_denoised$post == 1, ],
-        density_var = tau_hat,
-        method_var = method,
-        model_run_var = model_run,
-        palette = cbbPalette) +
-        ggtitle("B: Factor") +
-        labs(x = "Tau hat (normalised)",
-             y = "Density") +
-        xlim(-100,100)
-    ),
-    ncol = 2,
-    guides = "collect",
-    legend_position = "bottom"
-  )) %>%
-    
-    ggsave("Output/Figures/Simulation/patchwork_density_tau_hat_demeaned_denoised.png", ., width = 8, height = 5, dpi = 700, create.dir = TRUE)
   ),
   
   # 4. Random assignment, no de-meaning or de-noising
@@ -998,7 +758,7 @@ list(
         model_run_var = model_run,
         palette = cbbPalette) +
         ggtitle("A: Negative Binomial") +
-        labs(x = "Tau hat (normalised)",
+        labs(x = "Tau hat",
              y = "Density") +
         xlim(-100,100),
       
@@ -1009,7 +769,7 @@ list(
         model_run_var = model_run,
         palette = cbbPalette) +
         ggtitle("B: Factor") +
-        labs(x = "Tau hat (normalised)",
+        labs(x = "Tau hat",
              y = "Density") +
         xlim(-100,100)
     ),
@@ -1034,7 +794,7 @@ list(
         model_run_var = model_run,
         palette = cbbPalette) +
         ggtitle("A: Negative Binomial") +
-        labs(x = "Tau hat (normalised)",
+        labs(x = "Tau hat",
              y = "Density") +
         xlim(-100,100),
       
@@ -1045,7 +805,7 @@ list(
         model_run_var = model_run,
         palette = cbbPalette) +
         ggtitle("B: Factor") +
-        labs(x = "Tau hat (normalised)",
+        labs(x = "Tau hat",
              y = "Density") +
         xlim(-100,100)
     ),
@@ -1055,42 +815,6 @@ list(
   )) %>%
     
     ggsave("Output/Figures/Simulation/patchwork_density_tau_hat_demeaned_random_assignment.png", ., width = 8, height = 5, dpi = 700, create.dir = TRUE)
-  ),
-  
-  # 6. Random assignment, de-meaned + de-noised data
-  # Density plot of tau hat from negative binomial model and factor model - placebo effect
-  tar_target(patchwork_density_tau_hat_demeaned_denoised_random_assignment, (make_patchwork_plot(
-    
-    list = list(
-      
-      make_density_plot_synth_results(
-        data = data_tau_hat_neg_binom_demeaned_denoised_random_assignment[data_tau_hat_neg_binom_demeaned_denoised_random_assignment$post == 1, ],
-        density_var = tau_hat,
-        method_var = method,
-        model_run_var = model_run,
-        palette = cbbPalette) +
-        ggtitle("A: Negative Binomial") +
-        labs(x = "Tau hat (normalised)",
-             y = "Density") +
-        xlim(-100,100),
-      
-      make_density_plot_synth_results(
-        data = data_tau_hat_factor_demeaned_denoised_random_assignment[data_tau_hat_factor_demeaned_denoised_random_assignment$post == 1, ],
-        density_var = tau_hat,
-        method_var = method,
-        model_run_var = model_run,
-        palette = cbbPalette) +
-        ggtitle("B: Factor") +
-        labs(x = "Tau hat (normalised)",
-             y = "Density") +
-        xlim(-100,100)
-    ),
-    ncol = 2,
-    guides = "collect",
-    legend_position = "bottom"
-  )) %>%
-    
-    ggsave("Output/Figures/Simulation/patchwork_density_tau_hat_demeaned_denoised_random_assignment.png", ., width = 8, height = 5, dpi = 700, create.dir = TRUE)
   ),
   
   # Plots of tau hat over time -----------------------------------------------------------------------------------------------
@@ -1269,93 +993,30 @@ list(
   format = "file"
   ),
   
-  # De-meaned and de-noised outcome data
+  # Plots of tau hat over time, each model run represented ------------------------------------------------------------------------------
   
-  # Scatter plots of estimated tau hat coefficients against time by method (averaging across model runs)
-  tar_target(plot_scatter_tau_hat_time_by_method_neg_binom_demeaned_denoised, (data_tau_hat_neg_binom_demeaned_denoised %>%
-                                                                        
-                                                                        summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
-                                                                                  se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                                  .by = c(t, method)) %>%
-                                                                        
-                                                                        # Make scatter plot with facet wrap by method
-                                                                        make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
-                                                                                                       se_var = se_tau_hat, 
-                                                                                                       time_var = t, 
-                                                                                                       facet_var = method, 
-                                                                                                       palette = cbbPalette) +
-                                                                        
-                                                                        labs(x = "Time (centred)",
-                                                                             y = "Tau hat (mean)")
-  ) %>%
-    
-    ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_neg_binom_demeaned_denoised.png", ., height = 5, width = 8, create.dir = TRUE),
-  format = "file"
-  ),
-  
-  tar_target(plot_scatter_tau_hat_time_by_method_factor_demeaned_denoised, (data_tau_hat_factor_demeaned_denoised %>%
-                                                                     
-                                                                     summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
-                                                                               se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                               .by = c(t, method)) %>%
-                                                                     
-                                                                     # Make scatter plot with facet wrap by method
-                                                                     make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
-                                                                                                    se_var = se_tau_hat, 
-                                                                                                    time_var = t, 
-                                                                                                    facet_var = method, 
-                                                                                                    palette = cbbPalette) +
-                                                                     
-                                                                     labs(x = "Time (centred)",
-                                                                          y = "Tau hat (mean)")
-  ) %>%
-    
-    ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_factor_demeaned_denoised.png", ., height = 5, width = 8, create.dir = TRUE),
-  format = "file"
-  ),
-  
-  # Scatter plots of estimated tau hat coefficients against time by method
-  tar_target(plot_scatter_tau_hat_time_by_method_neg_binom_demeaned_denoised_random_assignment, (data_tau_hat_neg_binom_demeaned_denoised_random_assignment %>%
-                                                                                          
-                                                                                          summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
-                                                                                                    se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                                                    .by = c(t, method)) %>%
-                                                                                          
-                                                                                          # Make scatter plot with facet wrap by method
-                                                                                          make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
-                                                                                                                         se_var = se_tau_hat, 
-                                                                                                                         time_var = t, 
-                                                                                                                         facet_var = method, 
-                                                                                                                         palette = cbbPalette) +
-                                                                                          
-                                                                                          labs(x = "Time (centred)",
-                                                                                               y = "Tau hat (mean)")
-  ) %>%
-    
-    ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_neg_binom_demeaned_denoised_random_assignment.png", ., height = 5, width = 8, create.dir = TRUE),
-  format = "file"
-  ),
-  
-  tar_target(plot_scatter_tau_hat_time_by_method_factor_demeaned_denoised_random_assignment, (data_tau_hat_factor_demeaned_denoised_random_assignment %>%
-                                                                                       
-                                                                                       summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
-                                                                                                 se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                                                 .by = c(t, method)) %>%
-                                                                                       
-                                                                                       # Make scatter plot with facet wrap by method
-                                                                                       make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
-                                                                                                                      se_var = se_tau_hat, 
-                                                                                                                      time_var = t, 
-                                                                                                                      facet_var = method, 
-                                                                                                                      palette = cbbPalette) +
-                                                                                       
-                                                                                       labs(x = "Time (centred)",
-                                                                                            y = "Tau hat (mean)")
-  ) %>%
-    
-    ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_factor_demeaned_denoised_random_assignment.png", ., height = 5, width = 8, create.dir = TRUE),
-  format = "file"
-  ),
+  tar_target(plot_line_tau_hat_time_by_method_neg_binom, (data_tau_hat_neg_binom %>%
+               
+               # Generate new variable for mean tau hat across simulation runs
+               mutate(mean_tau_hat = mean(tau_hat, na.rm = TRUE),
+                      .by = c(method, t)) %>%
+               
+               # ggplot call
+               ggplot() +
+               
+               geom_line(aes(x = t,
+                             y = mean_tau_hat)) +
+               
+               geom_line(aes(x = t,
+                             y = tau_hat,
+                             group = model_run),
+                         alpha = 0.0005) +
+               
+               facet_wrap(~method) +
+               
+               scatter_plot_opts) %>%
+               
+               ggsave("Output/Figures/Simulation/plot_line_tau_hat_time_by_method_neg_binom.png", ., height = 5, width = 8)),
   
   # Summary tables of synth diagnostics by treatment effect type and method -------------------------------------------------------------
   
@@ -1492,72 +1153,6 @@ list(
                gtsave("Output/Tables/Simulation/tbl_summary_synth_diagnostics_demeaned.tex"),
              format = "file"),
   
-  tar_target(tbl_summary_synth_diagnostics_demeaned_denoised, 
-             
-             bind_rows(make_summary_table_synth_diagnostics(data_tau_hat_neg_binom_demeaned_denoised, 
-                                                            tau_hat, 
-                                                            tau, 
-                                                            post,
-                                                            "negative_binomial"), 
-                       make_summary_table_synth_diagnostics(data_tau_hat_factor_demeaned_denoised,
-                                                            tau_hat, 
-                                                            tau, 
-                                                            post,
-                                                            "factor")) %>%
-               
-               # Pivot wider
-               pivot_wider(
-                 names_from = dgp_type,
-                 values_from = c(indiv_rmse,
-                                 agg_rmse,
-                                 indiv_abs_bias,
-                                 agg_abs_bias),
-                 names_glue = "{.value}_{dgp_type}"
-               ) %>%
-               
-               # Set as gt object and format
-               gt() %>%
-               
-               tab_spanner(
-                 label = "Negative Binomial",
-                 columns = c(
-                   indiv_rmse_negative_binomial,
-                   agg_rmse_negative_binomial,
-                   indiv_abs_bias_negative_binomial,
-                   agg_abs_bias_negative_binomial
-                 )
-               ) %>%
-               
-               tab_spanner(
-                 label = "Factor",
-                 columns = c(
-                   indiv_rmse_factor,
-                   agg_rmse_factor,
-                   indiv_abs_bias_factor,
-                   agg_abs_bias_factor
-                 )
-               ) %>%
-               
-               cols_label(
-                 method = "Method",
-                 indiv_rmse_negative_binomial = "Indiv RMSE",
-                 agg_rmse_negative_binomial = "Aggregate RMSE",
-                 indiv_abs_bias_negative_binomial = "Indiv |Bias|",
-                 agg_abs_bias_negative_binomial = "Aggregate |Bias|",
-                 indiv_rmse_factor = "Indiv RMSE",
-                 agg_rmse_factor = "Aggregate RMSE",
-                 indiv_abs_bias_factor = "Indiv |Bias|",
-                 agg_abs_bias_factor = "Aggregate |Bias|"
-               ) %>%
-               
-               fmt_number(
-                 column = -method,
-                 decimals = 2
-               ) %>%
-               
-               gtsave("Output/Tables/Simulation/tbl_summary_synth_diagnostics_demeaned_denoised.tex"),
-             format = "file"),
-  
   # Random assignment
   tar_target(tbl_summary_synth_diagnostics_random_assignment, 
              
@@ -1690,72 +1285,6 @@ list(
                ) %>%
                
                gtsave("Output/Tables/Simulation/tbl_summary_synth_diagnostics_demeaned_random_assignment.tex"),
-             format = "file"),
-  
-  tar_target(tbl_summary_synth_diagnostics_demeaned_denoised_random_assignment, 
-             
-             bind_rows(make_summary_table_synth_diagnostics(data_tau_hat_neg_binom_demeaned_denoised_random_assignment, 
-                                                            tau_hat, 
-                                                            tau, 
-                                                            post,
-                                                            "negative_binomial"), 
-                       make_summary_table_synth_diagnostics(data_tau_hat_factor_demeaned_denoised_random_assignment,
-                                                            tau_hat, 
-                                                            tau, 
-                                                            post,
-                                                            "factor")) %>%
-               
-               # Pivot wider
-               pivot_wider(
-                 names_from = dgp_type,
-                 values_from = c(indiv_rmse,
-                                 agg_rmse,
-                                 indiv_abs_bias,
-                                 agg_abs_bias),
-                 names_glue = "{.value}_{dgp_type}"
-               ) %>%
-               
-               # Set as gt object and format
-               gt() %>%
-               
-               tab_spanner(
-                 label = "Negative Binomial",
-                 columns = c(
-                   indiv_rmse_negative_binomial,
-                   agg_rmse_negative_binomial,
-                   indiv_abs_bias_negative_binomial,
-                   agg_abs_bias_negative_binomial
-                 )
-               ) %>%
-               
-               tab_spanner(
-                 label = "Factor",
-                 columns = c(
-                   indiv_rmse_factor,
-                   agg_rmse_factor,
-                   indiv_abs_bias_factor,
-                   agg_abs_bias_factor
-                 )
-               ) %>%
-               
-               cols_label(
-                 method = "Method",
-                 indiv_rmse_negative_binomial = "Indiv RMSE",
-                 agg_rmse_negative_binomial = "Aggregate RMSE",
-                 indiv_abs_bias_negative_binomial = "Indiv |Bias|",
-                 agg_abs_bias_negative_binomial = "Aggregate |Bias|",
-                 indiv_rmse_factor = "Indiv RMSE",
-                 agg_rmse_factor = "Aggregate RMSE",
-                 indiv_abs_bias_factor = "Indiv |Bias|",
-                 agg_abs_bias_factor = "Aggregate |Bias|"
-               ) %>%
-               
-               fmt_number(
-                 column = -method,
-                 decimals = 2
-               ) %>%
-               
-               gtsave("Output/Tables/Simulation/tbl_summary_synth_diagnostics_demeaned_denoised_random_assignment.tex"),
              format = "file")
 
 )
