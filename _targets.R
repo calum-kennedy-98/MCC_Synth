@@ -1010,7 +1010,7 @@ list(
                geom_line(aes(x = t,
                              y = tau_hat,
                              group = model_run),
-                         alpha = 0.0005) +
+                         alpha = 0.005) +
                
                facet_wrap(~method) +
                
