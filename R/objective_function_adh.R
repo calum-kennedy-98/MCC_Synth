@@ -13,14 +13,7 @@
 
 # Comments ---------------------------------------------------------------------
 
-# @ param data, an input dataframe
-# @ param id_var, unit ID column
-# @ param outcome_var, name of the outcome variable column
-# @ param time_var, column name for time variable
-# @ param treated_id_var, binary ID variable for the treated unit
-# @ param treated_time_var, binary ID variable for the treatment time
-# @ param predictors, vector of quoted variables to use as predictors in synth
-# @ return a list with elements data, Y1, Y1_hat, W_opt, mu_opt (equal to 0), first_treated_period
+# @ param ...
 
 # Function ---------------------------------------------------------------------
 

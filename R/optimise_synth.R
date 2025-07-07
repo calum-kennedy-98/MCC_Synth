@@ -28,7 +28,7 @@ optimise_synth <- function(data,
   
   # Checks
   if(denoise_outcomes == TRUE & is.null(spline_df)) stop("If `denoise_outcomes' == TRUE, please specify a value for `spline_df'")
-  if(!objective_function %in% c("ADH", "PSC", "DIFP")) stop("Please set `objective_function' to one of `ADH', `PSC', or `DIFP'")
+  if(!objective_function %in% c("ADH", "PSC", "DIFP", "DID")) stop("Please set `objective_function' to one of `ADH', `PSC', `DIFP', or 'DID'")
   
   # Prepare data for synth
   data_prepared <- prepare_data_for_synth(data,
@@ -97,6 +97,9 @@ optimise_synth <- function(data,
                                                    Y_controls_post = Y_controls_to_optimise_post,
                                                    lambda_init = 1,
                                                    lower_bound_lambda = 1e-6)
+  } else if(objective_function == "DID"){
+    results_optimisation <- objective_function_did(Y_treated_pre = Y_treated_pre,
+                                                   Y_controls_pre = Y_controls_to_optimise_pre)
   }
   
   # Extract optimal weights and intercept from optimisation routine
