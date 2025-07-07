@@ -482,20 +482,6 @@ list(
                                                                       time_var = week_id,
                                                                       spline_df = NULL))),
   
-  # DID
-  tar_target(results_synth_did_neg_binom_demeaned, future_map(list_data_simulated,
-                                                              ~ optimise_synth(.,
-                                                                               demean_outcomes = TRUE,
-                                                                               denoise_outcomes = FALSE,
-                                                                               objective_function = "DID",
-                                                                               n_periods_pre = 26,
-                                                                               n_periods_post = 26,
-                                                                               outcome_var = Y0_treated_neg_binom,
-                                                                               treated_id_var = treated,
-                                                                               treated_time_var = post,
-                                                                               time_var = week_id,
-                                                                               spline_df = NULL))),
-  
   # 6. De-meaned outcomes, factor model, assignment based on empirical distribution
   
   # ADH
@@ -539,20 +525,6 @@ list(
                                                                    treated_time_var = post,
                                                                    time_var = week_id,
                                                                    spline_df = NULL))),
-  
-  # DID
-  tar_target(results_synth_did_factor_demeaned, future_map(list_data_simulated,
-                                                           ~ optimise_synth(.,
-                                                                            demean_outcomes = TRUE,
-                                                                            denoise_outcomes = FALSE,
-                                                                            objective_function = "DID",
-                                                                            n_periods_pre = 26,
-                                                                            n_periods_post = 26,
-                                                                            outcome_var = Y0_treated_factor,
-                                                                            treated_id_var = treated,
-                                                                            treated_time_var = post,
-                                                                            time_var = week_id,
-                                                                            spline_df = NULL))),
   
   # 7. De-meaned outcomes, negative binomial model, random assignment 
   
@@ -598,20 +570,6 @@ list(
                                                                                         time_var = week_id,
                                                                                         spline_df = NULL))),
   
-  # DID
-  tar_target(results_synth_did_neg_binom_demeaned_random_assignment, future_map(list_data_simulated_random_assignment,
-                                                                                ~ optimise_synth(.,
-                                                                                                 demean_outcomes = TRUE,
-                                                                                                 denoise_outcomes = FALSE,
-                                                                                                 objective_function = "DID",
-                                                                                                 n_periods_pre = 26,
-                                                                                                 n_periods_post = 26,
-                                                                                                 outcome_var = Y0_treated_neg_binom,
-                                                                                                 treated_id_var = treated,
-                                                                                                 treated_time_var = post,
-                                                                                                 time_var = week_id,
-                                                                                                 spline_df = NULL))),
-  
   # 8. De-meaned outcomes, factor model, random assignment
   
   # ADH
@@ -656,20 +614,6 @@ list(
                                                                                      time_var = week_id,
                                                                                      spline_df = NULL))),
   
-  # DID
-  tar_target(results_synth_did_factor_demeaned_random_assignment, future_map(list_data_simulated_random_assignment,
-                                                                             ~ optimise_synth(.,
-                                                                                              demean_outcomes = TRUE,
-                                                                                              denoise_outcomes = FALSE,
-                                                                                              objective_function = "DID",
-                                                                                              n_periods_pre = 26,
-                                                                                              n_periods_post = 26,
-                                                                                              outcome_var = Y0_treated_factor,
-                                                                                              treated_id_var = treated,
-                                                                                              treated_time_var = post,
-                                                                                              time_var = week_id,
-                                                                                              spline_df = NULL))),
-  
   # Extract results across simulations and assign treatment effects ------------
   
   # 1. Empirical distribution assignment
@@ -685,7 +629,7 @@ list(
   tar_target(data_tau_hat_neg_binom_demeaned, map(list(results_synth_adh_neg_binom_demeaned,
                                               results_synth_difp_neg_binom_demeaned,
                                               results_synth_psc_neg_binom_demeaned,
-                                              results_synth_did_neg_binom_demeaned), 
+                                              results_synth_did_neg_binom), # Don't need to demean DID since estimator is identical 
                                          ~extract_tau_hat_synth_results(.,
                                                                         treatment_effect_type = "placebo")) %>%
                bind_rows()),
@@ -701,7 +645,7 @@ list(
   tar_target(data_tau_hat_factor_demeaned, map(list(results_synth_adh_factor_demeaned,
                                                     results_synth_difp_factor_demeaned,
                                                     results_synth_psc_factor_demeaned,
-                                                    results_synth_did_factor_demeaned), 
+                                                    results_synth_did_factor), # DID estimator is identical under demeaning 
                                       ~extract_tau_hat_synth_results(.,
                                                                      treatment_effect_type = "placebo")) %>%
                bind_rows()),
@@ -719,7 +663,7 @@ list(
   tar_target(data_tau_hat_neg_binom_demeaned_random_assignment, map(list(results_synth_adh_neg_binom_demeaned_random_assignment,
                                                        results_synth_difp_neg_binom_demeaned_random_assignment,
                                                        results_synth_psc_neg_binom_demeaned_random_assignment,
-                                                       results_synth_did_neg_binom_demeaned_random_assignment), 
+                                                       results_synth_did_neg_binom_random_assignment), # DID estimator is identical under demeaning 
                                                   ~extract_tau_hat_synth_results(.,
                                                                                  treatment_effect_type = "placebo")) %>%
                bind_rows()),
@@ -735,7 +679,7 @@ list(
   tar_target(data_tau_hat_factor_demeaned_random_assignment, map(list(results_synth_adh_factor_demeaned_random_assignment,
                                                     results_synth_difp_factor_demeaned_random_assignment,
                                                     results_synth_psc_factor_demeaned_random_assignment,
-                                                    results_synth_did_factor_demeaned_random_assignment), 
+                                                    results_synth_did_factor_random_assignment), # DID estimator is identical under demeaning 
                                                ~extract_tau_hat_synth_results(.,
                                                                               treatment_effect_type = "placebo")) %>%
                bind_rows()),
