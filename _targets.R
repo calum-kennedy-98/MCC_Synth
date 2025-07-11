@@ -1057,6 +1057,26 @@ list(
   format = "file"
   ),
   
+  tar_target(scatter_plot_abs_bias_mean_y, (data_tau_hat_neg_binom_demeaned %>%
+                                              
+                                              # Estimate mean absolute bias and mean outcome during post-treatment period
+                                              filter(post == 1) %>%
+                                              
+                                              summarise(mean_abs_bias = mean(abs(tau_hat), na.rm = TRUE),
+                                                        mean_y = mean(Y1_treated, na.rm = TRUE),
+                                                        .by = c(method,
+                                                                model_run)) %>%
+                                              
+                                              ggplot() +
+                                              geom_point(aes(x = mean_y,
+                                                             y = mean_abs_bias,
+                                                             colour = method)) +
+                                              scale_colour_manual(values = cbbPalette) +
+                                              scatter_plot_opts) %>%
+               
+               ggsave("scatter_plot_abs_bias_mean_y.png", ., width = 8, height = 5),
+             format = "file"),
+  
   # Summary tables of synth diagnostics by treatment effect type and method -------------------------------------------------------------
   
   # Empirical assignment, no de-meaning/de-noising
