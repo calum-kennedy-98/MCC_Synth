@@ -1074,6 +1074,7 @@ list(
                                                              colour = method),
                                                          alpha = 0.4) +
                                               scale_colour_manual(values = cbbPalette) +
+                                              facet_wrap(~method) +
                                               scatter_plot_opts) %>%
                
                ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y.png", ., width = 8, height = 5),
@@ -1099,6 +1100,7 @@ list(
                                                              colour = method),
                                                          alpha = 0.4) +
                                               scale_colour_manual(values = cbbPalette) +
+                                                facet_wrap(~method) +
                                               scatter_plot_opts) %>%
                
                ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y_filtered.png", ., width = 8, height = 5),
