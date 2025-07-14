@@ -1072,11 +1072,11 @@ list(
                                               geom_point(aes(x = mean_y,
                                                              y = ratio_abs_bias_y,
                                                              colour = method),
-                                                         alpha = 0.25) +
+                                                         alpha = 0.4) +
                                               scale_colour_manual(values = cbbPalette) +
                                               scatter_plot_opts) %>%
                
-               ggsave("scatter_plot_abs_bias_mean_y.png", ., width = 8, height = 5),
+               ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y.png", ., width = 8, height = 5),
              format = "file"),
   
   tar_target(scatter_plot_abs_bias_mean_y_filtered, (data_tau_hat_neg_binom_demeaned %>%
@@ -1097,11 +1097,11 @@ list(
                                               geom_point(aes(x = mean_y,
                                                              y = ratio_abs_bias_y,
                                                              colour = method),
-                                                         alpha = 0.25) +
+                                                         alpha = 0.4) +
                                               scale_colour_manual(values = cbbPalette) +
                                               scatter_plot_opts) %>%
                
-               ggsave("scatter_plot_abs_bias_mean_y.png", ., width = 8, height = 5),
+               ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y_filtered.png", ., width = 8, height = 5),
              format = "file"),
   
   # Summary tables of synth diagnostics by treatment effect type and method -------------------------------------------------------------
