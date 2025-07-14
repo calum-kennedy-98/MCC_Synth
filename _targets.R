@@ -1064,12 +1064,13 @@ list(
                                               
                                               summarise(mean_abs_bias = mean(abs(tau_hat), na.rm = TRUE),
                                                         mean_y = mean(Y1_treated, na.rm = TRUE),
+                                                        ratio_abs_bias_y = mean_abs_bias / mean_y,
                                                         .by = c(method,
                                                                 model_run)) %>%
                                               
                                               ggplot() +
                                               geom_point(aes(x = mean_y,
-                                                             y = mean_abs_bias,
+                                                             y = ratio_abs_bias_y,
                                                              colour = method)) +
                                               scale_colour_manual(values = cbbPalette) +
                                               scatter_plot_opts) %>%
