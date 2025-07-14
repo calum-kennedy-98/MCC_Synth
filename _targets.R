@@ -133,6 +133,13 @@ list(
                                                                           "countryname",
                                                                           "region"))),
   
+  # Partition main data into list of datasets to pass to synth optimisation
+  tar_target(list_data_for_synth, partition_data_for_synth(data = data_mcc_lfs_weekly,
+                                                           unit_id_var = column_label,
+                                                           time_id_var = week_id,
+                                                           region_id_var = region,
+                                                           treated_var = treated)),
+  
   # Make datasets for simulation exercise --------------------------------------------------------
   
   # Generate data for simulation (conditions to ensure that no missing data - Korea data only goes up 
