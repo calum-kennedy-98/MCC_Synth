@@ -1071,7 +1071,33 @@ list(
                                               ggplot() +
                                               geom_point(aes(x = mean_y,
                                                              y = ratio_abs_bias_y,
-                                                             colour = method)) +
+                                                             colour = method),
+                                                         alpha = 0.25) +
+                                              scale_colour_manual(values = cbbPalette) +
+                                              scatter_plot_opts) %>%
+               
+               ggsave("scatter_plot_abs_bias_mean_y.png", ., width = 8, height = 5),
+             format = "file"),
+  
+  tar_target(scatter_plot_abs_bias_mean_y_filtered, (data_tau_hat_neg_binom_demeaned %>%
+                                              
+                                              # Estimate mean absolute bias and mean outcome during post-treatment period
+                                              filter(post == 1) %>%
+                                              
+                                              summarise(mean_abs_bias = mean(abs(tau_hat), na.rm = TRUE),
+                                                        mean_y = mean(Y1_treated, na.rm = TRUE),
+                                                        ratio_abs_bias_y = mean_abs_bias / mean_y,
+                                                        .by = c(method,
+                                                                model_run)) %>%
+                                                
+                                                # Retain abs bias ratio <= 100%
+                                                filter(ratio_abs_bias_y <= 1) %>%
+                                              
+                                              ggplot() +
+                                              geom_point(aes(x = mean_y,
+                                                             y = ratio_abs_bias_y,
+                                                             colour = method),
+                                                         alpha = 0.25) +
                                               scale_colour_manual(values = cbbPalette) +
                                               scatter_plot_opts) %>%
                
