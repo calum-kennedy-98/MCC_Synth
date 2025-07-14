@@ -1092,8 +1092,8 @@ list(
                                                         .by = c(method,
                                                                 model_run)) %>%
                                                 
-                                                # Retain abs bias ratio <= 100%
-                                                filter(ratio_abs_bias_y <= 1) %>%
+                                                # Retain abs bias ratio <= 50%
+                                                filter(ratio_abs_bias_y <= 0.5) %>%
                                               
                                               ggplot() +
                                               geom_point(aes(x = mean_y,
@@ -1106,57 +1106,6 @@ list(
                                               scatter_plot_opts) %>%
                
                ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y_filtered.png", ., width = 8, height = 5),
-             format = "file"),
-  
-  tar_target(scatter_plot_abs_bias_mean_y_random_assignment, (data_tau_hat_neg_binom_demeaned_random_assignment %>%
-                                              
-                                              # Estimate mean absolute bias and mean outcome during post-treatment period
-                                              filter(post == 1) %>%
-                                              
-                                              summarise(mean_abs_bias = mean(abs(tau_hat), na.rm = TRUE),
-                                                        mean_y = mean(Y1_treated, na.rm = TRUE),
-                                                        ratio_abs_bias_y = mean_abs_bias / mean_y,
-                                                        .by = c(method,
-                                                                model_run)) %>%
-                                              
-                                              ggplot() +
-                                              geom_point(aes(x = mean_y,
-                                                             y = ratio_abs_bias_y,
-                                                             colour = method),
-                                                         alpha = 0.4) +
-                                              scale_colour_manual(values = cbbPalette) +
-                                              facet_wrap(~method,
-                                                         scales = "fixed") +
-                                              scatter_plot_opts) %>%
-               
-               ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y_random_assignment.png", ., width = 8, height = 5),
-             format = "file"),
-  
-  tar_target(scatter_plot_abs_bias_mean_y_filtered_random_assignment, (data_tau_hat_neg_binom_demeaned_random_assignment %>%
-                                                       
-                                                       # Estimate mean absolute bias and mean outcome during post-treatment period
-                                                       filter(post == 1) %>%
-                                                       
-                                                       summarise(mean_abs_bias = mean(abs(tau_hat), na.rm = TRUE),
-                                                                 mean_y = mean(Y1_treated, na.rm = TRUE),
-                                                                 ratio_abs_bias_y = mean_abs_bias / mean_y,
-                                                                 .by = c(method,
-                                                                         model_run)) %>%
-                                                       
-                                                       # Retain abs bias ratio <= 100%
-                                                       filter(ratio_abs_bias_y <= 1) %>%
-                                                       
-                                                       ggplot() +
-                                                       geom_point(aes(x = mean_y,
-                                                                      y = ratio_abs_bias_y,
-                                                                      colour = method),
-                                                                  alpha = 0.4) +
-                                                       scale_colour_manual(values = cbbPalette) +
-                                                       facet_wrap(~method,
-                                                                  scales = "fixed") +
-                                                       scatter_plot_opts) %>%
-               
-               ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y_filtered_random_assignment.png", ., width = 8, height = 5),
              format = "file"),
   
   # Summary tables of synth diagnostics by treatment effect type and method -------------------------------------------------------------
