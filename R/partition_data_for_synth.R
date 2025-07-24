@@ -16,9 +16,13 @@ partition_data_for_synth <- function(data,
                                      unit_id_var,
                                      time_id_var,
                                      region_id_var,
-                                     treated_var){
+                                     treated_var,
+                                     outcome_var,
+                                     min_periods_pre,
+                                     min_control_units,
+                                     min_weekly_mortality){
   
-  # Generate quoted variables to passs to function below
+  # Generate quoted variables to pass to function below
   region_id_var_quo <- as_string(ensym(region_id_var))
   unit_id_var_quo <- as_string(ensym(unit_id_var))
   
@@ -86,10 +90,89 @@ partition_data_for_synth <- function(data,
       select(!c(treatment_episode,
                 end_exposure,
                 start_date,
-                end_date))
+                end_date)) %>% 
+      
+      # Retain only observational units with complete outcome data
+      filter(
+        all(!is.na({{outcome_var}})),
+        .by = {{unit_id_var}}
+      ) %>%
+      
+      # Retain only control units with data available during same window as the
+      # treated unit
+      filter(
+        n() == sum(.$treated == 1),
+        .by = {{unit_id_var}}
+      )
     
     return(data_final)
     
+  })
+  
+  # Filter list elements to retain only data subsets which have non-missing data
+  # for the outcome variable in the treated unit. To do this, filter data for
+  # treated unit and check that nrow > 0. If nrow == 0 then this implies that
+  # there is missing data for the treated unit
+  list_data_raw_for_synth <- keep(list_data_raw_for_synth, function(x){
+    
+    ifelse(
+      nrow(
+          filter(x, treated == 1)
+        ) > 0,
+      TRUE,
+      FALSE
+      )
+  })
+  
+  # Filter list elements to retain subsets with at least 'min_periods_pre' 
+  # pre-treatment periods - min_periods_pre must be set by the user (default = 10)
+  # To do this, filter data to retain rows for treated unit in pre-treatment period
+  # and check the number of rows
+  list_data_raw_for_synth <- keep(list_data_raw_for_synth, function(x){
+    
+    ifelse(
+      nrow(
+          filter(x, post == 0, treated == 1)
+      ) >= min_periods_pre,
+      TRUE,
+      FALSE
+    )
+  })
+  
+  # Filter list elements to retain subsets with at least 'min_control_units'
+  # control units - min_control_units must be set by the user (default = 5)
+  # To do this, filter data to retain control units  only, extract distinct control 
+  # unit IDs, and check if number of rows is larger than 'min_control_units'
+  list_data_raw_for_synth <- keep(list_data_raw_for_synth, function(x){
+    
+    ifelse(
+      nrow(
+        distinct(
+        filter(x, treated == 0),
+        {{unit_id_var}}
+        )
+      ) >= min_control_units,
+      TRUE,
+      FALSE
+    )
+  })
+  
+  # Filter data to retain subsets with sufficient signal-noise ratio (i.e. a large
+  # enough total weekly mortality), defined as 'min_weekly_mortality'. To do this,
+  # extract vector of pre-treatment outcomes in treated unit and check if mean is
+  # greater than or equal to 'min_weekly_mortality'
+  list_data_raw_for_synth <- keep(list_data_raw_for_synth, function(x){
+    
+    ifelse(
+      mean(
+        pull(
+          filter(x, treated == 1, post == 0),
+          {{outcome_var}}
+          )
+        ) >= min_weekly_mortality,
+      TRUE,
+      FALSE
+    )
   })
   
 }

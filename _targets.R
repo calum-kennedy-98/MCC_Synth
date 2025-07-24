@@ -138,7 +138,11 @@ list(
                                                            unit_id_var = column_label,
                                                            time_id_var = week_id,
                                                            region_id_var = region,
-                                                           treated_var = treated)),
+                                                           treated_var = treated,
+                                                           outcome_var = all,
+                                                           min_periods_pre = 10,
+                                                           min_control_units = 5,
+                                                           min_weekly_mortality = 100)),
   
   # Make datasets for simulation exercise --------------------------------------------------------
   
@@ -690,6 +694,35 @@ list(
                                                ~extract_tau_hat_synth_results(.,
                                                                               treatment_effect_type = "placebo")) %>%
                bind_rows()),
+  
+  ########################################################################################################
+  ### RESULTS FROM MAIN ANALYSIS #########################################################################
+  ########################################################################################################
+  
+  tar_target(results_synth_main_all_cause, future_map(list_data_for_synth,
+                                                      function(x){
+                                                        n_periods_pre <- nrow(filter(x, 
+                                                                                     treated == 1,
+                                                                                     post == 0))
+                                                        n_periods_post <- nrow(filter(x,
+                                                                                      treated == 1,
+                                                                                      post == 1))
+                                                        
+                                                        # Set maximum value of n_periods_pre to 100
+                                                        n_periods_pre <- min(n_periods_pre, 100)
+                                                        
+                                                        optimise_synth(data = x,
+                                                                       demean_outcomes = TRUE,
+                                                                       denoise_outcomes = FALSE,
+                                                                       objective_function = "PSC",
+                                                                       n_periods_pre = n_periods_pre,
+                                                                       n_periods_post = n_periods_post,
+                                                                       outcome_var = all,
+                                                                       treated_id_var = treated,
+                                                                       treated_time_var = post,
+                                                                       time_var = week_id,
+                                                                       spline_df = NULL)
+                                                      })),
   
   # Make output plots - simulation study ------------------------------------------------------------------------
   
