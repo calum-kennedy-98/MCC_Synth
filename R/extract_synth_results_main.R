@@ -23,7 +23,7 @@ extract_synth_results_main <- function(list_data_for_synth,
   
   list_data_for_synth_with_id <- lapply(seq_along(list_data_for_synth),
                                        function(x) {
-                                         c(list_data_for_synth[[x]], event_id = x)
+                                         list_data_for_synth[[x]] %>% mutate(event_id = x)
                                        })
   
   list_results_synth_with_id <- lapply(seq_along(list_results_synth),
