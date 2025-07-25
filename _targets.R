@@ -726,7 +726,7 @@ list(
   
   # Extract results from main analysis
   tar_target(data_results_synth_main_all_cause, extract_synth_results_main(list_data_for_synth = list_data_for_synth,
-                                                                           list_results_synth = results_synth_main_all_cause))
+                                                                           list_results_synth = results_synth_main_all_cause)),
   
   # Make output plots - simulation study ------------------------------------------------------------------------
   
