@@ -64,11 +64,12 @@ extract_synth_results_main <- function(list_data_for_synth,
   list_metadata_to_merge <- lapply(list_data_for_synth_with_id, function(x){
     
     # Extract metadata
+    event_id <- x %>% filter(treated == 1) %>% distinct(event_id) %>% pull()
     region <- x %>% filter(treated == 1) %>% distinct(region) %>% pull()
     countryname <- x %>% filter(treated == 1) %>% distinct(countryname) %>% pull()
     column_label <- x %>% filter(treated == 1) %>% distinct(column_label) %>% pull()
     
-    metadata <- tibble("event_id" = x[["event_id"]],
+    metadata <- tibble("event_id" = event_id,
                        "region" = region,
                        "countryname" = countryname,
                        "column_label" = column_label)
@@ -77,6 +78,7 @@ extract_synth_results_main <- function(list_data_for_synth,
   
   # Bind results and metadata into single dataframe and merge
   metadata_synth <- bind_rows(list_metadata_to_merge)
+  
   results_synth <- bind_rows(list_results_to_merge) %>% left_join(metadata_synth, by = "event_id")
   
   return(results_synth)
