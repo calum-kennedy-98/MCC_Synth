@@ -31,6 +31,7 @@ source(here("R/optimise_synth.R"))
 source(here("R/prepare_data_for_synth.R"))
 source(here("R/make_scatter_plot_tau_hat_time.R"))
 source(here("R/partition_data_for_synth.R"))
+source(here("extract_synth_results_main.R"))
 
 # Simulation functions
 

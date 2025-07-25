@@ -724,6 +724,10 @@ list(
                                                                        spline_df = NULL)
                                                       })),
   
+  # Extract results from main analysis
+  tar_target(data_results_synth_main_all_cause, extract_synth_results_main(list_data_for_synth = list_data_for_synth,
+                                                                           list_results_synth = results_synth_main_all_cause))
+  
   # Make output plots - simulation study ------------------------------------------------------------------------
   
   tar_target(patchwork_plot_line_real_vs_sim_data, (make_patchwork_plot(list = list(make_line_plot_real_vs_sim_data(list_data = list_data_simulated, 
