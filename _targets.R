@@ -728,6 +728,10 @@ list(
   tar_target(data_results_synth_main_all_cause, extract_synth_results_main(list_data_for_synth = list_data_for_synth,
                                                                            list_results_synth = results_synth_main_all_cause)),
   
+  ##############################################################################################################################
+  ### PLOTS FROM SIMULATION STUDY ##############################################################################################
+  ##############################################################################################################################
+  
   # Make output plots - simulation study ------------------------------------------------------------------------
   
   tar_target(patchwork_plot_line_real_vs_sim_data, (make_patchwork_plot(list = list(make_line_plot_real_vs_sim_data(list_data = list_data_simulated, 
@@ -1151,6 +1155,37 @@ list(
                
                ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y_filtered.png", ., width = 8, height = 5),
              format = "file"),
+  
+  #######################################################################################################################################
+  ### PRODUCE PLOTS FROM MAIN ANALYSIS ##################################################################################################
+  #######################################################################################################################################
+  
+  tar_target(plot_scatter_tau_hat_time_region_main,
+    
+             (data_results_synth_main_all_cause %>%
+                
+                summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
+                          se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
+                          .by = c(t, region)) %>%
+                
+                # Make scatter plot with facet wrap by method
+                make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
+                                               se_var = se_tau_hat, 
+                                               time_var = t, 
+                                               facet_var = region, 
+                                               palette = cbbPalette) +
+                
+                labs(x = "Time (centred)",
+                     y = "Tau hat (mean)")
+             ) %>%
+               
+               ggsave("Output/Figures/Main/plot_scatter_tau_hat_time_region_main.png", ., height = 5, width = 8, create.dir = TRUE),
+             format = "file"
+  ),
+  
+  #######################################################################################################################################
+  ### TABLES FROM SIMULATION STUDY ######################################################################################################
+  #######################################################################################################################################
   
   # Summary tables of synth diagnostics by treatment effect type and method -------------------------------------------------------------
   
