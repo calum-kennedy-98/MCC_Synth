@@ -1166,13 +1166,13 @@ list(
                 
                 summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
                           se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                          .by = c(t, region)) %>%
+                          .by = c(t, countryname)) %>%
                 
                 # Make scatter plot with facet wrap by method
                 make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
                                                se_var = se_tau_hat, 
                                                time_var = t, 
-                                               facet_var = region, 
+                                               facet_var = countryname, 
                                                palette = cbbPalette) +
                 
                 labs(x = "Time (centred)",
@@ -1181,6 +1181,28 @@ list(
                
                ggsave("Output/Figures/Main/plot_scatter_tau_hat_time_region_main.png", ., height = 5, width = 8, create.dir = TRUE),
              format = "file"
+  ),
+  
+  tar_target(plot_line_tau_hat_time_main,
+             
+             (data_results_synth_main_all_cause %>%
+                
+                ggplot() +
+                
+                geom_line(aes(x = t,
+                              y = tau_hat,
+                              group = event_id),
+                          alpha = 0.1) +
+                
+                scale_colour_manual(values = cbbPalette) +
+                
+                facet_wrap(~countryname,
+                           scales = "fixed") +
+                
+                scatter_plot_opts) %>%
+               
+               ggsave("Output/Figures/Main/plot_line_tau_hat_time_main.png", ., height = 5, width = 8, create.dir = TRUE)
+    
   ),
   
   #######################################################################################################################################
