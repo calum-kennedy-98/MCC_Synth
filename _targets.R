@@ -798,7 +798,8 @@ list(
       palette = cbbPalette) +
         ggtitle("A: Negative Binomial") +
         labs(x = "Tau hat",
-             y = "Density"),
+             y = "Density") +
+        xlim(-1,1),
       
       make_density_plot_synth_results(
         data = data_tau_hat_factor[data_tau_hat_factor$post == 1, ],
@@ -808,7 +809,8 @@ list(
         palette = cbbPalette) +
         ggtitle("B: Factor") +
         labs(x = "Tau hat",
-             y = "Density")
+             y = "Density") +
+        xlim(-1,1)
       ),
     ncol = 2,
     guides = "collect",
@@ -832,7 +834,8 @@ list(
         palette = cbbPalette) +
         ggtitle("A: Negative Binomial") +
         labs(x = "Tau hat",
-             y = "Density"),
+             y = "Density") +
+        xlim(-1,1),
       
       make_density_plot_synth_results(
         data = data_tau_hat_factor_demeaned[data_tau_hat_factor_demeaned$post == 1, ],
@@ -842,7 +845,8 @@ list(
         palette = cbbPalette) +
         ggtitle("B: Factor") +
         labs(x = "Tau hat",
-             y = "Density")
+             y = "Density") +
+        xlim(-1,1)
     ),
     ncol = 2,
     guides = "collect",
@@ -867,7 +871,8 @@ list(
         palette = cbbPalette) +
         ggtitle("A: Negative Binomial") +
         labs(x = "Tau hat",
-             y = "Density"),
+             y = "Density") +
+        xlim(-1,1),
       
       make_density_plot_synth_results(
         data = data_tau_hat_factor_random_assignment[data_tau_hat_factor_random_assignment$post == 1, ],
@@ -877,7 +882,8 @@ list(
         palette = cbbPalette) +
         ggtitle("B: Factor") +
         labs(x = "Tau hat",
-             y = "Density")
+             y = "Density") +
+        xlim(-1,1)
     ),
     ncol = 2,
     guides = "collect",
@@ -901,7 +907,8 @@ list(
         palette = cbbPalette) +
         ggtitle("A: Negative Binomial") +
         labs(x = "Tau hat",
-             y = "Density"),
+             y = "Density") +
+        xlim(-1,1),
       
       make_density_plot_synth_results(
         data = data_tau_hat_factor_demeaned_random_assignment[data_tau_hat_factor_demeaned_random_assignment$post == 1, ],
@@ -911,7 +918,8 @@ list(
         palette = cbbPalette) +
         ggtitle("B: Factor") +
         labs(x = "Tau hat",
-             y = "Density")
+             y = "Density") +
+        xlim(-1,1)
     ),
     ncol = 2,
     guides = "collect",
