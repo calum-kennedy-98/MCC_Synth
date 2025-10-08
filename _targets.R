@@ -935,7 +935,7 @@ list(
   tar_target(plot_scatter_tau_hat_time_by_method_neg_binom, (data_tau_hat_neg_binom %>%
                                                                
                                                                summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
-                                                                         se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
+                                                                         se_tau_hat = sd(tau_hat_normalised, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat_normalised))), 
                                                                          .by = c(t, method)) %>%
                                                                
                                                                # Make scatter plot with facet wrap by method
@@ -955,9 +955,9 @@ list(
   
   tar_target(plot_scatter_tau_hat_time_by_method_factor, (data_tau_hat_factor %>%
                                                                
-                                                               summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
-                                                                         se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                         .by = c(t, method)) %>%
+                                                            summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
+                                                                      se_tau_hat = sd(tau_hat_normalised, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat_normalised))), 
+                                                                      .by = c(t, method)) %>%
                                                                
                                                                # Make scatter plot with facet wrap by method
                                                                make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
@@ -977,9 +977,9 @@ list(
   # Scatter plots of estimated tau hat coefficients against time by method (averaging across model runs)
   tar_target(plot_scatter_tau_hat_time_by_method_neg_binom_random_assignment, (data_tau_hat_neg_binom_random_assignment %>%
                                                                
-                                                               summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
-                                                                         se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                         .by = c(t, method)) %>%
+                                                                                 summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
+                                                                                           se_tau_hat = sd(tau_hat_normalised, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat_normalised))), 
+                                                                                           .by = c(t, method)) %>%
                                                                
                                                                # Make scatter plot with facet wrap by method
                                                                make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
@@ -998,9 +998,9 @@ list(
   
   tar_target(plot_scatter_tau_hat_time_by_method_factor_random_assignment, (data_tau_hat_factor_random_assignment %>%
                                                             
-                                                            summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
-                                                                      se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                      .by = c(t, method)) %>%
+                                                                              summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
+                                                                                        se_tau_hat = sd(tau_hat_normalised, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat_normalised))), 
+                                                                                        .by = c(t, method)) %>%
                                                             
                                                             # Make scatter plot with facet wrap by method
                                                             make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
@@ -1022,9 +1022,9 @@ list(
   # Scatter plots of estimated tau hat coefficients against time by method (averaging across model runs)
   tar_target(plot_scatter_tau_hat_time_by_method_neg_binom_demeaned, (data_tau_hat_neg_binom_demeaned %>%
                                                                
-                                                               summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
-                                                                         se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                         .by = c(t, method)) %>%
+                                                                        summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
+                                                                                  se_tau_hat = sd(tau_hat_normalised, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat_normalised))), 
+                                                                                  .by = c(t, method)) %>%
                                                                
                                                                # Make scatter plot with facet wrap by method
                                                                make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
@@ -1043,9 +1043,9 @@ list(
   
   tar_target(plot_scatter_tau_hat_time_by_method_factor_demeaned, (data_tau_hat_factor_demeaned %>%
                                                             
-                                                            summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
-                                                                      se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                      .by = c(t, method)) %>%
+                                                                     summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
+                                                                               se_tau_hat = sd(tau_hat_normalised, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat_normalised))), 
+                                                                               .by = c(t, method)) %>%
                                                             
                                                             # Make scatter plot with facet wrap by method
                                                             make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
@@ -1065,9 +1065,9 @@ list(
   # Scatter plots of estimated tau hat coefficients against time by method - de-meaned data
   tar_target(plot_scatter_tau_hat_time_by_method_neg_binom_demeaned_random_assignment, (data_tau_hat_neg_binom_demeaned_random_assignment %>%
                                                                                  
-                                                                                 summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
-                                                                                           se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                                           .by = c(t, method)) %>%
+                                                                                          summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
+                                                                                                    se_tau_hat = sd(tau_hat_normalised, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat_normalised))), 
+                                                                                                    .by = c(t, method)) %>%
                                                                                  
                                                                                  # Make scatter plot with facet wrap by method
                                                                                  make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
@@ -1086,9 +1086,9 @@ list(
   
   tar_target(plot_scatter_tau_hat_time_by_method_factor_demeaned_random_assignment, (data_tau_hat_factor_demeaned_random_assignment %>%
                                                                               
-                                                                              summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
-                                                                                        se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                                        .by = c(t, method)) %>%
+                                                                                       summarise(mean_tau_hat = mean(tau_hat_normalised, na.rm = TRUE), 
+                                                                                                 se_tau_hat = sd(tau_hat_normalised, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat_normalised))), 
+                                                                                                 .by = c(t, method)) %>%
                                                                               
                                                                               # Make scatter plot with facet wrap by method
                                                                               make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
