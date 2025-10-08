@@ -86,8 +86,8 @@ extract_tau_hat_synth_results <- function(results_synth_model_simulated,
     tau <- Y1_treated - Y0_treated
     tau_hat <- Y1_treated - Y0_treated_hat
     
-    # Get normalised tau_hat (scaled by standard deviation of tau_hat in post-treatment period)
-    tau_hat_normalised <- (tau_hat - tau) / sd(tau_hat[post == 1])
+    # Get normalised tau_hat (scale by value of Y1_treated)
+    tau_hat_normalised <- tau_hat / Y1_treated
     
     # Return tibble of results
     results <- tibble("method" = method,
