@@ -167,7 +167,14 @@ list(
                
                # Keep only data with non-missing temperature and mortality data
                filter(if_all(all, ~ !is.na(.)),
-                      if_all(tmean, ~ !is.na(.)))),
+                      if_all(tmean, ~ !is.na(.))) %>%
+               
+               # Filter out locations with mean weekly deaths < 100
+               mutate(mean_mortality = mean(all, na.rm = TRUE), .by = column_label) %>%
+               
+               filter(mean_mortality > 100) %>%
+               
+               select(-mean_mortality)),
   
   # List of simulated outcome data from negative binomial model - untreated potential outcome (Y(0))
   tar_target(list_outcome_sim_neg_binomial, make_list_data_negative_binomial_model(n_sims = 500, 
