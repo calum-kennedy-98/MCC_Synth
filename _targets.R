@@ -936,281 +936,59 @@ list(
     ggsave("Output/Figures/Simulation/patchwork_density_tau_hat_demeaned_random_assignment.png", ., width = 8, height = 5, dpi = 700, create.dir = TRUE)
   ),
   
-  # Plots of tau hat over time -----------------------------------------------------------------------------------------------
+  # Plots of absolute bias in normalised tau hat against Y -----------------------------------------------------------------------------------------------
   
-  # Scatter plots of normalised tau hat coefficients against time by method (averaging across model runs)
-  tar_target(plot_scatter_tau_hat_time_by_method_neg_binom, (data_tau_hat_neg_binom %>%
-                                                               
-                                                               summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
-                                                                         se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                         .by = c(t, method)) %>%
-                                                               
-                                                               # Make scatter plot with facet wrap by method
-                                                               make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
-                                                                                              se_var = se_tau_hat, 
-                                                                                              time_var = t, 
-                                                                                              facet_var = method, 
-                                                                                              palette = cbbPalette) +
-                                                               
-                                                               labs(x = "Time (centred)",
-                                                                    y = "Tau hat (mean)")
-                                                             ) %>%
-               
-               ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_neg_binom.png", ., height = 5, width = 8, create.dir = TRUE),
-             format = "file"
-             ),
-  
-  tar_target(plot_scatter_tau_hat_time_by_method_factor, (data_tau_hat_factor %>%
-                                                               
-                                                            summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
-                                                                      se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                      .by = c(t, method)) %>%
-                                                               
-                                                               # Make scatter plot with facet wrap by method
-                                                               make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
-                                                                                              se_var = se_tau_hat, 
-                                                                                              time_var = t, 
-                                                                                              facet_var = method, 
-                                                                                              palette = cbbPalette) +
-                                                            
-                                                            labs(x = "Time (centred)",
-                                                                 y = "Tau hat (mean)")
-  ) %>%
-    
-    ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_factor.png", ., height = 5, width = 8, create.dir = TRUE),
-  format = "file"
-  ),
-  
-  # Scatter plots of estimated tau hat coefficients against time by method (averaging across model runs)
-  tar_target(plot_scatter_tau_hat_time_by_method_neg_binom_random_assignment, (data_tau_hat_neg_binom_random_assignment %>%
-                                                               
-                                                                                 summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
-                                                                                           se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                                           .by = c(t, method)) %>%
-                                                               
-                                                               # Make scatter plot with facet wrap by method
-                                                               make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
-                                                                                              se_var = se_tau_hat, 
-                                                                                              time_var = t, 
-                                                                                              facet_var = method, 
-                                                                                              palette = cbbPalette) +
-                                                               
-                                                               labs(x = "Time (centred)",
-                                                                    y = "Tau hat (mean)")
-  ) %>%
-    
-    ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_neg_binom_random_assignment.png", ., height = 5, width = 8, create.dir = TRUE),
-  format = "file"
-  ),
-  
-  tar_target(plot_scatter_tau_hat_time_by_method_factor_random_assignment, (data_tau_hat_factor_random_assignment %>%
-                                                            
-                                                                              summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
-                                                                                        se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                                        .by = c(t, method)) %>%
-                                                            
-                                                            # Make scatter plot with facet wrap by method
-                                                            make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
-                                                                                           se_var = se_tau_hat, 
-                                                                                           time_var = t, 
-                                                                                           facet_var = method, 
-                                                                                           palette = cbbPalette) +
-                                                            
-                                                            labs(x = "Time (centred)",
-                                                                 y = "Tau hat (mean)")
-  ) %>%
-    
-    ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_factor_random_assignment.png", ., height = 5, width = 8, create.dir = TRUE),
-  format = "file"
-  ),
-  
-  # De-meaned outcome data
-  
-  # Scatter plots of estimated tau hat coefficients against time by method (averaging across model runs)
-  tar_target(plot_scatter_tau_hat_time_by_method_neg_binom_demeaned, (data_tau_hat_neg_binom_demeaned %>%
-                                                               
-                                                                        summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
-                                                                                  se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                                  .by = c(t, method)) %>%
-                                                               
-                                                               # Make scatter plot with facet wrap by method
-                                                               make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
-                                                                                              se_var = se_tau_hat, 
-                                                                                              time_var = t, 
-                                                                                              facet_var = method, 
-                                                                                              palette = cbbPalette) +
-                                                               
-                                                               labs(x = "Time (centred)",
-                                                                    y = "Tau hat (mean)")
-  ) %>%
-    
-    ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_neg_binom_demeaned.png", ., height = 5, width = 8, create.dir = TRUE),
-  format = "file"
-  ),
-  
-  tar_target(plot_scatter_tau_hat_time_by_method_factor_demeaned, (data_tau_hat_factor_demeaned %>%
-                                                            
-                                                                     summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
-                                                                               se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                               .by = c(t, method)) %>%
-                                                            
-                                                            # Make scatter plot with facet wrap by method
-                                                            make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
-                                                                                           se_var = se_tau_hat, 
-                                                                                           time_var = t, 
-                                                                                           facet_var = method, 
-                                                                                           palette = cbbPalette) +
-                                                            
-                                                            labs(x = "Time (centred)",
-                                                                 y = "Tau hat (mean)")
-  ) %>%
-    
-    ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_factor_demeaned.png", ., height = 5, width = 8, create.dir = TRUE),
-  format = "file"
-  ),
-  
-  # Scatter plots of estimated tau hat coefficients against time by method - de-meaned data
-  tar_target(plot_scatter_tau_hat_time_by_method_neg_binom_demeaned_random_assignment, (data_tau_hat_neg_binom_demeaned_random_assignment %>%
-                                                                                 
-                                                                                          summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
-                                                                                                    se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                                                    .by = c(t, method)) %>%
-                                                                                 
-                                                                                 # Make scatter plot with facet wrap by method
-                                                                                 make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
-                                                                                                                se_var = se_tau_hat, 
-                                                                                                                time_var = t, 
-                                                                                                                facet_var = method, 
-                                                                                                                palette = cbbPalette) +
-                                                                                 
-                                                                                 labs(x = "Time (centred)",
-                                                                                      y = "Tau hat (mean)")
-  ) %>%
-    
-    ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_neg_binom_demeaned_random_assignment.png", ., height = 5, width = 8, create.dir = TRUE),
-  format = "file"
-  ),
-  
-  tar_target(plot_scatter_tau_hat_time_by_method_factor_demeaned_random_assignment, (data_tau_hat_factor_demeaned_random_assignment %>%
-                                                                              
-                                                                                       summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
-                                                                                                 se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                                                                                                 .by = c(t, method)) %>%
-                                                                              
-                                                                              # Make scatter plot with facet wrap by method
-                                                                              make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
-                                                                                                             se_var = se_tau_hat, 
-                                                                                                             time_var = t, 
-                                                                                                             facet_var = method, 
-                                                                                                             palette = cbbPalette) +
-                                                                              
-                                                                              labs(x = "Time (centred)",
-                                                                                   y = "Tau hat (mean)")
-  ) %>%
-    
-    ggsave("Output/Figures/Simulation/plot_scatter_tau_hat_time_by_method_factor_demeaned_random_assignment.png", ., height = 5, width = 8, create.dir = TRUE),
-  format = "file"
-  ),
-  
-  tar_target(scatter_plot_abs_bias_mean_y, (data_tau_hat_neg_binom_demeaned %>%
+  tar_target(scatter_plot_abs_bias_mean_y_neg_binom, (data_tau_hat_neg_binom_demeaned %>%
                                               
                                               # Estimate mean absolute bias and mean outcome during post-treatment period
                                               filter(post == 1) %>%
                                               
-                                              summarise(mean_abs_bias = mean(abs(tau_hat), na.rm = TRUE),
+                                              summarise(mean_abs_bias = mean(abs(tau_hat_normalised), na.rm = TRUE),
                                                         mean_y = mean(Y1_treated, na.rm = TRUE),
-                                                        ratio_abs_bias_y = mean_abs_bias / mean_y,
                                                         .by = c(method,
                                                                 model_run)) %>%
                                               
                                               ggplot() +
                                               geom_point(aes(x = mean_y,
-                                                             y = ratio_abs_bias_y,
+                                                             y = mean_abs_bias * 100,
                                                              colour = method),
                                                          alpha = 0.4) +
                                               scale_colour_manual(values = cbbPalette) +
                                               facet_wrap(~method,
                                                          scales = "fixed") +
-                                              scatter_plot_opts) %>%
+                                              scatter_plot_opts +
+                                                labs(x = "Mean weekly mortality - post treatment period",
+                                                     y = "Mean absolute bias\nin tau hat (%)",
+                                                     colour = "Method")) %>%
                
-               ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y.png", ., width = 8, height = 5),
+               ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y_neg_binom.png", ., width = 8, height = 5),
              format = "file"),
   
-  tar_target(scatter_plot_abs_bias_mean_y_filtered, (data_tau_hat_neg_binom_demeaned %>%
-                                              
-                                              # Estimate mean absolute bias and mean outcome during post-treatment period
-                                              filter(post == 1) %>%
-                                              
-                                              summarise(mean_abs_bias = mean(abs(tau_hat), na.rm = TRUE),
-                                                        mean_y = mean(Y1_treated, na.rm = TRUE),
-                                                        ratio_abs_bias_y = mean_abs_bias / mean_y,
-                                                        .by = c(method,
-                                                                model_run)) %>%
-                                                
-                                                # Retain abs bias ratio <= 50%
-                                                filter(ratio_abs_bias_y <= 0.5) %>%
-                                              
-                                              ggplot() +
-                                              geom_point(aes(x = mean_y,
-                                                             y = ratio_abs_bias_y,
-                                                             colour = method),
-                                                         alpha = 0.4) +
-                                              scale_colour_manual(values = cbbPalette) +
-                                                facet_wrap(~method,
-                                                           scales = "fixed") +
-                                              scatter_plot_opts) %>%
+  tar_target(scatter_plot_abs_bias_mean_y_factor, (data_tau_hat_factor_demeaned %>%
+                                                        
+                                                        # Estimate mean absolute bias and mean outcome during post-treatment period
+                                                        filter(post == 1) %>%
+                                                        
+                                                        summarise(mean_abs_bias = mean(abs(tau_hat_normalised), na.rm = TRUE),
+                                                                  mean_y = mean(Y1_treated, na.rm = TRUE),
+                                                                  .by = c(method,
+                                                                          model_run)) %>%
+                                                        
+                                                        ggplot() +
+                                                        geom_point(aes(x = mean_y,
+                                                                       y = mean_abs_bias * 100,
+                                                                       colour = method),
+                                                                   alpha = 0.4) +
+                                                        scale_colour_manual(values = cbbPalette) +
+                                                        facet_wrap(~method,
+                                                                   scales = "fixed") +
+                                                        scatter_plot_opts +
+                                                     labs(x = "Mean weekly mortality - post treatment period",
+                                                          y = "Mean absolute bias\n in tau hat (%)",
+                                                          colour = "Method")) %>%
                
-               ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y_filtered.png", ., width = 8, height = 5),
+               ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y_factor.png", ., width = 8, height = 5),
              format = "file"),
-  
-  #######################################################################################################################################
-  ### PRODUCE PLOTS FROM MAIN ANALYSIS ##################################################################################################
-  #######################################################################################################################################
-  
-  tar_target(plot_scatter_tau_hat_time_region_main,
-    
-             (data_results_synth_main_all_cause %>%
-                
-                summarise(mean_tau_hat = mean(tau_hat, na.rm = TRUE), 
-                          se_tau_hat = sd(tau_hat, na.rm = TRUE) / sqrt(sum(!is.na(tau_hat))), 
-                          .by = c(t, countryname)) %>%
-                
-                # Make scatter plot with facet wrap by method
-                make_scatter_plot_tau_hat_time(tau_hat_var = mean_tau_hat, 
-                                               se_var = se_tau_hat, 
-                                               time_var = t, 
-                                               facet_var = countryname, 
-                                               palette = cbbPalette) +
-                
-                labs(x = "Time (centred)",
-                     y = "Tau hat (mean)")
-             ) %>%
-               
-               ggsave("Output/Figures/Main/plot_scatter_tau_hat_time_region_main.png", ., height = 5, width = 8, create.dir = TRUE),
-             format = "file"
-  ),
-  
-  tar_target(plot_line_tau_hat_time_main,
-             
-             (data_results_synth_main_all_cause %>%
-                
-                ggplot() +
-                
-                geom_line(aes(x = t,
-                              y = tau_hat,
-                              group = event_id),
-                          alpha = 0.1) +
-                
-                scale_colour_manual(values = cbbPalette) +
-                
-                facet_wrap(~countryname,
-                           scales = "fixed") +
-                
-                scatter_plot_opts) %>%
-               
-               ggsave("Output/Figures/Main/plot_line_tau_hat_time_main.png", ., height = 5, width = 8, create.dir = TRUE)
-    
-  ),
   
   #######################################################################################################################################
   ### TABLES FROM SIMULATION STUDY ######################################################################################################
