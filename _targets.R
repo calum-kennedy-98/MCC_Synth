@@ -1315,9 +1315,9 @@ list(
                                                         results_case_study_adh$Y0_treated_pred,
                                                         results_case_study_psc$Y0_treated_pred,
                                                         results_case_study_difp$Y0_treated_pred),
-                                             method = c(rep("True", length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 1])), 
-                                                        rep("ADH", length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 1])),
-                                                        rep("PSC", length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 1])),
-                                                        rep("DIFP", length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 1])))))
+                                             method = c(rep("True", length(data_for_case_study$post[data_for_case_study$treated == 1])), 
+                                                        rep("ADH", length(data_for_case_study$post[data_for_case_study$treated == 1])),
+                                                        rep("PSC", length(data_for_case_study$post[data_for_case_study$treated == 1])),
+                                                        rep("DIFP", length(data_for_case_study$post[data_for_case_study$treated == 1])))))
   
 )
