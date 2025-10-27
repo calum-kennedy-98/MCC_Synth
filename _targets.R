@@ -1311,7 +1311,7 @@ list(
   ),
   
   # Store results in tibble
-  tar_target(data_results_case_study, tibble(outcome = c(results_case_study_adh$Y1,
+  tar_target(data_results_case_study, tibble(outcome = c(results_case_study_adh$Y_treated,
                                                         results_case_study_adh$Y0_treated_hat,
                                                         results_case_study_psc$Y0_treated_hat,
                                                         results_case_study_difp$Y0_treated_hat),
