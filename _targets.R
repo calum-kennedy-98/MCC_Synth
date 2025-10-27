@@ -1310,16 +1310,31 @@ list(
                                                     spline_df = NULL)
   ),
   
+  tar_target(results_case_study_did, optimise_synth(data = data_for_case_study,
+                                                     demean_outcomes = TRUE,
+                                                     denoise_outcomes = FALSE,
+                                                     objective_function = "DID",
+                                                     n_periods_pre = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 0]),
+                                                     n_periods_post = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 1]),
+                                                     outcome_var = all,
+                                                     treated_id_var = treated,
+                                                     treated_time_var = post,
+                                                     time_var = week_id,
+                                                     spline_df = NULL)
+  ),
+  
   # Store results in tibble
   tar_target(data_results_case_study, tibble(outcome = c(results_case_study_adh$Y_treated,
                                                         results_case_study_adh$Y0_treated_hat,
                                                         results_case_study_psc$Y0_treated_hat,
-                                                        results_case_study_difp$Y0_treated_hat),
+                                                        results_case_study_difp$Y0_treated_hat,
+                                                        results_case_study_did$Y0_treated_hat),
                                              method = c(rep("True", length(data_for_case_study$post[data_for_case_study$treated == 1])), 
                                                         rep("ADH", length(data_for_case_study$post[data_for_case_study$treated == 1])),
                                                         rep("PSC", length(data_for_case_study$post[data_for_case_study$treated == 1])),
-                                                        rep("DIFP", length(data_for_case_study$post[data_for_case_study$treated == 1]))),
-                                             t = rep(1:length(data_for_case_study$post[data_for_case_study$treated == 1]), 4))
+                                                        rep("DIFP", length(data_for_case_study$post[data_for_case_study$treated == 1])),
+                                                        rep("DID", length(data_for_case_study$post[data_for_case_study$treated == 1]))),
+                                             t = rep(1:length(data_for_case_study$post[data_for_case_study$treated == 1]), 5))
              ),
   
   # Plot outcome trajectories
@@ -1331,15 +1346,20 @@ list(
                              y = outcome,
                              colour = method)) +
                
-               geom_vline(xintercept = length(data_for_case_study$post[data_for_case_study$treated == 1]),
+               geom_vline(xintercept = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 0]),
                           linetype = "dashed") +
                
                ylim(0, 800) +
                
                labs(x = "Week",
-                    y = "Weekly mortality") +
+                    y = "Weekly mortality",
+                    colour = "Method") +
+                 
+                 theme(legend.position = "bottom") +
                
-               scatter_plot_opts) %>%
+               scatter_plot_opts +
+                 
+                 scale_colour_manual(values = cbbPalette)) %>%
                
                ggsave("Output/Figures/Main/plot_results_case_study.png", ., width = 8, height = 5)
              )
