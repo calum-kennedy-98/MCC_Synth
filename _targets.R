@@ -1261,6 +1261,63 @@ list(
                ) %>%
                
                gtsave("Output/Tables/Simulation/tbl_summary_synth_diagnostics_demeaned_random_assignment.tex"),
-             format = "file")
-
+             format = "file"),
+  
+  ##########################################################################################################
+  ### EMPIRICAL APPLICATION ################################################################################
+  ##########################################################################################################
+  
+  ### Select data subset for analysis
+  tar_target(data_for_case_study, list_data_for_synth[["567"]]
+  ),
+  
+  tar_target(results_case_study_adh, optimise_synth(data = data_for_case_study,
+                                                    demean_outcomes = TRUE,
+                                                    denoise_outcomes = FALSE,
+                                                    objective_function = "ADH",
+                                                    n_periods_pre = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 0]),
+                                                    n_periods_post = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 1]),
+                                                    outcome_var = all,
+                                                    treated_id_var = treated,
+                                                    treated_time_var = post,
+                                                    time_var = week_id,
+                                                    spline_df = NULL)
+             ),
+  
+  tar_target(results_case_study_psc, optimise_synth(data = data_for_case_study,
+                                                    demean_outcomes = TRUE,
+                                                    denoise_outcomes = FALSE,
+                                                    objective_function = "ADH",
+                                                    n_periods_pre = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 0]),
+                                                    n_periods_post = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 1]),
+                                                    outcome_var = all,
+                                                    treated_id_var = treated,
+                                                    treated_time_var = post,
+                                                    time_var = week_id,
+                                                    spline_df = NULL)
+  ),
+  
+  tar_target(results_case_study_difp, optimise_synth(data = data_for_case_study,
+                                                    demean_outcomes = TRUE,
+                                                    denoise_outcomes = FALSE,
+                                                    objective_function = "ADH",
+                                                    n_periods_pre = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 0]),
+                                                    n_periods_post = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 1]),
+                                                    outcome_var = all,
+                                                    treated_id_var = treated,
+                                                    treated_time_var = post,
+                                                    time_var = week_id,
+                                                    spline_df = NULL)
+  ),
+  
+  # Store results in tibble
+  tar_target(data_results_case_study, tibble(outcome = c(results_case_study_adh$Y1,
+                                                        results_case_study_adh$Y0_treated_pred,
+                                                        results_case_study_psc$Y0_treated_pred,
+                                                        results_case_study_difp$Y0_treated_pred),
+                                             method = c(rep("True", length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 1])), 
+                                                        rep("ADH", length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 1])),
+                                                        rep("PSC", length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 1])),
+                                                        rep("DIFP", length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 1])))))
+  
 )
