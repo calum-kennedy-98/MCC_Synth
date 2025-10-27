@@ -1312,9 +1312,9 @@ list(
   
   # Store results in tibble
   tar_target(data_results_case_study, tibble(outcome = c(results_case_study_adh$Y1,
-                                                        results_case_study_adh$Y0_treated_pred,
-                                                        results_case_study_psc$Y0_treated_pred,
-                                                        results_case_study_difp$Y0_treated_pred),
+                                                        results_case_study_adh$Y0_treated_hat,
+                                                        results_case_study_psc$Y0_treated_hat,
+                                                        results_case_study_difp$Y0_treated_hat),
                                              method = c(rep("True", length(data_for_case_study$post[data_for_case_study$treated == 1])), 
                                                         rep("ADH", length(data_for_case_study$post[data_for_case_study$treated == 1])),
                                                         rep("PSC", length(data_for_case_study$post[data_for_case_study$treated == 1])),
