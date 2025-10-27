@@ -133,6 +133,22 @@ list(
                                                                           "countryname",
                                                                           "region"))),
   
+  tar_target(
+    data_mcc_lfs_monthly, make_data_mcc_lfs_monthly(data_mcc_lfs = data_mcc_lfs_with_treatment,
+                                                   climatic_vars = c("tmean",
+                                                                     "pred_fire_PM25",
+                                                                     "pred_total_PM25",
+                                                                     "pred_nonfire_PM25"),
+                                                   mortality_vars = c("all",
+                                                                      "nonext",
+                                                                      "cvd",
+                                                                      "resp"),
+                                                   group_vars = c("column_label",
+                                                                  "month_id",
+                                                                  "countryname",
+                                                                  "region"))
+  ),
+  
   # Partition main data into list of datasets to pass to synth optimisation
   tar_target(list_data_for_synth, partition_data_for_synth(data = data_mcc_lfs_weekly,
                                                            unit_id_var = column_label,
@@ -143,6 +159,16 @@ list(
                                                            min_periods_pre = 10,
                                                            min_control_units = 5,
                                                            min_weekly_mortality = 100)),
+  
+  tar_target(list_data_for_synth_monthly, partition_data_for_synth(data = data_mcc_lfs_monthly,
+                                                           unit_id_var = column_label,
+                                                           time_id_var = month_id,
+                                                           region_id_var = region,
+                                                           treated_var = treated,
+                                                           outcome_var = all,
+                                                           min_periods_pre = 10,
+                                                           min_control_units = 5,
+                                                           min_weekly_mortality = 700)),
   
   # Make datasets for simulation exercise --------------------------------------------------------
   
