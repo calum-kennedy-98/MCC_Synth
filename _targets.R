@@ -1318,6 +1318,29 @@ list(
                                              method = c(rep("True", length(data_for_case_study$post[data_for_case_study$treated == 1])), 
                                                         rep("ADH", length(data_for_case_study$post[data_for_case_study$treated == 1])),
                                                         rep("PSC", length(data_for_case_study$post[data_for_case_study$treated == 1])),
-                                                        rep("DIFP", length(data_for_case_study$post[data_for_case_study$treated == 1])))))
+                                                        rep("DIFP", length(data_for_case_study$post[data_for_case_study$treated == 1]))),
+                                             t = rep(1:length(data_for_case_study$post[data_for_case_study$treated == 1]), 4))
+             ),
   
+  # Plot outcome trajectories
+  tar_target(plot_results_case_study, (data_results_case_study %>%
+               
+               ggplot() +
+               
+               geom_line(aes(x = t,
+                             y = outcome,
+                             colour = method)) +
+               
+               geom_vline(xintercept = length(data_for_case_study$post[data_for_case_study$treated == 1]),
+                          linetype = "dashed") +
+               
+               ylim(0, 800) +
+               
+               labs(x = "Week",
+                    y = "Weekly mortality") +
+               
+               scatter_plot_opts) %>%
+               
+               ggsave("Output/Figures/Main/plot_results_case_study.png", ., width = 8, height = 5)
+             )
 )
