@@ -1364,7 +1364,7 @@ list(
              ),
   
   # Plot outcome trajectories
-  tar_target(plot_results_case_study, (data_results_case_study %>%
+  tar_target(plot_results_case_study, data_results_case_study %>%
                
                ggplot() +
                
@@ -1380,13 +1380,50 @@ list(
                labs(x = "Week",
                     y = "Weekly mortality",
                     colour = "Method") +
-                 
-                 theme(legend.position = "bottom") +
                
                scatter_plot_opts +
                  
-                 scale_colour_manual(values = cbbPalette)) %>%
+                 scale_colour_manual(values = cbbPalette)
+             ),
+  
+  # Plot outcome trajectories relative to truth
+  tar_target(plot_results_case_study_diff, data_results_case_study %>% 
                
-               ggsave("Output/Figures/Main/plot_results_case_study.png", ., width = 8, height = 5)
-             )
+               pivot_wider(id_cols = t, names_from = method, values_from = outcome) %>% 
+               
+               mutate(across(-t, ~ True - .)) %>% 
+               
+               pivot_longer(-t, names_to = "method", values_to = "outcome") %>%
+               
+               filter(method != "True") %>%
+               
+               ggplot() +
+               
+               geom_line(aes(x = t,
+                             y = outcome,
+                             colour = method)) +
+               
+               geom_vline(xintercept = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 0]),
+                          linetype = "dashed") +
+               
+               geom_hline(yintercept = 0, linetype = "dashed") +
+               
+               ylim(-200,200) +
+               
+               labs(x = "Week",
+                    y = "Difference between true\nvs. counterfactual mortality",
+                    colour = "Method") +
+               
+               scatter_plot_opts +
+               
+               scale_colour_manual(values = cbbPalette)
+             
+             ),
+  
+  # Combine into patchwork plot
+  tar_target(patchwork_results_case_study, make_patchwork_plot(list = list(plot_results_case_study_diff,
+                                                                           plot_results_case_study),
+                                                               ncol = 1) %>%
+               
+               ggsave("Output/Figures/Main/patchwork_results_case_study.png", ., width = 8, height = 5))
 )
