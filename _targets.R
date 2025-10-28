@@ -1293,6 +1293,42 @@ list(
   ### EMPIRICAL APPLICATION ################################################################################
   ##########################################################################################################
   
+  tar_target(
+    plot_pm25_case_study, (data_for_case_study %>% 
+      
+      ggplot() + 
+      
+      geom_line(aes(x = week_id, 
+                    y = pred_fire_PM25, 
+                    group = column_label), 
+                alpha = 0.1) + 
+      
+      geom_line(data = filter(data_for_case_study, treated == 1), 
+                aes(x = week_id, y = pred_fire_PM25)) + 
+      
+      geom_vline(xintercept = min(data_for_case_study$week_id[data_for_case_study$post==1]), 
+                 linetype = "dashed") + 
+      
+      annotate("rect",
+               xmin = min(data_for_case_study$week_id[data_for_case_study$post==1]),
+               xmax = Inf,
+               ymin = -Inf,
+               ymax = Inf,
+               alpha = 0.1) +
+      
+      annotate("text",
+               x = 802,
+               y = 60,
+               label = "Treatment start") +
+      
+      scatter_plot_opts + 
+      
+      labs(x = "Week",
+           y = "Predicted\nLFS PM2.5/m3")) %>% 
+      
+      ggsave("Output/Figures/Main/plot_pm25_case_study.png", ., width = 8, height = 5)
+  ),
+  
   ### Select data subset for analysis
   tar_target(data_for_case_study, list_data_for_synth[["567"]]
   ),
