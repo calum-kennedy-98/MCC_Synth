@@ -1049,7 +1049,7 @@ list(
                                  ymax = q95)) + 
                coord_flip() + 
                scatter_plot_opts + 
-                 theme(axis.text.x = element_blank()) +
+                 theme(axis.text.y = element_blank()) +
                labs(x = "", y = "Coefficient on predicted fire PM2.5 exposure")
              ) %>% 
                ggsave("Output/Figures/Simulation/scatter_plot_coef_pred_fire_pm25_factor_outcome_neg_binom_model.png", ., width = 8, height = 8)
