@@ -1037,7 +1037,7 @@ list(
              format = "file"),
   
   # Plot of estimated coefficients on fire PM2.5 from negative binomial model estimated on outcomes generated from a factor model
-  tar_target(scatter_plot_coef_pred_fire_pm25_factor_outcome_neg_binom_model, (data_coef_pred_fire_pm25_factor_outcome_neg_binom_model %>% 
+  tar_target(scatter_plot_coef_pred_fire_pm25_factor_outcome_neg_binom_model, (data_coef_pred_fire_PM25_factor_outcome_neg_binom_model %>% 
                
                ggplot() + 
                geom_point(aes(x = reorder(column_label, mean), 
