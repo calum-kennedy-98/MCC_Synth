@@ -97,6 +97,6 @@ results <- list_results_coef_pred_fire_PM25_by_location %>%
   })
 
 # Bind the original vector of locations
-result <- tibble(result, column_label = unique_locations)
+results <- tibble(results, column_label = unique_locations)
 
 }
