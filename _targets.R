@@ -248,9 +248,29 @@ list(
                                                            n_periods_pre = 26,
                                                            n_periods_post = 26)),
   
+  # Extract coefficient on pred_fire_PM25 from running 'wrong' negative binomial model
+  # on outcomes generated from factor model
+  tar_target(data_coef_pred_fire_PM25_factor_outcome_neg_binom_model, 
+             
+             get_coefficient_pred_fire_pm25_sim_data_neg_binom(
+               
+               list_data_simulated = list_data_simulated, 
+               unit_id_var = column_label, 
+               time_id_var = week_id,
+               week_id_var = week_id,
+               treated_var = treated,
+               outcome_var = Y0_treated_factor, 
+               year_var = year,
+               linear_predictors = c("pred_nonfire_PM25"), 
+               temp_var = tmean, 
+               spline_df_per_year = 7, 
+               spline_df_temp = 4)
+             
+             ),
+  
   # Get optimal SC from simulations --------------------------------------------
   
-  # 1. No demeaning/denoising, negative binomial model, assignment based on empirical distribution 
+  # 1. No demeaning/denoising, negative binomial model, assignment based on empirical distribution f
   
   # ADH
   tar_target(results_synth_adh_neg_binom, future_map(list_data_simulated,
@@ -769,22 +789,22 @@ list(
   
   tar_target(patchwork_plot_line_real_vs_sim_data, (make_patchwork_plot(list = list(make_line_plot_real_vs_sim_data(list_data = list_data_simulated, 
                                                                                                                    location_var = column_label, 
-                                                                                                                   location_string = "toky.jap7220", 
+                                                                                                                   location_string = "aich.jap7220", 
                                                                                                                    time_var = week_id, 
                                                                                                                    min_time_var = 900, 
                                                                                                                    outcome_var = all, 
                                                                                                                    outcome_sim_var = Y0_treated_neg_binom) +
-                                                                                      ggtitle("A: Tokyo, Negative Binomial") +
+                                                                                      ggtitle("A: Aichi, Negative Binomial") +
                                                                                       labs(x = "",
                                                                                            y = "All-cause\nmortality"),
                                                                                    make_line_plot_real_vs_sim_data(list_data = list_data_simulated, 
                                                                                                                    location_var = column_label, 
-                                                                                                                   location_string = "toky.jap7220", 
+                                                                                                                   location_string = "aich.jap7220", 
                                                                                                                    time_var = week_id, 
                                                                                                                    min_time_var = 900, 
                                                                                                                    outcome_var = all, 
                                                                                                                    outcome_sim_var = Y0_treated_factor) + 
-                                                                                     ggtitle("B: Tokyo, Factor") +
+                                                                                     ggtitle("B: Aichi, Factor") +
                                                                                      labs(x = "",
                                                                                           y = ""),
                                                                                    make_line_plot_real_vs_sim_data(list_data = list_data_simulated, 
@@ -1015,6 +1035,24 @@ list(
                
                ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y_factor.png", ., width = 8, height = 5),
              format = "file"),
+  
+  # Plot of estimated coefficients on fire PM2.5 from negative binomial model estimated on outcomes generated from a factor model
+  tar_target(scatter_plot_coef_pred_fire_pm25_factor_outcome_neg_binom_model, (data_coef_pred_fire_pm25_factor_outcome_neg_binom_model %>% 
+               
+               ggplot() + 
+               geom_point(aes(x = reorder(column_label, mean), 
+                              y = mean)) + 
+               geom_hline(yintercept = 0, linetype = "dashed") + 
+               geom_errorbar(aes(x = reorder(column_label, mean), 
+                                 y = mean, 
+                                 ymin = q05, 
+                                 ymax = q95)) + 
+               coord_flip() + 
+               scatter_plot_opts + 
+               labs(x = "", y = "Coefficient on predicted fire PM2.5 exposure")
+             ) %>% 
+               ggsave("Output/Figures/Simulation/scatter_plot_coef_pred_fire_pm25_factor_outcome_neg_binom_model.png", ., width = 8, height = 5)
+             ),
   
   #######################################################################################################################################
   ### TABLES FROM SIMULATION STUDY ######################################################################################################
