@@ -286,6 +286,20 @@ list(
                                                                               time_var = week_id,
                                                                               spline_df = NULL))),
   
+  # ADH subset
+  tar_target(results_synth_adh_subset_neg_binom, future_map(list_data_simulated,
+                                                     ~ optimise_synth(.,
+                                                                      demean_outcomes = FALSE,
+                                                                      denoise_outcomes = FALSE,
+                                                                      objective_function = "ADH subset",
+                                                                      n_periods_pre = 26,
+                                                                      n_periods_post = 26,
+                                                                      outcome_var = Y0_treated_neg_binom,
+                                                                      treated_id_var = treated,
+                                                                      treated_time_var = post,
+                                                                      time_var = week_id,
+                                                                      spline_df = NULL))),
+  
   # DIFP
   tar_target(results_synth_difp_neg_binom, future_map(list_data_simulated,
                                                                ~ optimise_synth(.,
@@ -328,6 +342,20 @@ list(
                                                                       time_var = week_id,
                                                                       spline_df = NULL))),
   
+  # 1-NN matching
+  tar_target(results_synth_1NN_matching_neg_binom, future_map(list_data_simulated,
+                                                     ~ optimise_synth(.,
+                                                                      demean_outcomes = FALSE,
+                                                                      denoise_outcomes = FALSE,
+                                                                      objective_function = "1NN matching",
+                                                                      n_periods_pre = 26,
+                                                                      n_periods_post = 26,
+                                                                      outcome_var = Y0_treated_neg_binom,
+                                                                      treated_id_var = treated,
+                                                                      treated_time_var = post,
+                                                                      time_var = week_id,
+                                                                      spline_df = NULL))),
+  
   # 2. No demeaning/denoising, factor model, assignment based on empirical distribution
   
   # ADH
@@ -343,6 +371,20 @@ list(
                                                                       treated_time_var = post,
                                                                       time_var = week_id,
                                                                       spline_df = NULL))),
+  
+  # ADH subset
+  tar_target(results_synth_adh_subset_factor, future_map(list_data_simulated,
+                                                  ~ optimise_synth(.,
+                                                                   demean_outcomes = FALSE,
+                                                                   denoise_outcomes = FALSE,
+                                                                   objective_function = "ADH subset",
+                                                                   n_periods_pre = 26,
+                                                                   n_periods_post = 26,
+                                                                   outcome_var = Y0_treated_factor,
+                                                                   treated_id_var = treated,
+                                                                   treated_time_var = post,
+                                                                   time_var = week_id,
+                                                                   spline_df = NULL))),
   
   # DIFP
   tar_target(results_synth_difp_factor, future_map(list_data_simulated,
@@ -386,6 +428,20 @@ list(
                                                                    time_var = week_id,
                                                                    spline_df = NULL))),
   
+  # 1-NN matching
+  tar_target(results_synth_1NN_matching_factor, future_map(list_data_simulated,
+                                                  ~ optimise_synth(.,
+                                                                   demean_outcomes = FALSE,
+                                                                   denoise_outcomes = FALSE,
+                                                                   objective_function = "1NN matching",
+                                                                   n_periods_pre = 26,
+                                                                   n_periods_post = 26,
+                                                                   outcome_var = Y0_treated_factor,
+                                                                   treated_id_var = treated,
+                                                                   treated_time_var = post,
+                                                                   time_var = week_id,
+                                                                   spline_df = NULL))),
+  
   # 3. No demeaning/denoising, negative binomial model, random assignment 
   
   # ADH
@@ -401,6 +457,20 @@ list(
                                                                       treated_time_var = post,
                                                                       time_var = week_id,
                                                                       spline_df = NULL))),
+  
+  # ADH
+  tar_target(results_synth_adh_subset_neg_binom_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                                       ~ optimise_synth(.,
+                                                                                        demean_outcomes = FALSE,
+                                                                                        denoise_outcomes = FALSE,
+                                                                                        objective_function = "ADH subset",
+                                                                                        n_periods_pre = 26,
+                                                                                        n_periods_post = 26,
+                                                                                        outcome_var = Y0_treated_neg_binom,
+                                                                                        treated_id_var = treated,
+                                                                                        treated_time_var = post,
+                                                                                        time_var = week_id,
+                                                                                        spline_df = NULL))),
   
   # DIFP
   tar_target(results_synth_difp_neg_binom_random_assignment, future_map(list_data_simulated_random_assignment,
@@ -444,6 +514,20 @@ list(
                                                                                         time_var = week_id,
                                                                                         spline_df = NULL))),
   
+  # 1-NN matching
+  tar_target(results_synth_1NN_matching_neg_binom_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                                       ~ optimise_synth(.,
+                                                                                        demean_outcomes = FALSE,
+                                                                                        denoise_outcomes = FALSE,
+                                                                                        objective_function = "1NN matching",
+                                                                                        n_periods_pre = 26,
+                                                                                        n_periods_post = 26,
+                                                                                        outcome_var = Y0_treated_neg_binom,
+                                                                                        treated_id_var = treated,
+                                                                                        treated_time_var = post,
+                                                                                        time_var = week_id,
+                                                                                        spline_df = NULL))),
+  
   # 4. No demeaning/denoising, factor model, random assignment
   
   # ADH
@@ -459,6 +543,20 @@ list(
                                                                    treated_time_var = post,
                                                                    time_var = week_id,
                                                                    spline_df = NULL))),
+  
+  # ADH subset
+  tar_target(results_synth_adh_subset_factor_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                                    ~ optimise_synth(.,
+                                                                                     demean_outcomes = FALSE,
+                                                                                     denoise_outcomes = FALSE,
+                                                                                     objective_function = "ADH subset",
+                                                                                     n_periods_pre = 26,
+                                                                                     n_periods_post = 26,
+                                                                                     outcome_var = Y0_treated_factor,
+                                                                                     treated_id_var = treated,
+                                                                                     treated_time_var = post,
+                                                                                     time_var = week_id,
+                                                                                     spline_df = NULL))),
   
   # DIFP
   tar_target(results_synth_difp_factor_random_assignment, future_map(list_data_simulated_random_assignment,
@@ -502,6 +600,20 @@ list(
                                                                                      time_var = week_id,
                                                                                      spline_df = NULL))),
   
+  # 1-NN matching
+  tar_target(results_synth_1NN_matching_factor_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                                    ~ optimise_synth(.,
+                                                                                     demean_outcomes = FALSE,
+                                                                                     denoise_outcomes = FALSE,
+                                                                                     objective_function = "1NN matching",
+                                                                                     n_periods_pre = 26,
+                                                                                     n_periods_post = 26,
+                                                                                     outcome_var = Y0_treated_factor,
+                                                                                     treated_id_var = treated,
+                                                                                     treated_time_var = post,
+                                                                                     time_var = week_id,
+                                                                                     spline_df = NULL))),
+  
   # 5. De-meaned outcomes, negative binomial model, assignment based on empirical distribution 
   
   # ADH
@@ -517,6 +629,20 @@ list(
                                                                       treated_time_var = post,
                                                                       time_var = week_id,
                                                                       spline_df = NULL))),
+  
+  # ADH subset
+  tar_target(results_synth_adh_subset_neg_binom_demeaned, future_map(list_data_simulated,
+                                                              ~ optimise_synth(.,
+                                                                               demean_outcomes = TRUE,
+                                                                               denoise_outcomes = FALSE,
+                                                                               objective_function = "ADH subset",
+                                                                               n_periods_pre = 26,
+                                                                               n_periods_post = 26,
+                                                                               outcome_var = Y0_treated_neg_binom,
+                                                                               treated_id_var = treated,
+                                                                               treated_time_var = post,
+                                                                               time_var = week_id,
+                                                                               spline_df = NULL))),
   
   # DIFP
   tar_target(results_synth_difp_neg_binom_demeaned, future_map(list_data_simulated,
@@ -546,6 +672,34 @@ list(
                                                                       time_var = week_id,
                                                                       spline_df = NULL))),
   
+  # DID
+  tar_target(results_synth_did_neg_binom_demeaned, future_map(list_data_simulated,
+                                                              ~ optimise_synth(.,
+                                                                               demean_outcomes = TRUE,
+                                                                               denoise_outcomes = FALSE,
+                                                                               objective_function = "DID",
+                                                                               n_periods_pre = 26,
+                                                                               n_periods_post = 26,
+                                                                               outcome_var = Y0_treated_neg_binom,
+                                                                               treated_id_var = treated,
+                                                                               treated_time_var = post,
+                                                                               time_var = week_id,
+                                                                               spline_df = NULL))),
+  
+  # 1-NN matching
+  tar_target(results_synth_1NN_matching_neg_binom_demeaned, future_map(list_data_simulated,
+                                                              ~ optimise_synth(.,
+                                                                               demean_outcomes = TRUE,
+                                                                               denoise_outcomes = FALSE,
+                                                                               objective_function = "1NN matching",
+                                                                               n_periods_pre = 26,
+                                                                               n_periods_post = 26,
+                                                                               outcome_var = Y0_treated_neg_binom,
+                                                                               treated_id_var = treated,
+                                                                               treated_time_var = post,
+                                                                               time_var = week_id,
+                                                                               spline_df = NULL))),
+  
   # 6. De-meaned outcomes, factor model, assignment based on empirical distribution
   
   # ADH
@@ -561,6 +715,20 @@ list(
                                                                    treated_time_var = post,
                                                                    time_var = week_id,
                                                                    spline_df = NULL))),
+  
+  # ADH subset
+  tar_target(results_synth_adh_subset_factor_demeaned, future_map(list_data_simulated,
+                                                           ~ optimise_synth(.,
+                                                                            demean_outcomes = TRUE,
+                                                                            denoise_outcomes = FALSE,
+                                                                            objective_function = "ADH subset",
+                                                                            n_periods_pre = 26,
+                                                                            n_periods_post = 26,
+                                                                            outcome_var = Y0_treated_factor,
+                                                                            treated_id_var = treated,
+                                                                            treated_time_var = post,
+                                                                            time_var = week_id,
+                                                                            spline_df = NULL))),
   
   # DIFP
   tar_target(results_synth_difp_factor_demeaned, future_map(list_data_simulated,
@@ -590,6 +758,34 @@ list(
                                                                    time_var = week_id,
                                                                    spline_df = NULL))),
   
+  # DID
+  tar_target(results_synth_did_factor_demeaned, future_map(list_data_simulated,
+                                                           ~ optimise_synth(.,
+                                                                            demean_outcomes = TRUE,
+                                                                            denoise_outcomes = FALSE,
+                                                                            objective_function = "DID",
+                                                                            n_periods_pre = 26,
+                                                                            n_periods_post = 26,
+                                                                            outcome_var = Y0_treated_factor,
+                                                                            treated_id_var = treated,
+                                                                            treated_time_var = post,
+                                                                            time_var = week_id,
+                                                                            spline_df = NULL))),
+  
+  # 1-NN matching
+  tar_target(results_synth_1NN_matching_factor_demeaned, future_map(list_data_simulated,
+                                                           ~ optimise_synth(.,
+                                                                            demean_outcomes = TRUE,
+                                                                            denoise_outcomes = FALSE,
+                                                                            objective_function = "1NN matching",
+                                                                            n_periods_pre = 26,
+                                                                            n_periods_post = 26,
+                                                                            outcome_var = Y0_treated_factor,
+                                                                            treated_id_var = treated,
+                                                                            treated_time_var = post,
+                                                                            time_var = week_id,
+                                                                            spline_df = NULL))),
+  
   # 7. De-meaned outcomes, negative binomial model, random assignment 
   
   # ADH
@@ -605,6 +801,20 @@ list(
                                                                                         treated_time_var = post,
                                                                                         time_var = week_id,
                                                                                         spline_df = NULL))),
+  
+  # ADH subset
+  tar_target(results_synth_adh_subset_neg_binom_demeaned_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                                                ~ optimise_synth(.,
+                                                                                                 demean_outcomes = TRUE,
+                                                                                                 denoise_outcomes = FALSE,
+                                                                                                 objective_function = "ADH subset",
+                                                                                                 n_periods_pre = 26,
+                                                                                                 n_periods_post = 26,
+                                                                                                 outcome_var = Y0_treated_neg_binom,
+                                                                                                 treated_id_var = treated,
+                                                                                                 treated_time_var = post,
+                                                                                                 time_var = week_id,
+                                                                                                 spline_df = NULL))),
   
   # DIFP
   tar_target(results_synth_difp_neg_binom_demeaned_random_assignment, future_map(list_data_simulated_random_assignment,
@@ -634,6 +844,34 @@ list(
                                                                                         time_var = week_id,
                                                                                         spline_df = NULL))),
   
+  # DID
+  tar_target(results_synth_did_neg_binom_demeaned_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                                                ~ optimise_synth(.,
+                                                                                                 demean_outcomes = TRUE,
+                                                                                                 denoise_outcomes = FALSE,
+                                                                                                 objective_function = "DID",
+                                                                                                 n_periods_pre = 26,
+                                                                                                 n_periods_post = 26,
+                                                                                                 outcome_var = Y0_treated_neg_binom,
+                                                                                                 treated_id_var = treated,
+                                                                                                 treated_time_var = post,
+                                                                                                 time_var = week_id,
+                                                                                                 spline_df = NULL))),
+  
+  # 1-NN matching
+  tar_target(results_synth_1NN_matching_neg_binom_demeaned_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                                                ~ optimise_synth(.,
+                                                                                                 demean_outcomes = TRUE,
+                                                                                                 denoise_outcomes = FALSE,
+                                                                                                 objective_function = "1NN matching",
+                                                                                                 n_periods_pre = 26,
+                                                                                                 n_periods_post = 26,
+                                                                                                 outcome_var = Y0_treated_neg_binom,
+                                                                                                 treated_id_var = treated,
+                                                                                                 treated_time_var = post,
+                                                                                                 time_var = week_id,
+                                                                                                 spline_df = NULL))),
+  
   # 8. De-meaned outcomes, factor model, random assignment
   
   # ADH
@@ -649,6 +887,20 @@ list(
                                                                                      treated_time_var = post,
                                                                                      time_var = week_id,
                                                                                      spline_df = NULL))),
+  
+  # ADH subset
+  tar_target(results_synth_adh_subset_factor_demeaned_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                                             ~ optimise_synth(.,
+                                                                                              demean_outcomes = TRUE,
+                                                                                              denoise_outcomes = FALSE,
+                                                                                              objective_function = "ADH subset",
+                                                                                              n_periods_pre = 26,
+                                                                                              n_periods_post = 26,
+                                                                                              outcome_var = Y0_treated_factor,
+                                                                                              treated_id_var = treated,
+                                                                                              treated_time_var = post,
+                                                                                              time_var = week_id,
+                                                                                              spline_df = NULL))),
   
   # DIFP
   tar_target(results_synth_difp_factor_demeaned_random_assignment, future_map(list_data_simulated_random_assignment,
@@ -678,38 +930,74 @@ list(
                                                                                      time_var = week_id,
                                                                                      spline_df = NULL))),
   
+  # DID
+  tar_target(results_synth_did_factor_demeaned_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                                             ~ optimise_synth(.,
+                                                                                              demean_outcomes = TRUE,
+                                                                                              denoise_outcomes = FALSE,
+                                                                                              objective_function = "DID",
+                                                                                              n_periods_pre = 26,
+                                                                                              n_periods_post = 26,
+                                                                                              outcome_var = Y0_treated_factor,
+                                                                                              treated_id_var = treated,
+                                                                                              treated_time_var = post,
+                                                                                              time_var = week_id,
+                                                                                              spline_df = NULL))),
+  
+  # 1-NN matching
+  tar_target(results_synth_1NN_matching_factor_demeaned_random_assignment, future_map(list_data_simulated_random_assignment,
+                                                                             ~ optimise_synth(.,
+                                                                                              demean_outcomes = TRUE,
+                                                                                              denoise_outcomes = FALSE,
+                                                                                              objective_function = "1NN matching",
+                                                                                              n_periods_pre = 26,
+                                                                                              n_periods_post = 26,
+                                                                                              outcome_var = Y0_treated_factor,
+                                                                                              treated_id_var = treated,
+                                                                                              treated_time_var = post,
+                                                                                              time_var = week_id,
+                                                                                              spline_df = NULL))),
+  
   # Extract results across simulations and assign treatment effects ------------
   
   # 1. Empirical distribution assignment
   
   tar_target(data_tau_hat_neg_binom, map(list(results_synth_adh_neg_binom,
+                                              results_synth_adh_subset_neg_binom,
                                               results_synth_difp_neg_binom,
                                               results_synth_psc_neg_binom,
-                                              results_synth_did_neg_binom), 
+                                              results_synth_did_neg_binom,
+                                              results_synth_1NN_matching_neg_binom), 
                                          ~extract_tau_hat_synth_results(.,
                                                                         treatment_effect_type = "placebo")) %>%
                bind_rows()),
   
   tar_target(data_tau_hat_neg_binom_demeaned, map(list(results_synth_adh_neg_binom_demeaned,
+                                                       results_synth_adh_subset_neg_binom_demeaned,
                                               results_synth_difp_neg_binom_demeaned,
                                               results_synth_psc_neg_binom_demeaned,
-                                              results_synth_did_neg_binom), # Don't need to demean DID since estimator is identical 
+                                              results_synth_did_neg_binom_demeaned,
+                                              results_synth_1NN_matching_neg_binom_demeaned), # Don't need to demean DID since estimator is identical 
                                          ~extract_tau_hat_synth_results(.,
                                                                         treatment_effect_type = "placebo")) %>%
                bind_rows()),
   
   tar_target(data_tau_hat_factor, map(list(results_synth_adh_factor,
+                                           results_synth_adh_subset_factor,
                                            results_synth_difp_factor,
                                            results_synth_psc_factor,
-                                           results_synth_did_factor), 
+                                           results_synth_did_factor,
+                                           results_synth_1NN_matching_factor), 
                                          ~extract_tau_hat_synth_results(.,
                                                                         treatment_effect_type = "placebo")) %>%
                bind_rows()),
   
   tar_target(data_tau_hat_factor_demeaned, map(list(results_synth_adh_factor_demeaned,
+                                                    results_synth_adh_subset_factor_demeaned,
                                                     results_synth_difp_factor_demeaned,
                                                     results_synth_psc_factor_demeaned,
-                                                    results_synth_did_factor), # DID estimator is identical under demeaning 
+                                                    results_synth_did_factor_demeaned,
+                                                    results_synth_1NN_matching_factor_demeaned),
                                       ~extract_tau_hat_synth_results(.,
                                                                      treatment_effect_type = "placebo")) %>%
                bind_rows()),
@@ -717,33 +1005,41 @@ list(
   # 2. Random assignment
   
   tar_target(data_tau_hat_neg_binom_random_assignment, map(list(results_synth_adh_neg_binom_random_assignment,
+                                                                results_synth_adh_subset_neg_binom_random_assignment,
                                               results_synth_difp_neg_binom_random_assignment,
                                               results_synth_psc_neg_binom_random_assignment,
-                                              results_synth_did_neg_binom_random_assignment), 
+                                              results_synth_did_neg_binom_random_assignment,
+                                              results_synth_1NN_matching_neg_binom_random_assignment), 
                                          ~extract_tau_hat_synth_results(.,
                                                                         treatment_effect_type = "placebo")) %>%
                bind_rows()),
   
   tar_target(data_tau_hat_neg_binom_demeaned_random_assignment, map(list(results_synth_adh_neg_binom_demeaned_random_assignment,
+                                                                         results_synth_adh_subset_neg_binom_demeaned_random_assignment,
                                                        results_synth_difp_neg_binom_demeaned_random_assignment,
                                                        results_synth_psc_neg_binom_demeaned_random_assignment,
-                                                       results_synth_did_neg_binom_random_assignment), # DID estimator is identical under demeaning 
+                                                       results_synth_did_neg_binom_demeaned_random_assignment,
+                                                       results_synth_1NN_matching_neg_binom_demeaned_random_assignment), 
                                                   ~extract_tau_hat_synth_results(.,
                                                                                  treatment_effect_type = "placebo")) %>%
                bind_rows()),
   
   tar_target(data_tau_hat_factor_random_assignment, map(list(results_synth_adh_factor_random_assignment,
+                                                             results_synth_adh_subset_factor_random_assignment,
                                            results_synth_difp_factor_random_assignment,
                                            results_synth_psc_factor_random_assignment,
-                                           results_synth_did_factor_random_assignment), 
+                                           results_synth_did_factor_random_assignment,
+                                           results_synth_1NN_matching_factor_random_assignment), 
                                       ~extract_tau_hat_synth_results(.,
                                                                      treatment_effect_type = "placebo")) %>%
                bind_rows()),
   
   tar_target(data_tau_hat_factor_demeaned_random_assignment, map(list(results_synth_adh_factor_demeaned_random_assignment,
+                                                                      results_synth_adh_subset_factor_demeaned_random_assignment,
                                                     results_synth_difp_factor_demeaned_random_assignment,
                                                     results_synth_psc_factor_demeaned_random_assignment,
-                                                    results_synth_did_factor_random_assignment), # DID estimator is identical under demeaning 
+                                                    results_synth_did_factor_demeaned_random_assignment,
+                                                    results_synth_1NN_matching_factor_demeaned_random_assignment),
                                                ~extract_tau_hat_synth_results(.,
                                                                               treatment_effect_type = "placebo")) %>%
                bind_rows()),
@@ -752,34 +1048,34 @@ list(
   ### RESULTS FROM MAIN ANALYSIS #########################################################################
   ########################################################################################################
   
-  tar_target(results_synth_main_all_cause, future_map(list_data_for_synth,
-                                                      function(x){
-                                                        n_periods_pre <- nrow(filter(x, 
-                                                                                     treated == 1,
-                                                                                     post == 0))
-                                                        n_periods_post <- nrow(filter(x,
-                                                                                      treated == 1,
-                                                                                      post == 1))
-                                                        
-                                                        # Set maximum value of n_periods_pre to 100
-                                                        n_periods_pre <- min(n_periods_pre, 100)
-                                                        
-                                                        optimise_synth(data = x,
-                                                                       demean_outcomes = TRUE,
-                                                                       denoise_outcomes = FALSE,
-                                                                       objective_function = "PSC",
-                                                                       n_periods_pre = n_periods_pre,
-                                                                       n_periods_post = n_periods_post,
-                                                                       outcome_var = all,
-                                                                       treated_id_var = treated,
-                                                                       treated_time_var = post,
-                                                                       time_var = week_id,
-                                                                       spline_df = NULL)
-                                                      })),
-  
-  # Extract results from main analysis
-  tar_target(data_results_synth_main_all_cause, extract_synth_results_main(list_data_for_synth = list_data_for_synth,
-                                                                           list_results_synth = results_synth_main_all_cause)),
+  # tar_target(results_synth_main_all_cause, future_map(list_data_for_synth,
+  #                                                     function(x){
+  #                                                       n_periods_pre <- nrow(filter(x, 
+  #                                                                                    treated == 1,
+  #                                                                                    post == 0))
+  #                                                       n_periods_post <- nrow(filter(x,
+  #                                                                                     treated == 1,
+  #                                                                                     post == 1))
+  #                                                       
+  #                                                       # Set maximum value of n_periods_pre to 100
+  #                                                       n_periods_pre <- min(n_periods_pre, 100)
+  #                                                       
+  #                                                       optimise_synth(data = x,
+  #                                                                      demean_outcomes = TRUE,
+  #                                                                      denoise_outcomes = FALSE,
+  #                                                                      objective_function = "PSC",
+  #                                                                      n_periods_pre = n_periods_pre,
+  #                                                                      n_periods_post = n_periods_post,
+  #                                                                      outcome_var = all,
+  #                                                                      treated_id_var = treated,
+  #                                                                      treated_time_var = post,
+  #                                                                      time_var = week_id,
+  #                                                                      spline_df = NULL)
+  #                                                     })),
+  # 
+  # # Extract results from main analysis
+  # tar_target(data_results_synth_main_all_cause, extract_synth_results_main(list_data_for_synth = list_data_for_synth,
+  #                                                                          list_results_synth = results_synth_main_all_cause)),
   
   ##############################################################################################################################
   ### PLOTS FROM SIMULATION STUDY ##############################################################################################
@@ -1040,16 +1336,15 @@ list(
   tar_target(scatter_plot_coef_pred_fire_pm25_factor_outcome_neg_binom_model, (data_coef_pred_fire_PM25_factor_outcome_neg_binom_model %>% 
                
                ggplot() + 
-               geom_point(aes(x = reorder(column_label, mean), 
-                              y = mean)) + 
+               geom_point(aes(x = reorder(term, estimate), 
+                              y = estimate)) + 
                geom_hline(yintercept = 0, linetype = "dashed") + 
-               geom_errorbar(aes(x = reorder(column_label, mean), 
-                                 y = mean, 
-                                 ymin = q05, 
-                                 ymax = q95)) + 
+               geom_errorbar(aes(x = reorder(term, estimate), 
+                                 y = estimate, 
+                                 ymin = `lower.2.5 %`, 
+                                 ymax = `upper.97.5 %`)) + 
                coord_flip() + 
                scatter_plot_opts + 
-                 theme(axis.text.y = element_blank()) +
                labs(x = "", y = "Coefficient on predicted fire PM2.5 exposure")
              ) %>% 
                ggsave("Output/Figures/Simulation/scatter_plot_coef_pred_fire_pm25_factor_outcome_neg_binom_model.png", ., width = 8, height = 8)
@@ -1385,6 +1680,19 @@ list(
                                                     spline_df = NULL)
              ),
   
+  tar_target(results_case_study_adh_subset, optimise_synth(data = data_for_case_study,
+                                                    demean_outcomes = TRUE,
+                                                    denoise_outcomes = FALSE,
+                                                    objective_function = "ADH subset",
+                                                    n_periods_pre = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 0]),
+                                                    n_periods_post = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 1]),
+                                                    outcome_var = all,
+                                                    treated_id_var = treated,
+                                                    treated_time_var = post,
+                                                    time_var = week_id,
+                                                    spline_df = NULL)
+  ),
+  
   tar_target(results_case_study_psc, optimise_synth(data = data_for_case_study,
                                                     demean_outcomes = TRUE,
                                                     denoise_outcomes = FALSE,
@@ -1424,18 +1732,35 @@ list(
                                                      spline_df = NULL)
   ),
   
+  tar_target(results_case_study_1NN_matching, optimise_synth(data = data_for_case_study,
+                                                    demean_outcomes = TRUE,
+                                                    denoise_outcomes = FALSE,
+                                                    objective_function = "1NN matching",
+                                                    n_periods_pre = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 0]),
+                                                    n_periods_post = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 1]),
+                                                    outcome_var = all,
+                                                    treated_id_var = treated,
+                                                    treated_time_var = post,
+                                                    time_var = week_id,
+                                                    spline_df = NULL)
+  ),
+  
   # Store results in tibble
   tar_target(data_results_case_study, tibble(outcome = c(results_case_study_adh$Y_treated,
                                                         results_case_study_adh$Y0_treated_hat,
+                                                        results_case_study_adh_subset$Y0_treated_hat,
                                                         results_case_study_psc$Y0_treated_hat,
                                                         results_case_study_difp$Y0_treated_hat,
-                                                        results_case_study_did$Y0_treated_hat),
+                                                        results_case_study_did$Y0_treated_hat,
+                                                        results_case_study_1NN_matching$Y0_treated_hat),
                                              method = c(rep("True", length(data_for_case_study$post[data_for_case_study$treated == 1])), 
                                                         rep("ADH", length(data_for_case_study$post[data_for_case_study$treated == 1])),
+                                                        rep("ADH subset", length(data_for_case_study$post[data_for_case_study$treated == 1])),
                                                         rep("PSC", length(data_for_case_study$post[data_for_case_study$treated == 1])),
                                                         rep("DIFP", length(data_for_case_study$post[data_for_case_study$treated == 1])),
-                                                        rep("DID", length(data_for_case_study$post[data_for_case_study$treated == 1]))),
-                                             t = rep(1:length(data_for_case_study$post[data_for_case_study$treated == 1]), 5))
+                                                        rep("DID", length(data_for_case_study$post[data_for_case_study$treated == 1])),
+                                                        rep("1NN matching", length(data_for_case_study$post[data_for_case_study$treated == 1]))),
+                                             t = rep(1:length(data_for_case_study$post[data_for_case_study$treated == 1]), 7))
              ),
   
   # Plot outcome trajectories

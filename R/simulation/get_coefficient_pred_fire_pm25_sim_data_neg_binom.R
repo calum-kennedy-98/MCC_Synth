@@ -1,8 +1,8 @@
 # Name of script: get_coefficient_pred_fire_pm25_sim_data_neg_binom
-# Description: Function to extract dataframe of point estimates and upper/lower quantiles
+# Description: Function to extract dataframe of point estimates and upper/lower confidence intervals
 # for the coefficient on predicted LFS PM2.5 exposure using a negative binomial model
 # from the simulated outcome data. By construction, the true effect of predicted fire PM2.5
-# in the simulated data is zero, so this function allows us to check how well a `wrong` model
+# in any simulated data is zero, so this function allows us to check how well a `wrong` model
 # recovers the true effect of zero.
 # Created by: Calum Kennedy (calum.kennedy.25@ucl.ac.uk)
 # Created on: 05-11-2025
@@ -51,18 +51,19 @@ get_coefficient_pred_fire_pm25_sim_data_neg_binom <- function(list_data_simulate
   temp_var_quo <- as_name(ensym(temp_var))
   year_var_quo <- as_name(ensym(year_var))
   unit_id_var_quo <- as_name(ensym(unit_id_var))
-
-list_results_coef_pred_fire_PM25 <- future_map(list_data_simulated, function(data){
   
-  # Export ns function to workers
-  ns
+  # Use first simulated dataset for analysis
+  data <- list_data_simulated[[1]]
   
   # Extract list of location-specific datasets from main data
   list_data_location_specific <- lapply(unique_locations, function(x){filter(data, .data[[unit_id_var_quo]] == x)})
   
   # Get list of estimated coefficients on pred_fire_PM25 from each location
-  list_coef_pred_fire_PM25 <- map(list_data_location_specific, 
+  list_coef_pred_fire_PM25 <- future_map(list_data_location_specific, 
                                                  function(x){
+                                                   
+                                                   # Export ns function to workers
+                                                   ns
                                                    
                                                    # Estimate negative binomial regression model and extract output
                                                    model <- estimate_neg_binomial_model(data = x,
@@ -75,28 +76,24 @@ list_results_coef_pred_fire_PM25 <- future_map(list_data_simulated, function(dat
                                                                                         spline_df_temp)
                                                    
                                                    # Extract coefficient on pred_fire_PM25
-                                                   model$coefficients[["pred_fire_PM25"]]
+                                                   coef <- model$coefficients[["pred_fire_PM25"]]
+                                                   
+                                                   # Extract confidence interval
+                                                   ci <- confint(model)["pred_fire_PM25", ]
+                                                   
+                                                   # Combine into a named vector or small data frame
+                                                   result <- c(estimate = coef,
+                                                               lower = ci[1],
+                                                               upper = ci[2])
                                                    
                                                  })
   
-})
 
-# Transpose results to get list of coefficient estimates by location across simulated datasets
-list_results_coef_pred_fire_PM25_by_location <- list_results_coef_pred_fire_PM25 %>%
-  transpose() 
+# Set unique locations to names of list of output
+names(list_coef_pred_fire_PM25) <- unique_locations
 
 # Get mean of coefficient + upper and lower quantiles across all simulation runs
-results <- list_results_coef_pred_fire_PM25_by_location %>%
-  map_dfr(~ {
-    vals <- unlist(.x)
-    tibble(
-      mean = mean(vals),
-      q05  = quantile(vals, 0.05),
-      q95  = quantile(vals, 0.95)
-    )
-  })
-
-# Bind the original vector of locations
-results <- tibble(results, column_label = unique_locations)
-
+#results <- tibble(bind_rows(list_coef_pred_fire_PM25), column_label = unique_locations)
+results <- imap_dfr(list_coef_pred_fire_PM25, ~ tibble(term = .y, !!!as.list(.x)))
+  
 }
