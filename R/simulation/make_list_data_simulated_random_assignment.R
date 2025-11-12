@@ -50,7 +50,11 @@ make_list_data_simulated_random_assignment <- function(data,
       mutate(
         treated = ifelse({{unit_id_var}} == treated_unit, 1, 0),
         post = ifelse({{time_id_var}} >= treated_time, 1, 0)
-      )
+      ) %>%
+      
+      select({{time_id_var}}, Y0_treated_neg_binom, Y0_treated_factor, post, treated) %>%
+      
+      filter(between({{time_id_var}}, treated_time - n_periods_pre, treated_time + n_periods_post - 1))
   }
   )
   
