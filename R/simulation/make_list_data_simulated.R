@@ -55,9 +55,11 @@ make_list_data_simulated <- function(data,
         post = ifelse({{time_id_var}} >= treated_time, 1, 0)
       ) %>%
       
-      select({{time_id_var}}, Y0_treated_neg_binom, Y0_treated_factor, post, treated) %>%
+      select({{time_id_var}}, {{unit_id_var}}, Y0_treated_neg_binom, Y0_treated_factor, post, treated) %>%
       
-      filter(between({{time_id_var}}, treated_time - n_periods_pre, treated_time + n_periods_post - 1))
+      filter(between({{time_id_var}}, treated_time - n_periods_pre, treated_time + n_periods_post - 1)) %>%
+      
+      mutate(across(where(is.character), as.factor))
   }
   )
   
