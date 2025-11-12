@@ -28,7 +28,7 @@ optimise_synth <- function(data,
   
   # Checks
   if(denoise_outcomes == TRUE & is.null(spline_df)) stop("If `denoise_outcomes' == TRUE, please specify a value for `spline_df'")
-  if(!objective_function %in% c("ADH", "PSC", "DIFP", "DID")) stop("Please set `objective_function' to one of `ADH', `PSC', `DIFP', or 'DID'")
+  if(!objective_function %in% c("ADH", "ADH subset", "PSC", "DIFP", "DID", "1NN matching")) stop("Please set `objective_function' to one of `ADH', 'ADH subset', `PSC', `DIFP', 'DID', or '1NN matching'")
   
   # Prepare data for synth
   data_prepared <- prepare_data_for_synth(data,
@@ -99,6 +99,17 @@ optimise_synth <- function(data,
                                                    lower_bound_lambda = 1e-6)
   } else if(objective_function == "DID"){
     results_optimisation <- objective_function_did(Y_treated_pre = Y_treated_pre,
+                                                   Y_controls_pre = Y_controls_to_optimise_pre,
+                                                   n_controls = 20)
+  } else if(objective_function == "ADH subset"){
+    results_optimisation <- objective_function_adh_subset(Y_treated_pre = Y_treated_pre,
+                                                          Y_controls_pre = Y_controls_to_optimise_pre,
+                                                          n_controls = 20, # Pick 20 controls as default
+                                                          initial_margin = 0.0005,
+                                                          max_attempts = 20,
+                                                          margin_increment = 0.0005)
+  } else if(objective_function == "1NN matching"){
+    results_optimisation <- objective_function_1NN_matching(Y_treated_pre = Y_treated_pre,
                                                    Y_controls_pre = Y_controls_to_optimise_pre)
   }
   
