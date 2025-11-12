@@ -8,6 +8,7 @@ library(here)
 library(ggplot2)
 library(viridis)
 library(crew)
+library(crew.cluster)
 library(future)
 
 # Conflict preferences
@@ -43,7 +44,7 @@ tar_option_set(
   ),
   format = "qs",
   memory = "transient",
-  garbage_collection = TRUE
+  garbage_collection = TRUE,
   #controller = crew_controller_local(workers = 10,
                                      #seconds_idle = 10)
   # Alternatively, if you want workers to run on a high-performance computing
@@ -51,20 +52,21 @@ tar_option_set(
   # For the cloud, see plugin packages like {crew.aws.batch}.
   # The following example is a controller for Sun Grid Engine (SGE).
   #
-  #   controller = crew.cluster::crew_controller_sge(
-  #     # Number of workers that the pipeline can scale up to:
-  #     workers = 10,
-  #     # It is recommended to set an idle time so workers can shut themselves
-  #     # down if they are not running tasks.
-  #     seconds_idle = 120,
-  #     # Many clusters install R as an environment module, and you can load it
-  #     # with the script_lines argument. To select a specific verison of R,
-  #     # you may need to include a version string, e.g. "module load R/4.3.2".
-  #     # Check with your system administrator if you are unsure.
-  #     script_lines = "module load R"
-  #   )
-  #
-  # Set other options as needed.
+    controller = crew.cluster::crew_controller_sge(
+      workers = 8,
+      seconds_idle = 120,
+      options_cluster = crew_options_sge(
+      script_lines = c(
+        "module -f unload compilers mpi gcc-libs",
+        "module load cmake/3.27.3",
+        "module load pandoc",
+        "module load glpk",
+        "module load r/r-4.4.2_bc-3.20",
+        "#$ -l mem=4G",
+        "#$ -pe smp 8"
+        )
+      )
+    )
 )
 
 # Source functions
