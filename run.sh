@@ -2,9 +2,9 @@
 
 #$ -N mcc_synth_pipeline
 #$ -cwd
-#$ -l h_rt=02:00:00
-#$ -l mem_free=16G
-#$ -pe smp 4
+#$ -l h_rt=30:00:00
+#$ -l mem=28G
+#$ -pe smp 36
 
 # Load required modules
 module -f unload compilers mpi gcc-libs

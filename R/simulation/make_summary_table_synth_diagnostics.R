@@ -30,18 +30,22 @@ make_summary_table_synth_diagnostics <- function(data_synth_results,
     # Filter observations from post-treatment period
     filter({{post_var}} == 1) %>%
     
+    # Estimate bias in per-period effects
+    mutate(abs_error_per_period = abs(mean({{tau_hat_var}} - {{tau_var}}, na.rm = TRUE)),
+           .by = c(t, method)) %>%
+    
     # Estimate error and squared error by method and model run
     summarise(error = mean({{tau_hat_var}} - {{tau_var}}),
-              abs_error = mean(abs({{tau_hat_var}} - {{tau_var}})),
+              abs_error_per_period = mean(abs_error_per_period),
               squared_error = mean(({{tau_hat_var}} - {{tau_var}})^2),
               .by = c(method,
                       model_run)) %>%
     
     # Generate summary stats
-    summarise(indiv_rmse = sqrt(mean(squared_error, na.rm = TRUE)),
+    summarise(per_period_rmse = sqrt(mean(squared_error, na.rm = TRUE)),
               agg_rmse = sqrt(mean(error^2, na.rm = TRUE)),
-              indiv_abs_bias = mean(abs_error, na.rm = TRUE),
-              agg_abs_bias = abs(mean(error, na.rm = TRUE)),
+              avg_per_period_bias = mean(abs_error_per_period, na.rm = TRUE),
+              agg_bias = abs(mean(error, na.rm = TRUE)),
               .by = method) %>%
     
     # Add column for DGP type

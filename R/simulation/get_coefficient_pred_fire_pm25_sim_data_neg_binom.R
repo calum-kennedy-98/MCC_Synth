@@ -11,7 +11,7 @@
 
 # Comments ---------------------------------------------------------------------
 
-# @ param `list_data_simulated` - list of simulated outcome datasets
+# @ param `data` - simulated outcome data
 # @ param `unit_id_var` - name of unit ID variable
 # @ param `time_id_var` - name of time ID variable
 # @ param `week_id_var` - name of week ID variable
@@ -27,7 +27,7 @@
 # Function ---------------------------------------------------------------------
 
 
-get_coefficient_pred_fire_pm25_sim_data_neg_binom <- function(list_data_simulated,
+get_coefficient_pred_fire_pm25_sim_data_neg_binom <- function(data,
                                                               unit_id_var,
                                                               time_id_var,
                                                               week_id_var,
@@ -40,7 +40,7 @@ get_coefficient_pred_fire_pm25_sim_data_neg_binom <- function(list_data_simulate
                                                               spline_df_temp){
   
   # Extract list of unique locations from data
-  unique_locations <- pull(distinct(list_data_simulated[[1]], {{unit_id_var}}))
+  unique_locations <- pull(distinct(data, {{unit_id_var}}))
   
   # Append pred_fire_PM25 variable to linear predictors
   linear_predictors <- c(linear_predictors, "pred_fire_PM25")
@@ -51,9 +51,6 @@ get_coefficient_pred_fire_pm25_sim_data_neg_binom <- function(list_data_simulate
   temp_var_quo <- as_name(ensym(temp_var))
   year_var_quo <- as_name(ensym(year_var))
   unit_id_var_quo <- as_name(ensym(unit_id_var))
-  
-  # Use first simulated dataset for analysis
-  data <- list_data_simulated[[1]]
   
   # Extract list of location-specific datasets from main data
   list_data_location_specific <- lapply(unique_locations, function(x){filter(data, .data[[unit_id_var_quo]] == x)})
