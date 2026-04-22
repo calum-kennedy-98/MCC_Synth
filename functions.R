@@ -35,6 +35,9 @@ source(here("R/prepare_data_for_synth.R"))
 source(here("R/make_scatter_plot_tau_hat_time.R"))
 source(here("R/partition_data_for_synth.R"))
 source(here("R/extract_synth_results_main.R"))
+source(here("R/get_residuals_conformal_inference.R"))
+source(here("R/get_p_value_grid.R"))
+source(here("R/get_df_conf_int_period_specific.R"))
 
 # Simulation functions
 
@@ -50,3 +53,5 @@ source(here("R/simulation/estimate_assignment_probabilities.R"))
 source(here("R/simulation/make_density_plot_synth_results.R"))
 source(here("R/simulation/make_summary_table_synth_diagnostics.R"))
 source(here("R/simulation/get_coefficient_pred_fire_pm25_sim_data_neg_binom.R"))
+source(here("R/simulation/get_outcome_exp_val_negative_binomial_model.R"))
+source(here("R/simulation/get_outcome_exp_val_factor_model.R"))

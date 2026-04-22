@@ -44,7 +44,7 @@ tar_option_set(
   ),
   format = "qs",
   memory = "transient",
-  garbage_collection = TRUE,
+  garbage_collection = TRUE#,
   #controller = crew_controller_local(workers = 10,
                                      #seconds_idle = 10)
   # Alternatively, if you want workers to run on a high-performance computing
@@ -52,21 +52,21 @@ tar_option_set(
   # For the cloud, see plugin packages like {crew.aws.batch}.
   # The following example is a controller for Sun Grid Engine (SGE).
   #
-    controller = crew.cluster::crew_controller_sge(
-      workers = 8,
-      seconds_idle = 120,
-      options_cluster = crew_options_sge(
-      script_lines = c(
-        "module -f unload compilers mpi gcc-libs",
-        "module load cmake/3.27.3",
-        "module load pandoc",
-        "module load glpk",
-        "module load r/r-4.4.2_bc-3.20",
-        "#$ -l mem=4G",
-        "#$ -pe smp 8"
-        )
-      )
-    )
+    # controller = crew.cluster::crew_controller_sge(
+    #   workers = 8,
+    #   seconds_idle = 120,
+    #   options_cluster = crew_options_sge(
+    #   script_lines = c(
+    #     "module -f unload compilers mpi gcc-libs",
+    #     "module load cmake/3.27.3",
+    #     "module load pandoc",
+    #     "module load glpk",
+    #     "module load r/r-4.4.2_bc-3.20",
+    #     "#$ -l mem=4G",
+    #     "#$ -pe smp 8"
+    #     )
+    #   )
+    # )
 )
 
 # Source functions
@@ -202,7 +202,36 @@ list(
                
                filter(mean_mortality > 100) %>%
                
-               select(-mean_mortality)),
+               select(-mean_mortality)
+               ),
+  
+  # Get expected value of outcome series - negative binomial model
+  tar_target(outcome_exp_val_neg_binom, tibble(outcome_exp_val = get_outcome_exp_val_negative_binomial_model(data = data_for_simulation, 
+                                                                                    unit_id_var = column_label, 
+                                                                                    time_id_var = week_id,
+                                                                                    week_id_var = week_id,
+                                                                                    treated_var = treated,
+                                                                                    outcome_var = all, 
+                                                                                    year_var = year,
+                                                                                    linear_predictors = "pred_nonfire_PM25", 
+                                                                                    temp_var = tmean, 
+                                                                                    spline_df_per_year = 7, 
+                                                                                    spline_df_temp = 4),
+                                               week_id = data_for_simulation$week_id,
+                                               column_label = data_for_simulation$column_label)
+             ),
+  
+  # Expected value of outcome series - factor model
+  tar_target(outcome_exp_val_factor, tibble(outcome_exp_val = get_outcome_exp_val_factor_model(data = data_for_simulation,
+                                                                      unit_id_var = column_label,
+                                                                      time_id_var = week_id,
+                                                                      outcome_var = all,
+                                                                      treated_var = treated,
+                                                                      week_id_var = week_id,
+                                                                      rank = 4),
+                                            week_id = data_for_simulation$week_id,
+                                            column_label = data_for_simulation$column_label)
+             ),
   
   # List of simulated outcome data from negative binomial model - untreated potential outcome (Y(0))
   tar_target(list_outcome_sim_neg_binomial, make_list_data_negative_binomial_model(n_sims = 500, 
@@ -250,13 +279,86 @@ list(
                                                            n_periods_pre = 26,
                                                            n_periods_post = 26)),
   
+  # Get list of treated units from simulated data
+  tar_target(list_treated_unit_time, map(list_data_simulated, ~ {
+    
+    treated_unit <- as.character(pull(distinct(filter(.x, .x$treated == 1), column_label)))
+    min_t <- min(.x$week_id)
+    max_t <- max(.x$week_id)
+    return(list(treated_unit = treated_unit,
+                min_t = min_t,
+                max_t = max_t))
+    }
+    )
+    ),
+  
+  # Get list of treated units from simulated data
+  tar_target(list_treated_unit_time_random_assignment, map(list_data_simulated_random_assignment, ~ {
+    
+    treated_unit <- as.character(pull(distinct(filter(.x, .x$treated == 1), column_label)))
+    min_t <- min(.x$week_id)
+    max_t <- max(.x$week_id)
+    return(list(treated_unit = treated_unit,
+                min_t = min_t,
+                max_t = max_t))
+  }
+  )
+  ),
+  
+  # Get vector of true expected value of outcome series for the treated units/time periods for 
+  # negative binomial model (replicate six times because we use six estimators)
+  tar_target(outcome_exp_val_neg_binom_treated_units, map(list_treated_unit_time, ~ outcome_exp_val_neg_binom %>% 
+                                                            filter(between(week_id, .x$min_t, .x$max_t), 
+                                                                   column_label == .x$treated_unit) %>% 
+                                                            pull(outcome_exp_val)) %>% 
+               unlist() %>%
+               rep(6)),
+  
+  # Get vector of true expected value of outcome series for the treated units/time periods for 
+  # negative binomial model (replicate six times because currently use six estimators)
+  tar_target(outcome_exp_val_factor_treated_units, map(list_treated_unit_time, ~ outcome_exp_val_factor %>% 
+                                                            filter(between(week_id, .x$min_t, .x$max_t), 
+                                                                   column_label == .x$treated_unit) %>% 
+                                                            pull(outcome_exp_val)) %>% 
+               unlist() %>%
+               rep(6)),
+  
+  # Get vector of true expected value of outcome series for the treated units/time periods under random assignment for 
+  # negative binomial model (replicate six times because we use six estimators)
+  tar_target(outcome_exp_val_neg_binom_treated_units_random_assignment, map(list_treated_unit_time_random_assignment, ~ outcome_exp_val_neg_binom %>% 
+                                                            filter(between(week_id, .x$min_t, .x$max_t), 
+                                                                   column_label == .x$treated_unit) %>% 
+                                                            pull(outcome_exp_val)) %>% 
+               unlist() %>%
+               rep(6)),
+  
+  # Get vector of true expected value of outcome series for the treated units/time periods under random assignment for 
+  # negative binomial model (replicate six times because currently use six estimators)
+  tar_target(outcome_exp_val_factor_treated_units_random_assignment, map(list_treated_unit_time_random_assignment, ~ outcome_exp_val_factor %>% 
+                                                         filter(between(week_id, .x$min_t, .x$max_t), 
+                                                                column_label == .x$treated_unit) %>% 
+                                                         pull(outcome_exp_val)) %>% 
+               unlist() %>%
+               rep(6)),
+  
+  tar_target(list_data_simulated_full, map2(list_outcome_sim_neg_binomial,
+                                            list_outcome_sim_factor,
+                                            ~ data_for_simulation %>% 
+                                              mutate(Y0_treated_neg_binom = .x,
+                                                     Y0_treated_factor = .y))
+             ),
+  
+  # Generate simulated data for estimation of `wrong` parametric model
+  tar_target(data_simulated_for_model, list_data_simulated_full[[1]]
+             ),
+  
   # Extract coefficient on pred_fire_PM25 from running 'wrong' negative binomial model
   # on outcomes generated from factor model
   tar_target(data_coef_pred_fire_PM25_factor_outcome_neg_binom_model, 
              
              get_coefficient_pred_fire_pm25_sim_data_neg_binom(
                
-               list_data_simulated = list_data_simulated, 
+               data = data_simulated_for_model, 
                unit_id_var = column_label, 
                time_id_var = week_id,
                week_id_var = week_id,
@@ -972,7 +1074,9 @@ list(
                                               results_synth_1NN_matching_neg_binom), 
                                          ~extract_tau_hat_synth_results(.,
                                                                         treatment_effect_type = "placebo")) %>%
-               bind_rows()),
+               bind_rows() %>%
+               mutate(Y0_treated_exp_val = outcome_exp_val_neg_binom_treated_units) %>%
+               mutate(diff_pred_systematic = Y0_treated_hat - Y0_treated_exp_val)),
   
   tar_target(data_tau_hat_neg_binom_demeaned, map(list(results_synth_adh_neg_binom_demeaned,
                                                        results_synth_adh_subset_neg_binom_demeaned,
@@ -982,7 +1086,9 @@ list(
                                               results_synth_1NN_matching_neg_binom_demeaned), # Don't need to demean DID since estimator is identical 
                                          ~extract_tau_hat_synth_results(.,
                                                                         treatment_effect_type = "placebo")) %>%
-               bind_rows()),
+               bind_rows() %>%
+               mutate(Y0_treated_exp_val = outcome_exp_val_neg_binom_treated_units) %>%
+               mutate(diff_pred_systematic = Y0_treated_hat - Y0_treated_exp_val)),
   
   tar_target(data_tau_hat_factor, map(list(results_synth_adh_factor,
                                            results_synth_adh_subset_factor,
@@ -992,7 +1098,9 @@ list(
                                            results_synth_1NN_matching_factor), 
                                          ~extract_tau_hat_synth_results(.,
                                                                         treatment_effect_type = "placebo")) %>%
-               bind_rows()),
+               bind_rows() %>%
+               mutate(Y0_treated_exp_val = outcome_exp_val_factor_treated_units) %>%
+               mutate(diff_pred_systematic = Y0_treated_hat - Y0_treated_exp_val)),
   
   tar_target(data_tau_hat_factor_demeaned, map(list(results_synth_adh_factor_demeaned,
                                                     results_synth_adh_subset_factor_demeaned,
@@ -1002,7 +1110,9 @@ list(
                                                     results_synth_1NN_matching_factor_demeaned),
                                       ~extract_tau_hat_synth_results(.,
                                                                      treatment_effect_type = "placebo")) %>%
-               bind_rows()),
+               bind_rows() %>%
+               mutate(Y0_treated_exp_val = outcome_exp_val_factor_treated_units) %>%
+               mutate(diff_pred_systematic = Y0_treated_hat - Y0_treated_exp_val)),
   
   # 2. Random assignment
   
@@ -1014,7 +1124,9 @@ list(
                                               results_synth_1NN_matching_neg_binom_random_assignment), 
                                          ~extract_tau_hat_synth_results(.,
                                                                         treatment_effect_type = "placebo")) %>%
-               bind_rows()),
+               bind_rows() %>%
+               mutate(Y0_treated_exp_val = outcome_exp_val_neg_binom_treated_units_random_assignment) %>%
+               mutate(diff_pred_systematic = Y0_treated_hat - Y0_treated_exp_val)),
   
   tar_target(data_tau_hat_neg_binom_demeaned_random_assignment, map(list(results_synth_adh_neg_binom_demeaned_random_assignment,
                                                                          results_synth_adh_subset_neg_binom_demeaned_random_assignment,
@@ -1024,7 +1136,9 @@ list(
                                                        results_synth_1NN_matching_neg_binom_demeaned_random_assignment), 
                                                   ~extract_tau_hat_synth_results(.,
                                                                                  treatment_effect_type = "placebo")) %>%
-               bind_rows()),
+               bind_rows() %>%
+               mutate(Y0_treated_exp_val = outcome_exp_val_neg_binom_treated_units_random_assignment) %>%
+               mutate(diff_pred_systematic = Y0_treated_hat - Y0_treated_exp_val)),
   
   tar_target(data_tau_hat_factor_random_assignment, map(list(results_synth_adh_factor_random_assignment,
                                                              results_synth_adh_subset_factor_random_assignment,
@@ -1034,7 +1148,9 @@ list(
                                            results_synth_1NN_matching_factor_random_assignment), 
                                       ~extract_tau_hat_synth_results(.,
                                                                      treatment_effect_type = "placebo")) %>%
-               bind_rows()),
+               bind_rows() %>%
+               mutate(Y0_treated_exp_val = outcome_exp_val_factor_treated_units_random_assignment) %>%
+               mutate(diff_pred_systematic = Y0_treated_hat - Y0_treated_exp_val)),
   
   tar_target(data_tau_hat_factor_demeaned_random_assignment, map(list(results_synth_adh_factor_demeaned_random_assignment,
                                                                       results_synth_adh_subset_factor_demeaned_random_assignment,
@@ -1044,40 +1160,9 @@ list(
                                                     results_synth_1NN_matching_factor_demeaned_random_assignment),
                                                ~extract_tau_hat_synth_results(.,
                                                                               treatment_effect_type = "placebo")) %>%
-               bind_rows()),
-  
-  ########################################################################################################
-  ### RESULTS FROM MAIN ANALYSIS #########################################################################
-  ########################################################################################################
-  
-  # tar_target(results_synth_main_all_cause, future_map(list_data_for_synth,
-  #                                                     function(x){
-  #                                                       n_periods_pre <- nrow(filter(x, 
-  #                                                                                    treated == 1,
-  #                                                                                    post == 0))
-  #                                                       n_periods_post <- nrow(filter(x,
-  #                                                                                     treated == 1,
-  #                                                                                     post == 1))
-  #                                                       
-  #                                                       # Set maximum value of n_periods_pre to 100
-  #                                                       n_periods_pre <- min(n_periods_pre, 100)
-  #                                                       
-  #                                                       optimise_synth(data = x,
-  #                                                                      demean_outcomes = TRUE,
-  #                                                                      denoise_outcomes = FALSE,
-  #                                                                      objective_function = "PSC",
-  #                                                                      n_periods_pre = n_periods_pre,
-  #                                                                      n_periods_post = n_periods_post,
-  #                                                                      outcome_var = all,
-  #                                                                      treated_id_var = treated,
-  #                                                                      treated_time_var = post,
-  #                                                                      time_var = week_id,
-  #                                                                      spline_df = NULL)
-  #                                                     })),
-  # 
-  # # Extract results from main analysis
-  # tar_target(data_results_synth_main_all_cause, extract_synth_results_main(list_data_for_synth = list_data_for_synth,
-  #                                                                          list_results_synth = results_synth_main_all_cause)),
+               bind_rows() %>%
+               mutate(Y0_treated_exp_val = outcome_exp_val_factor_treated_units_random_assignment) %>%
+               mutate(diff_pred_systematic = Y0_treated_hat - Y0_treated_exp_val)),
   
   ##############################################################################################################################
   ### PLOTS FROM SIMULATION STUDY ##############################################################################################
@@ -1085,7 +1170,7 @@ list(
   
   # Make output plots - simulation study ------------------------------------------------------------------------
   
-  tar_target(patchwork_plot_line_real_vs_sim_data, (make_patchwork_plot(list = list(make_line_plot_real_vs_sim_data(list_data = list_data_simulated, 
+  tar_target(patchwork_plot_line_real_vs_sim_data, (make_patchwork_plot(list = list(make_line_plot_real_vs_sim_data(list_data = list_data_simulated_full, 
                                                                                                                    location_var = column_label, 
                                                                                                                    location_string = "aich.jap7220", 
                                                                                                                    time_var = week_id, 
@@ -1095,7 +1180,7 @@ list(
                                                                                       ggtitle("A: Aichi, Negative Binomial") +
                                                                                       labs(x = "",
                                                                                            y = "All-cause\nmortality"),
-                                                                                   make_line_plot_real_vs_sim_data(list_data = list_data_simulated, 
+                                                                                   make_line_plot_real_vs_sim_data(list_data = list_data_simulated_full, 
                                                                                                                    location_var = column_label, 
                                                                                                                    location_string = "aich.jap7220", 
                                                                                                                    time_var = week_id, 
@@ -1105,7 +1190,7 @@ list(
                                                                                      ggtitle("B: Aichi, Factor") +
                                                                                      labs(x = "",
                                                                                           y = ""),
-                                                                                   make_line_plot_real_vs_sim_data(list_data = list_data_simulated, 
+                                                                                   make_line_plot_real_vs_sim_data(list_data = list_data_simulated_full, 
                                                                                                                    location_var = column_label, 
                                                                                                                    location_string = "srwk.mal0019", 
                                                                                                                    time_var = week_id, 
@@ -1115,7 +1200,7 @@ list(
                                                                                      ggtitle("C: Sarawak, Negative Binomial") +
                                                                                      labs(x = "Week",
                                                                                           y = ""),
-                                                                                   make_line_plot_real_vs_sim_data(list_data = list_data_simulated, 
+                                                                                   make_line_plot_real_vs_sim_data(list_data = list_data_simulated_full, 
                                                                                                                    location_var = column_label, 
                                                                                                                    location_string = "srwk.mal0019", 
                                                                                                                    time_var = week_id, 
@@ -1148,8 +1233,9 @@ list(
       model_run_var = model_run,
       palette = cbbPalette) +
         ggtitle("A: Negative Binomial") +
-        labs(x = "Tau hat",
-             y = "Density") +
+        labs(x = expression(hat(tau)),
+             y = "Density",
+             colour = "Method") +
         xlim(-1,1),
       
       make_density_plot_synth_results(
@@ -1159,8 +1245,9 @@ list(
         model_run_var = model_run,
         palette = cbbPalette) +
         ggtitle("B: Factor") +
-        labs(x = "Tau hat",
-             y = "Density") +
+        labs(x = expression(hat(tau)),
+             y = "Density",
+             colour = "Method") +
         xlim(-1,1)
       ),
     ncol = 2,
@@ -1184,8 +1271,9 @@ list(
         model_run_var = model_run,
         palette = cbbPalette) +
         ggtitle("A: Negative Binomial") +
-        labs(x = "Tau hat",
-             y = "Density") +
+        labs(x = expression(hat(tau)),
+             y = "Density",
+             colour = "Method") +
         xlim(-1,1),
       
       make_density_plot_synth_results(
@@ -1195,8 +1283,9 @@ list(
         model_run_var = model_run,
         palette = cbbPalette) +
         ggtitle("B: Factor") +
-        labs(x = "Tau hat",
-             y = "Density") +
+        labs(x = expression(hat(tau)),
+             y = "Density",
+             colour = "Method") +
         xlim(-1,1)
     ),
     ncol = 2,
@@ -1221,8 +1310,9 @@ list(
         model_run_var = model_run,
         palette = cbbPalette) +
         ggtitle("A: Negative Binomial") +
-        labs(x = "Tau hat",
-             y = "Density") +
+        labs(x = expression(hat(tau)),
+             y = "Density",
+             colour = "Method") +
         xlim(-1,1),
       
       make_density_plot_synth_results(
@@ -1232,8 +1322,9 @@ list(
         model_run_var = model_run,
         palette = cbbPalette) +
         ggtitle("B: Factor") +
-        labs(x = "Tau hat",
-             y = "Density") +
+        labs(x = expression(hat(tau)),
+             y = "Density",
+             colour = "Method") +
         xlim(-1,1)
     ),
     ncol = 2,
@@ -1257,8 +1348,9 @@ list(
         model_run_var = model_run,
         palette = cbbPalette) +
         ggtitle("A: Negative Binomial") +
-        labs(x = "Tau hat",
-             y = "Density") +
+        labs(x = expression(hat(tau)),
+             y = "Density",
+             colour = "Method") +
         xlim(-1,1),
       
       make_density_plot_synth_results(
@@ -1268,8 +1360,9 @@ list(
         model_run_var = model_run,
         palette = cbbPalette) +
         ggtitle("B: Factor") +
-        labs(x = "Tau hat",
-             y = "Density") +
+        labs(x = expression(hat(tau)),
+             y = "Density",
+             colour = "Method") +
         xlim(-1,1)
     ),
     ncol = 2,
@@ -1301,9 +1394,10 @@ list(
                                               facet_wrap(~method,
                                                          scales = "fixed") +
                                               scatter_plot_opts +
-                                                labs(x = "Mean weekly mortality - post treatment period",
-                                                     y = "Mean absolute bias\nin tau hat (%)",
-                                                     colour = "Method")) %>%
+                                                labs(x = "Mean weekly mortality",
+                                                     y = "Mean percentage bias (%)",
+                                                     colour = "Method")+
+                                                theme(legend.position = "none")) %>%
                
                ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y_neg_binom.png", ., width = 8, height = 5),
              format = "file"),
@@ -1329,7 +1423,9 @@ list(
                                                         scatter_plot_opts +
                                                      labs(x = "Mean weekly mortality - post treatment period",
                                                           y = "Mean absolute bias\n in tau hat (%)",
-                                                          colour = "Method")) %>%
+                                                          colour = "Method") + 
+                                                     theme(legend.position = "none"))
+               %>%
                
                ggsave("Output/Figures/Simulation/scatter_plot_abs_bias_mean_y_factor.png", ., width = 8, height = 5),
              format = "file"),
@@ -1347,10 +1443,45 @@ list(
                                  ymax = `upper.97.5 %`)) + 
                coord_flip() + 
                scatter_plot_opts + 
-               labs(x = "", y = "Coefficient on predicted fire PM2.5 exposure")
+                labs(x = "", y = expression("Coefficient on LFS PM"[2.5]*" exposure"))
              ) %>% 
                ggsave("Output/Figures/Simulation/scatter_plot_coef_pred_fire_pm25_factor_outcome_neg_binom_model.png", ., width = 8, height = 8)
              ),
+  
+  # Plot ratio of pre- / post-treatment absolute bias
+  tar_target(scatter_plot_ratio_pre_post_abs_bias,
+             
+             (data_tau_hat_neg_binom %>%
+                    
+                    # Estimate error and squared error by method and model run
+                    summarise(abs_error = mean(abs(tau_hat - tau)),
+                              .by = c(method,
+                                      model_run, post)) %>%
+               
+               pivot_wider(id_cols = c(method, model_run), 
+                           names_from = post, 
+                           names_prefix = "post_", 
+                           values_from = abs_error) %>% 
+              
+               ggplot() + 
+               geom_point(aes(x = post_0, 
+                              y = post_1,
+                              colour = method),
+                          alpha = 0.25) + 
+               geom_abline(linetype = "dashed",
+                           alpha = 0.5) + 
+               facet_wrap(~method) + 
+               xlim(0,150) + 
+               ylim(0,150) +
+               scatter_plot_opts +
+               scale_colour_manual(values = cbbPalette) +
+               labs(x = "Mean absolute bias (pre-treatment)",
+                    y = "Mean absolute\nbias (post-treatment)",
+                    colour = "") +
+               theme(legend.position = "none")) %>%
+               ggsave("Output/Figures/Simulation/scatter_plot_ratio_pre_post_abs_bias.png", ., width = 8, height = 5, dpi = 700)
+    
+  ),
   
   #######################################################################################################################################
   ### TABLES FROM SIMULATION STUDY ######################################################################################################
@@ -1375,10 +1506,10 @@ list(
                # Pivot wider
                pivot_wider(
                  names_from = dgp_type,
-                 values_from = c(indiv_rmse,
+                 values_from = c(per_period_rmse,
                                  agg_rmse,
-                                 indiv_abs_bias,
-                                 agg_abs_bias),
+                                 avg_per_period_bias,
+                                 agg_bias),
                  names_glue = "{.value}_{dgp_type}"
                ) %>%
                
@@ -1388,33 +1519,33 @@ list(
                tab_spanner(
                  label = "Negative Binomial",
                  columns = c(
-                   indiv_rmse_negative_binomial,
+                   per_period_rmse_negative_binomial,
                    agg_rmse_negative_binomial,
-                   indiv_abs_bias_negative_binomial,
-                   agg_abs_bias_negative_binomial
+                   avg_per_period_bias_negative_binomial,
+                   agg_bias_negative_binomial
                  )
                ) %>%
                
                tab_spanner(
                  label = "Factor",
                  columns = c(
-                   indiv_rmse_factor,
+                   per_period_rmse_factor,
                    agg_rmse_factor,
-                   indiv_abs_bias_factor,
-                   agg_abs_bias_factor
+                   avg_per_period_bias_factor,
+                   agg_bias_factor
                  )
                ) %>%
                
                cols_label(
                  method = "Method",
-                 indiv_rmse_negative_binomial = "Indiv RMSE",
+                 per_period_rmse_negative_binomial = "Per period RMSE",
                  agg_rmse_negative_binomial = "Aggregate RMSE",
-                 indiv_abs_bias_negative_binomial = "Indiv |Bias|",
-                 agg_abs_bias_negative_binomial = "Aggregate |Bias|",
-                 indiv_rmse_factor = "Indiv RMSE",
+                 avg_per_period_bias_negative_binomial = "Avg per period Bias",
+                 agg_bias_negative_binomial = "Aggregate Bias",
+                 per_period_rmse_factor = "Per period RMSE",
                  agg_rmse_factor = "Aggregate RMSE",
-                 indiv_abs_bias_factor = "Indiv |Bias|",
-                 agg_abs_bias_factor = "Aggregate |Bias|"
+                 avg_per_period_bias_factor = "Avg per period Bias",
+                 agg_bias_factor = "Aggregate Bias"
                ) %>%
                
                fmt_number(
@@ -1441,10 +1572,10 @@ list(
                # Pivot wider
                pivot_wider(
                  names_from = dgp_type,
-                 values_from = c(indiv_rmse,
+                 values_from = c(per_period_rmse,
                                  agg_rmse,
-                                 indiv_abs_bias,
-                                 agg_abs_bias),
+                                 avg_per_period_bias,
+                                 agg_bias),
                  names_glue = "{.value}_{dgp_type}"
                ) %>%
                
@@ -1454,33 +1585,33 @@ list(
                tab_spanner(
                  label = "Negative Binomial",
                  columns = c(
-                   indiv_rmse_negative_binomial,
+                   per_period_rmse_negative_binomial,
                    agg_rmse_negative_binomial,
-                   indiv_abs_bias_negative_binomial,
-                   agg_abs_bias_negative_binomial
+                   avg_per_period_bias_negative_binomial,
+                   agg_bias_negative_binomial
                  )
                ) %>%
                
                tab_spanner(
                  label = "Factor",
                  columns = c(
-                   indiv_rmse_factor,
+                   per_period_rmse_factor,
                    agg_rmse_factor,
-                   indiv_abs_bias_factor,
-                   agg_abs_bias_factor
+                   avg_per_period_bias_factor,
+                   agg_bias_factor
                  )
                ) %>%
                
                cols_label(
                  method = "Method",
-                 indiv_rmse_negative_binomial = "Indiv RMSE",
+                 per_period_rmse_negative_binomial = "Per period RMSE",
                  agg_rmse_negative_binomial = "Aggregate RMSE",
-                 indiv_abs_bias_negative_binomial = "Indiv |Bias|",
-                 agg_abs_bias_negative_binomial = "Aggregate |Bias|",
-                 indiv_rmse_factor = "Indiv RMSE",
+                 avg_per_period_bias_negative_binomial = "Avg per period Bias",
+                 agg_bias_negative_binomial = "Aggregate Bias",
+                 per_period_rmse_factor = "Per period RMSE",
                  agg_rmse_factor = "Aggregate RMSE",
-                 indiv_abs_bias_factor = "Indiv |Bias|",
-                 agg_abs_bias_factor = "Aggregate |Bias|"
+                 avg_per_period_bias_factor = "Avg per period Bias",
+                 agg_bias_factor = "Aggregate Bias"
                ) %>%
                
                fmt_number(
@@ -1508,10 +1639,10 @@ list(
                # Pivot wider
                pivot_wider(
                  names_from = dgp_type,
-                 values_from = c(indiv_rmse,
+                 values_from = c(per_period_rmse,
                                  agg_rmse,
-                                 indiv_abs_bias,
-                                 agg_abs_bias),
+                                 avg_per_period_bias,
+                                 agg_bias),
                  names_glue = "{.value}_{dgp_type}"
                ) %>%
                
@@ -1521,33 +1652,33 @@ list(
                tab_spanner(
                  label = "Negative Binomial",
                  columns = c(
-                   indiv_rmse_negative_binomial,
+                   per_period_rmse_negative_binomial,
                    agg_rmse_negative_binomial,
-                   indiv_abs_bias_negative_binomial,
-                   agg_abs_bias_negative_binomial
+                   avg_per_period_bias_negative_binomial,
+                   agg_bias_negative_binomial
                  )
                ) %>%
                
                tab_spanner(
                  label = "Factor",
                  columns = c(
-                   indiv_rmse_factor,
+                   per_period_rmse_factor,
                    agg_rmse_factor,
-                   indiv_abs_bias_factor,
-                   agg_abs_bias_factor
+                   avg_per_period_bias_factor,
+                   agg_bias_factor
                  )
                ) %>%
                
                cols_label(
                  method = "Method",
-                 indiv_rmse_negative_binomial = "Indiv RMSE",
+                 per_period_rmse_negative_binomial = "Per period RMSE",
                  agg_rmse_negative_binomial = "Aggregate RMSE",
-                 indiv_abs_bias_negative_binomial = "Indiv |Bias|",
-                 agg_abs_bias_negative_binomial = "Aggregate |Bias|",
-                 indiv_rmse_factor = "Indiv RMSE",
+                 avg_per_period_bias_negative_binomial = "Avg per period Bias",
+                 agg_bias_negative_binomial = "Aggregate Bias",
+                 per_period_rmse_factor = "Per period RMSE",
                  agg_rmse_factor = "Aggregate RMSE",
-                 indiv_abs_bias_factor = "Indiv |Bias|",
-                 agg_abs_bias_factor = "Aggregate |Bias|"
+                 avg_per_period_bias_factor = "Avg per period Bias",
+                 agg_bias_factor = "Aggregate Bias"
                ) %>%
                
                fmt_number(
@@ -1575,10 +1706,10 @@ list(
                # Pivot wider
                pivot_wider(
                  names_from = dgp_type,
-                 values_from = c(indiv_rmse,
+                 values_from = c(per_period_rmse,
                                  agg_rmse,
-                                 indiv_abs_bias,
-                                 agg_abs_bias),
+                                 avg_per_period_bias,
+                                 agg_bias),
                  names_glue = "{.value}_{dgp_type}"
                ) %>%
                
@@ -1588,33 +1719,33 @@ list(
                tab_spanner(
                  label = "Negative Binomial",
                  columns = c(
-                   indiv_rmse_negative_binomial,
+                   per_period_rmse_negative_binomial,
                    agg_rmse_negative_binomial,
-                   indiv_abs_bias_negative_binomial,
-                   agg_abs_bias_negative_binomial
+                   avg_per_period_bias_negative_binomial,
+                   agg_bias_negative_binomial
                  )
                ) %>%
                
                tab_spanner(
                  label = "Factor",
                  columns = c(
-                   indiv_rmse_factor,
+                   per_period_rmse_factor,
                    agg_rmse_factor,
-                   indiv_abs_bias_factor,
-                   agg_abs_bias_factor
+                   avg_per_period_bias_factor,
+                   agg_bias_factor
                  )
                ) %>%
                
                cols_label(
                  method = "Method",
-                 indiv_rmse_negative_binomial = "Indiv RMSE",
+                 per_period_rmse_negative_binomial = "Per period RMSE",
                  agg_rmse_negative_binomial = "Aggregate RMSE",
-                 indiv_abs_bias_negative_binomial = "Indiv |Bias|",
-                 agg_abs_bias_negative_binomial = "Aggregate |Bias|",
-                 indiv_rmse_factor = "Indiv RMSE",
+                 avg_per_period_bias_negative_binomial = "Avg per period Bias",
+                 agg_bias_negative_binomial = "Aggregate Bias",
+                 per_period_rmse_factor = "Per period RMSE",
                  agg_rmse_factor = "Aggregate RMSE",
-                 indiv_abs_bias_factor = "Indiv |Bias|",
-                 agg_abs_bias_factor = "Aggregate |Bias|"
+                 avg_per_period_bias_factor = "Avg per period Bias",
+                 agg_bias_factor = "Aggregate Bias"
                ) %>%
                
                fmt_number(
@@ -1660,13 +1791,20 @@ list(
       scatter_plot_opts + 
       
       labs(x = "Week",
-           y = "Predicted\nLFS PM2.5/m3")) %>% 
+           y = bquote(atop("Predicted LFS", PM[2.5] / m^3)))) %>% 
       
       ggsave("Output/Figures/Main/plot_pm25_case_study.png", ., width = 8, height = 5)
   ),
   
   ### Select data subset for analysis
-  tar_target(data_for_case_study, list_data_for_synth[["567"]]
+  tar_target(data_for_case_study, list_data_for_synth[["567"]] %>% 
+               
+               # Filter out locations with mean weekly deaths < 100
+               mutate(mean_mortality = mean(all, na.rm = TRUE), .by = column_label) %>%
+               
+               filter(mean_mortality > 100) %>%
+               
+               select(-mean_mortality)
   ),
   
   tar_target(results_case_study_adh, optimise_synth(data = data_for_case_study,
@@ -1762,48 +1900,129 @@ list(
                                                         rep("DIFP", length(data_for_case_study$post[data_for_case_study$treated == 1])),
                                                         rep("DID", length(data_for_case_study$post[data_for_case_study$treated == 1])),
                                                         rep("1NN matching", length(data_for_case_study$post[data_for_case_study$treated == 1]))),
-                                             t = rep(1:length(data_for_case_study$post[data_for_case_study$treated == 1]), 7))
+                                             t = rep(1:length(data_for_case_study$post[data_for_case_study$treated == 1]), 7)) %>%
+               
+               # Generate new column with difference in outcome vs. true trajectory
+               mutate(outcome_diff = outcome[method == "True"] - outcome,
+                      .by = t)
              ),
   
-  # Plot outcome trajectories
-  tar_target(plot_results_case_study, data_results_case_study %>%
-               
-               ggplot() +
-               
-               geom_line(aes(x = t,
-                             y = outcome,
-                             colour = method)) +
-               
-               geom_vline(xintercept = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 0]),
-                          linetype = "dashed") +
-               
-               ylim(0, 800) +
-               
-               labs(x = "Week",
-                    y = "Weekly mortality",
-                    colour = "Method") +
-               
-               scatter_plot_opts +
-                 
-                 scale_colour_manual(values = cbbPalette)
+  # Get confidence intervals using conformal inference ---------------------------------------------------------
+  tar_target(df_confidence_intervals_case_study_adh,
+             
+             get_df_conf_int_period_specific(data = data_for_case_study, 
+                                             method = "ADH", 
+                                             outcome_var = "all", 
+                                             treated_var = "treated", 
+                                             post_var = "post", 
+                                             time_var = "week_id", 
+                                             id_var = "column_label", 
+                                             null_grid = seq(-200,200, length.out = 100), 
+                                             q = 1, 
+                                             alpha = 0.05)
              ),
+  
+  tar_target(df_confidence_intervals_case_study_adh_subset,
+             
+             get_df_conf_int_period_specific(data = data_for_case_study, 
+                                             method = "ADH subset", 
+                                             outcome_var = "all", 
+                                             treated_var = "treated", 
+                                             post_var = "post", 
+                                             time_var = "week_id", 
+                                             id_var = "column_label", 
+                                             null_grid = seq(-200,200, length.out = 100), 
+                                             q = 1, 
+                                             alpha = 0.05)
+  ),
+  
+  tar_target(df_confidence_intervals_case_study_did,
+             
+             get_df_conf_int_period_specific(data = data_for_case_study, 
+                                             method = "DID", 
+                                             outcome_var = "all", 
+                                             treated_var = "treated", 
+                                             post_var = "post", 
+                                             time_var = "week_id", 
+                                             id_var = "column_label", 
+                                             null_grid = seq(-200,200, length.out = 100), 
+                                             q = 1, 
+                                             alpha = 0.05)
+  ),
+  
+  tar_target(df_confidence_intervals_case_study_1NN_matching,
+             
+             get_df_conf_int_period_specific(data = data_for_case_study, 
+                                             method = "1NN matching", 
+                                             outcome_var = "all", 
+                                             treated_var = "treated", 
+                                             post_var = "post", 
+                                             time_var = "week_id", 
+                                             id_var = "column_label", 
+                                             null_grid = seq(-200,200, length.out = 100), 
+                                             q = 1, 
+                                             alpha = 0.05)
+  ),
+  
+  tar_target(df_confidence_intervals_case_study_difp,
+             
+             get_df_conf_int_period_specific(data = data_for_case_study, 
+                                             method = "DIFP", 
+                                             outcome_var = "all", 
+                                             treated_var = "treated", 
+                                             post_var = "post", 
+                                             time_var = "week_id", 
+                                             id_var = "column_label", 
+                                             null_grid = seq(-200,200, length.out = 100), 
+                                             q = 1, 
+                                             alpha = 0.05)
+  ),
+  
+  tar_target(df_confidence_intervals_case_study_psc,
+             
+             get_df_conf_int_period_specific(data = data_for_case_study, 
+                                             method = "PSC", 
+                                             outcome_var = "all", 
+                                             treated_var = "treated", 
+                                             post_var = "post", 
+                                             time_var = "week_id", 
+                                             id_var = "column_label", 
+                                             null_grid = seq(-200,200, length.out = 100), 
+                                             q = 1, 
+                                             alpha = 0.05)
+  ),
+  
+  # Join confidence intervals to main case study data
+  tar_target(
+    data_results_case_study_conf_int, data_results_case_study %>%
+      
+      left_join(bind_rows(df_confidence_intervals_case_study_1NN_matching,
+                          df_confidence_intervals_case_study_did,
+                          df_confidence_intervals_case_study_adh,
+                          df_confidence_intervals_case_study_adh_subset,
+                          df_confidence_intervals_case_study_difp,
+                          df_confidence_intervals_case_study_psc), by = c("method", "t")) %>%
+      
+      # If conf int is NA, either because it is pre-treatment or because it is the True trajectory - in either case, set conf int to zero
+      mutate(conf_int_upper = if_else(is.na(conf_int_upper), 0, conf_int_upper),
+             conf_int_lower = if_else(is.na(conf_int_lower), 0, conf_int_lower))
+  ),
   
   # Plot outcome trajectories relative to truth
-  tar_target(plot_results_case_study_diff, data_results_case_study %>% 
-               
-               pivot_wider(id_cols = t, names_from = method, values_from = outcome) %>% 
-               
-               mutate(across(-t, ~ True - .)) %>% 
-               
-               pivot_longer(-t, names_to = "method", values_to = "outcome") %>%
+  tar_target(plot_results_case_study_diff, (data_results_case_study_conf_int %>%
                
                filter(method != "True") %>%
                
                ggplot() +
                
-               geom_line(aes(x = t,
-                             y = outcome,
+               geom_point(aes(x = t,
+                             y = outcome_diff,
                              colour = method)) +
+               
+               geom_linerange(aes(x = t,
+                                  ymin = conf_int_lower,
+                                  ymax = conf_int_upper,
+                                  colour = method)) + 
                
                geom_vline(xintercept = length(data_for_case_study$post[data_for_case_study$treated == 1 & data_for_case_study$post == 0]),
                           linetype = "dashed") +
@@ -1813,19 +2032,19 @@ list(
                ylim(-200,200) +
                
                labs(x = "Week",
-                    y = "Difference between true\nvs. counterfactual mortality",
+                    y = expression(hat(tau)),
                     colour = "Method") +
                
                scatter_plot_opts +
                
-               scale_colour_manual(values = cbbPalette)
-             
-             ),
-  
-  # Combine into patchwork plot
-  tar_target(patchwork_results_case_study, make_patchwork_plot(list = list(plot_results_case_study_diff,
-                                                                           plot_results_case_study),
-                                                               ncol = 1) %>%
+               scale_colour_manual(values = cbbPalette) + 
                
-               ggsave("Output/Figures/Main/patchwork_results_case_study.png", ., width = 8, height = 5))
+               facet_wrap(~method, nrow = 3) +
+               
+               theme(legend.position = "none")
+             
+             ) %>% 
+               
+               ggsave("Output/Figures/Main/plot_results_case_study_diff.png", ., height = 5, width = 8, dpi = 700)
+  )
 )

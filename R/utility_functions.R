@@ -147,3 +147,106 @@ ar2_correlation_matrix <- function(ar_coef, n_periods) {
   
   return(cor_matrix)
 }
+
+# Functions for conformal inference -----------------------------------------
+
+# Define test statistic as Lq norm of residuals
+test_statistic <- function(residual_vec,
+                           q = 1){
+  
+  s <- sum(abs(residual_vec)^q, na.rm = TRUE)^(1/q) 
+  return(s)
+}
+
+# Function to generate matrix of rolling block permutations
+roll_matrix <- function(x) {
+  n <- length(x)
+  idx <- outer(seq_len(n), 0:(n - 1),
+               function(i, k) ((i - k - 1) %% n) + 1)
+  matrix(x[idx], nrow = n)
+}
+
+# Function to generate matrix of rolling block permutations and subset by post-treatment period
+block_subset <- function(x, g) {
+  stopifnot(length(x) == length(g))
+  
+  M <- roll_matrix(x)
+  
+  M[g == 1, , drop = FALSE]
+}
+
+# Function to get p-value using block permutations of residuals
+get_p_value <- function(data,
+                        residuals_var,
+                        post_var,
+                        q){
+  
+  # Extract residuals and post variables
+  residuals <- pull(data, .data[[residuals_var]])
+  post <- pull(data, .data[[post_var]])
+  
+  # Generate rolling block permutations of residuals and subset to post-treatment period
+  block_permutations <- block_subset(residuals,
+                                     post)
+  
+  # Get value of test statistic for each block of permutations
+  vec_test_statistic <- apply(block_permutations, 2, test_statistic, q = q)
+  
+  # Return exact p-value (original residuals are first element in vector)
+  p_val <- sum(vec_test_statistic >= vec_test_statistic[1]) / length(vec_test_statistic)
+  
+  return(p_val)
+  
+}
+
+# Function to generate Y0 under the null hypothesis to pass to SC optimisation
+get_Y0_null <- function(data,
+                        outcome_var,
+                        treated_var,
+                        post_var,
+                        null_hypothesis){
+  
+  # Extract Y_treated_pre & Y_treated_post
+  Y_treated_pre <- data %>% 
+    filter(.data[[treated_var]]==1 & .data[[post_var]]==0) %>%
+    pull(.data[[outcome_var]])
+  
+  Y_treated_post <- data %>% 
+    filter(.data[[treated_var]]==1 & .data[[post_var]]==1) %>%
+    pull(.data[[outcome_var]])
+  
+  # Add treatment effect to post-intervention outcomes
+  Y0_treated_post_null <- Y_treated_post - null_hypothesis
+  
+  # Get vector Y0 under null
+  Y0_treated_null <- c(Y_treated_pre, Y0_treated_post_null)
+  
+  data_with_Y0 <- data %>%
+    
+    mutate(Y0_null = rep(Y0_treated_null, nrow(data) / length(Y0_treated_null))) %>%
+    mutate(Y0_null = if_else(.data[[treated_var]]==1,Y0_null,.data[[outcome_var]]))
+  
+  return(data_with_Y0)
+  
+}
+
+# Function to extract confidence interval from grid of p-values
+get_confidence_interval <- function(p_val_grid,
+                                    p_val_var,
+                                    null_hypothesis_var,
+                                    alpha = 0.05){
+  
+  # Subset dataframe to include only large p-values
+  p_val_grid_large <- filter(p_val_grid, .data[[p_val_var]] >= alpha)
+  
+  # Extract largest and smallest values of null hypothesis var to form confidence interval (note that remove NA values)
+  conf_int_lower <- min(pull(p_val_grid_large, .data[[null_hypothesis_var]]), na.rm = TRUE)
+  conf_int_upper <- max(pull(p_val_grid_large, .data[[null_hypothesis_var]]), na.rm = TRUE)
+  
+  # Compile results in tibble
+  results <- tibble("conf_int_lower" = conf_int_lower,
+                    "conf_int_upper" = conf_int_upper)
+  
+  return(results)
+  
+}
