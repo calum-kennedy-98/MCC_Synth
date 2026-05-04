@@ -8,7 +8,7 @@ Follow these steps to run the pipeline on your local machine:
 1. Clone the repository to your local device.
 2. Move the relevant datasets (main MCC data and wildfire air pollution data) to a folder called `data` within your R project folder.
 3. Open the R project and install the package `renv` using the terminal.
-4. Call `renv::restore()` to load the necessary packages and versions.
+4. Call `renv::restore()` to load the necessary package versions from the lockfile.
 5. Call `targets::tar_make()` in the terminal.
 
 The analysis pipeline should now run. Note that some of the simulations are time intensive, so it may be more efficient to adapt the code to run on an HPC. An example jobscript is given in the `run.sh' file.
