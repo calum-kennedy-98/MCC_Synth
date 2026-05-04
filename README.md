@@ -6,7 +6,7 @@ The file `_targets.R` contains the full analysis pipeline. Individual functions 
 Follow these steps to run the pipeline on your local machine:
 
 1. Clone the repository to your local device.
-2. Move the relevant datasets (main MCC data and wildfire air pollution data to a folder called `data` within your R project folder.
+2. Move the relevant datasets (main MCC data and wildfire air pollution data) to a folder called `data` within your R project folder.
 3. Open the R project and install the package `renv` using the terminal.
 4. Call `renv::restore()` to load the necessary packages and versions.
 5. Call `targets::tar_make()` in the terminal.
