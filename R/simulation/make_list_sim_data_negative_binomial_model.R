@@ -1,17 +1,38 @@
-# Name of script: make_list_sim_data_negative_binomial_model
-# Description: Wrapper function to generate K replications of simulated data from
-# negative binomial data using parallel processing
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 24-04-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 24-04-2025
-
-# Comments ---------------------------------------------------------------------
-
-
-
-# Function ---------------------------------------------------------------------
-
+#' Generate K Replicates of Simulated Outcomes from Negative Binomial Models
+#'
+#' @description
+#' For each city, fits a negative binomial GLM via
+#' \code{\link{estimate_neg_binomial_model}} and draws \code{n_sims}
+#' independent outcome replicates from the fitted distribution using
+#' \code{\link{sim_data_negative_binomial_model}}. The per-city lists of
+#' replicates are then transposed and concatenated so that the output is a
+#' list of \code{n_sims} vectors, each containing a full panel of simulated
+#' outcomes across all cities. Uses \pkg{furrr} for parallel processing.
+#'
+#' @param n_sims Integer. Number of simulation replicates.
+#' @param data A data frame in long format containing all units and time
+#'   periods.
+#' @param unit_id_var Bare (unquoted) name of the unit identifier column
+#'   (tidy-eval).
+#' @param time_id_var Bare (unquoted) name of the continuous time index column
+#'   used as the spline argument (tidy-eval).
+#' @param week_id_var Bare (unquoted) name of the week identifier column
+#'   (tidy-eval; accepted for API consistency, not used here).
+#' @param treated_var Bare (unquoted) name of the treatment indicator column
+#'   (tidy-eval; accepted for API consistency, not used here).
+#' @param outcome_var Bare (unquoted) name of the count outcome variable
+#'   (tidy-eval).
+#' @param year_var Bare (unquoted) name of the year variable (tidy-eval).
+#' @param linear_predictors Character vector of additional linear covariate
+#'   names.
+#' @param temp_var Bare (unquoted) name of the temperature variable (tidy-eval).
+#' @param spline_df_per_year Numeric. Degrees of freedom per year for the
+#'   time-trend spline.
+#' @param spline_df_temp Numeric. Degrees of freedom for the temperature spline.
+#'
+#' @return A list of \code{n_sims} numeric vectors, each of length equal to
+#'   the total number of city-period observations, containing simulated outcome
+#'   counts.
 make_list_data_negative_binomial_model <- function(n_sims,
                                                    data,
                                                    unit_id_var,

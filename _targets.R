@@ -1448,20 +1448,20 @@ list(
                ggsave("Output/Figures/Simulation/scatter_plot_coef_pred_fire_pm25_factor_outcome_neg_binom_model.png", ., width = 8, height = 8)
              ),
   
-  # Plot ratio of pre- / post-treatment absolute bias
+  # Plot ratio of pre- / post-treatment RMSPE
   tar_target(scatter_plot_ratio_pre_post_abs_bias,
              
              (data_tau_hat_neg_binom %>%
                     
-                    # Estimate error and squared error by method and model run
-                    summarise(abs_error = mean(abs(tau_hat - tau)),
+                    # Estimate RMSPE by method and model run
+                    summarise(rmspe = sqrt(mean((tau_hat - tau)^2)),
                               .by = c(method,
                                       model_run, post)) %>%
                
                pivot_wider(id_cols = c(method, model_run), 
                            names_from = post, 
                            names_prefix = "post_", 
-                           values_from = abs_error) %>% 
+                           values_from = rmspe) %>% 
               
                ggplot() + 
                geom_point(aes(x = post_0, 
@@ -1475,8 +1475,8 @@ list(
                ylim(0,150) +
                scatter_plot_opts +
                scale_colour_manual(values = cbbPalette) +
-               labs(x = "Mean absolute bias (pre-treatment)",
-                    y = "Mean absolute\nbias (post-treatment)",
+               labs(x = "RMSPE (pre-treatment)",
+                    y = "RMSPE\n(post-treatment)",
                     colour = "") +
                theme(legend.position = "none")) %>%
                ggsave("Output/Figures/Simulation/scatter_plot_ratio_pre_post_abs_bias.png", ., width = 8, height = 5, dpi = 700)
@@ -1506,10 +1506,10 @@ list(
                # Pivot wider
                pivot_wider(
                  names_from = dgp_type,
-                 values_from = c(per_period_rmse,
-                                 agg_rmse,
-                                 avg_per_period_bias,
-                                 agg_bias),
+                 values_from = c(abs_bias_att,
+                                 sd_att,
+                                 avg_abs_bias_per_period,
+                                 avg_sd_per_period),
                  names_glue = "{.value}_{dgp_type}"
                ) %>%
                
@@ -1519,33 +1519,33 @@ list(
                tab_spanner(
                  label = "Negative Binomial",
                  columns = c(
-                   per_period_rmse_negative_binomial,
-                   agg_rmse_negative_binomial,
-                   avg_per_period_bias_negative_binomial,
-                   agg_bias_negative_binomial
+                   abs_bias_att_negative_binomial,
+                   sd_att_negative_binomial,
+                   avg_abs_bias_per_period_negative_binomial,
+                   avg_sd_per_period_negative_binomial
                  )
                ) %>%
                
                tab_spanner(
                  label = "Factor",
                  columns = c(
-                   per_period_rmse_factor,
-                   agg_rmse_factor,
-                   avg_per_period_bias_factor,
-                   agg_bias_factor
+                   abs_bias_att_factor,
+                   sd_att_factor,
+                   avg_abs_bias_per_period_factor,
+                   avg_sd_per_period_factor
                  )
                ) %>%
                
                cols_label(
                  method = "Method",
-                 per_period_rmse_negative_binomial = "Per period RMSE",
-                 agg_rmse_negative_binomial = "Aggregate RMSE",
-                 avg_per_period_bias_negative_binomial = "Avg per period Bias",
-                 agg_bias_negative_binomial = "Aggregate Bias",
-                 per_period_rmse_factor = "Per period RMSE",
-                 agg_rmse_factor = "Aggregate RMSE",
-                 avg_per_period_bias_factor = "Avg per period Bias",
-                 agg_bias_factor = "Aggregate Bias"
+                 abs_bias_att_negative_binomial = "Abs bias ATT",
+                 sd_att_negative_binomial = "sd ATT",
+                 avg_abs_bias_per_period_negative_binomial = "Avg abs bias per period",
+                 avg_sd_per_period_negative_binomial = "Avg sd per period",
+                 abs_bias_att_factor = "Abs bias ATT",
+                 sd_att_factor = "sd ATT",
+                 avg_abs_bias_per_period_factor = "Avg abs bias per period",
+                 avg_sd_per_period_factor = "Avg sd per period"
                ) %>%
                
                fmt_number(
@@ -1572,10 +1572,10 @@ list(
                # Pivot wider
                pivot_wider(
                  names_from = dgp_type,
-                 values_from = c(per_period_rmse,
-                                 agg_rmse,
-                                 avg_per_period_bias,
-                                 agg_bias),
+                 values_from = c(abs_bias_att,
+                                 sd_att,
+                                 avg_abs_bias_per_period,
+                                 avg_sd_per_period),
                  names_glue = "{.value}_{dgp_type}"
                ) %>%
                
@@ -1585,33 +1585,33 @@ list(
                tab_spanner(
                  label = "Negative Binomial",
                  columns = c(
-                   per_period_rmse_negative_binomial,
-                   agg_rmse_negative_binomial,
-                   avg_per_period_bias_negative_binomial,
-                   agg_bias_negative_binomial
+                   abs_bias_att_negative_binomial,
+                   sd_att_negative_binomial,
+                   avg_abs_bias_per_period_negative_binomial,
+                   avg_sd_per_period_negative_binomial
                  )
                ) %>%
                
                tab_spanner(
                  label = "Factor",
                  columns = c(
-                   per_period_rmse_factor,
-                   agg_rmse_factor,
-                   avg_per_period_bias_factor,
-                   agg_bias_factor
+                   abs_bias_att_factor,
+                   sd_att_factor,
+                   avg_abs_bias_per_period_factor,
+                   avg_sd_per_period_factor
                  )
                ) %>%
                
                cols_label(
                  method = "Method",
-                 per_period_rmse_negative_binomial = "Per period RMSE",
-                 agg_rmse_negative_binomial = "Aggregate RMSE",
-                 avg_per_period_bias_negative_binomial = "Avg per period Bias",
-                 agg_bias_negative_binomial = "Aggregate Bias",
-                 per_period_rmse_factor = "Per period RMSE",
-                 agg_rmse_factor = "Aggregate RMSE",
-                 avg_per_period_bias_factor = "Avg per period Bias",
-                 agg_bias_factor = "Aggregate Bias"
+                 abs_bias_att_negative_binomial = "Abs bias ATT",
+                 sd_att_negative_binomial = "sd ATT",
+                 avg_abs_bias_per_period_negative_binomial = "Avg abs bias per period",
+                 avg_sd_per_period_negative_binomial = "Avg sd per period",
+                 abs_bias_att_factor = "Abs bias ATT",
+                 sd_att_factor = "sd ATT",
+                 avg_abs_bias_per_period_factor = "Avg abs bias per period",
+                 avg_sd_per_period_factor = "Avg sd per period"
                ) %>%
                
                fmt_number(
@@ -1639,10 +1639,10 @@ list(
                # Pivot wider
                pivot_wider(
                  names_from = dgp_type,
-                 values_from = c(per_period_rmse,
-                                 agg_rmse,
-                                 avg_per_period_bias,
-                                 agg_bias),
+                 values_from = c(abs_bias_att,
+                                 sd_att,
+                                 avg_abs_bias_per_period,
+                                 avg_sd_per_period),
                  names_glue = "{.value}_{dgp_type}"
                ) %>%
                
@@ -1652,33 +1652,33 @@ list(
                tab_spanner(
                  label = "Negative Binomial",
                  columns = c(
-                   per_period_rmse_negative_binomial,
-                   agg_rmse_negative_binomial,
-                   avg_per_period_bias_negative_binomial,
-                   agg_bias_negative_binomial
+                   abs_bias_att_negative_binomial,
+                   sd_att_negative_binomial,
+                   avg_abs_bias_per_period_negative_binomial,
+                   avg_sd_per_period_negative_binomial
                  )
                ) %>%
                
                tab_spanner(
                  label = "Factor",
                  columns = c(
-                   per_period_rmse_factor,
-                   agg_rmse_factor,
-                   avg_per_period_bias_factor,
-                   agg_bias_factor
+                   abs_bias_att_factor,
+                   sd_att_factor,
+                   avg_abs_bias_per_period_factor,
+                   avg_sd_per_period_factor
                  )
                ) %>%
                
                cols_label(
                  method = "Method",
-                 per_period_rmse_negative_binomial = "Per period RMSE",
-                 agg_rmse_negative_binomial = "Aggregate RMSE",
-                 avg_per_period_bias_negative_binomial = "Avg per period Bias",
-                 agg_bias_negative_binomial = "Aggregate Bias",
-                 per_period_rmse_factor = "Per period RMSE",
-                 agg_rmse_factor = "Aggregate RMSE",
-                 avg_per_period_bias_factor = "Avg per period Bias",
-                 agg_bias_factor = "Aggregate Bias"
+                 abs_bias_att_negative_binomial = "Abs bias ATT",
+                 sd_att_negative_binomial = "sd ATT",
+                 avg_abs_bias_per_period_negative_binomial = "Avg abs bias per period",
+                 avg_sd_per_period_negative_binomial = "Avg sd per period",
+                 abs_bias_att_factor = "Abs bias ATT",
+                 sd_att_factor = "sd ATT",
+                 avg_abs_bias_per_period_factor = "Avg abs bias per period",
+                 avg_sd_per_period_factor = "Avg sd per period"
                ) %>%
                
                fmt_number(
@@ -1706,10 +1706,10 @@ list(
                # Pivot wider
                pivot_wider(
                  names_from = dgp_type,
-                 values_from = c(per_period_rmse,
-                                 agg_rmse,
-                                 avg_per_period_bias,
-                                 agg_bias),
+                 values_from = c(abs_bias_att,
+                                 sd_att,
+                                 avg_abs_bias_per_period,
+                                 avg_sd_per_period),
                  names_glue = "{.value}_{dgp_type}"
                ) %>%
                
@@ -1719,33 +1719,33 @@ list(
                tab_spanner(
                  label = "Negative Binomial",
                  columns = c(
-                   per_period_rmse_negative_binomial,
-                   agg_rmse_negative_binomial,
-                   avg_per_period_bias_negative_binomial,
-                   agg_bias_negative_binomial
+                   abs_bias_att_negative_binomial,
+                   sd_att_negative_binomial,
+                   avg_abs_bias_per_period_negative_binomial,
+                   avg_sd_per_period_negative_binomial
                  )
                ) %>%
                
                tab_spanner(
                  label = "Factor",
                  columns = c(
-                   per_period_rmse_factor,
-                   agg_rmse_factor,
-                   avg_per_period_bias_factor,
-                   agg_bias_factor
+                   abs_bias_att_factor,
+                   sd_att_factor,
+                   avg_abs_bias_per_period_factor,
+                   avg_sd_per_period_factor
                  )
                ) %>%
                
                cols_label(
                  method = "Method",
-                 per_period_rmse_negative_binomial = "Per period RMSE",
-                 agg_rmse_negative_binomial = "Aggregate RMSE",
-                 avg_per_period_bias_negative_binomial = "Avg per period Bias",
-                 agg_bias_negative_binomial = "Aggregate Bias",
-                 per_period_rmse_factor = "Per period RMSE",
-                 agg_rmse_factor = "Aggregate RMSE",
-                 avg_per_period_bias_factor = "Avg per period Bias",
-                 agg_bias_factor = "Aggregate Bias"
+                 abs_bias_att_negative_binomial = "Abs bias ATT",
+                 sd_att_negative_binomial = "sd ATT",
+                 avg_abs_bias_per_period_negative_binomial = "Avg abs bias per period",
+                 avg_sd_per_period_negative_binomial = "Avg sd per period",
+                 abs_bias_att_factor = "Abs bias ATT",
+                 sd_att_factor = "sd ATT",
+                 avg_abs_bias_per_period_factor = "Avg abs bias per period",
+                 avg_sd_per_period_factor = "Avg sd per period"
                ) %>%
                
                fmt_number(

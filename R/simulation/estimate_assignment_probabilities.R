@@ -1,18 +1,38 @@
-# Name of script: estimate_assignment_probabilities
-# Description: Function which estimates time and unit assignment probabilities
-# for acute LFS fire exposure using the MCC data. To estimate the assignment
-# probabilities we use the empirical frequency of acute events across units and time
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 30-04-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 30-04-2025
-
-# Comments ---------------------------------------------------------------------
-
-
-
-# Function ---------------------------------------------------------------------
-
+#' Estimate Empirical Treatment Assignment Probabilities
+#'
+#' @description
+#' Computes unit-level and time-level treatment assignment probabilities from
+#' the observed MCC data for use in the simulation study. Unit probabilities
+#' are proportional to the number of acute exposure events experienced by each
+#' city. Time probabilities are proportional to the number of treated city-days
+#' at each time point, restricted to time periods that allow sufficient pre-
+#' and post-treatment windows. These probabilities are used to sample treatment
+#' assignments in \code{\link{make_list_data_simulated}}.
+#'
+#' @param data A data frame in long format containing all units and time
+#'   periods.
+#' @param treated_var Bare (unquoted) name of the binary treatment indicator
+#'   column (tidy-eval).
+#' @param unit_id_var Bare (unquoted) name of the unit (city) identifier column
+#'   (tidy-eval).
+#' @param time_id_var Bare (unquoted) name of the time identifier column
+#'   (tidy-eval).
+#' @param week_id_var Bare (unquoted) name of the week identifier column used
+#'   to filter time periods at the edges of the sample (tidy-eval).
+#' @param n_periods_pre Integer. Number of pre-treatment periods required;
+#'   time points with fewer than this many preceding observations are excluded.
+#' @param n_periods_post Integer. Number of post-treatment periods required;
+#'   time points with fewer than this many following observations are excluded.
+#'
+#' @return A named list with four elements:
+#' \describe{
+#'   \item{unit_names}{Character vector of unit (city) names.}
+#'   \item{time_ids}{Numeric vector of eligible time IDs.}
+#'   \item{treatment_prob_unit}{Numeric vector of unit-level assignment
+#'     probabilities (sums to 1).}
+#'   \item{treatment_prob_time}{Numeric vector of time-level assignment
+#'     probabilities (sums to 1).}
+#' }
 estimate_assignment_probabilities <- function(data,
                                               treated_var,
                                               unit_id_var,

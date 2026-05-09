@@ -1,19 +1,45 @@
-# Name of script: prepare_data_for_synth
-# Description: Function to prepare data to pass to synthetic control objective
-# function
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 24-04-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 24-04-2025
-
-# Comments ---------------------------------------------------------------------
-
-
-
-# Function ---------------------------------------------------------------------
-
-# @ param ...
-
+#' Prepare Panel Data for Synthetic Control Optimisation
+#'
+#' @description
+#' Extracts and structures the matrices and vectors required by the
+#' \code{objective_function_*} helpers. Subsets the input panel to the
+#' \code{n_periods_pre + n_periods_post} window centred on the first treated
+#' period, separates treated and control unit outcomes into vectors and
+#' matrices, computes pre-treatment means (used for de-meaning estimators),
+#' and constructs the post-treatment indicator. This function is called
+#' internally by \code{\link{optimise_synth}}.
+#'
+#' @param data A data frame in long format containing all units and time
+#'   periods.
+#' @param demean_outcomes Logical. Accepted for API consistency; validated
+#'   but not applied here (de-meaning occurs in \code{\link{optimise_synth}}).
+#' @param denoise_outcomes Logical. Accepted for API consistency; validated
+#'   but not applied here.
+#' @param n_periods_pre Integer. Number of pre-treatment periods to retain.
+#' @param n_periods_post Integer. Number of post-treatment periods to retain.
+#' @param outcome_var Bare (unquoted) name of the outcome variable (tidy-eval).
+#' @param treated_id_var Bare (unquoted) name of the binary treated-unit
+#'   indicator (1 = treated; tidy-eval).
+#' @param treated_time_var Bare (unquoted) name of the binary post-treatment
+#'   period indicator (1 = post; tidy-eval).
+#' @param time_var Bare (unquoted) name of the time identifier column
+#'   (tidy-eval).
+#' @param spline_df Integer or \code{NULL}. Accepted for API consistency;
+#'   not used within this function.
+#'
+#' @return A named list with elements:
+#' \describe{
+#'   \item{Y_treated}{Numeric vector. Full observed outcome series for the
+#'     treated unit (pre + post).}
+#'   \item{Y_controls}{Numeric matrix (\eqn{T \times N}). Full outcome
+#'     series for all control units.}
+#'   \item{Y_treated_bar_pre_treatment}{Numeric scalar. Pre-treatment mean
+#'     of the treated unit's outcomes.}
+#'   \item{Y_controls_bar_pre_treatment}{Numeric vector of length \eqn{N}.
+#'     Pre-treatment means for each control unit.}
+#'   \item{post}{Integer vector (0/1). Post-treatment period indicator.}
+#'   \item{first_treated_period}{The time index of the first treated period.}
+#' }
 prepare_data_for_synth <- function(data,
                                    demean_outcomes,
                                    denoise_outcomes,

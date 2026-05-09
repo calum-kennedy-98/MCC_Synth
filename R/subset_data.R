@@ -1,7 +1,22 @@
-# Name: subset_data
-# Description: Script to select subset of arbitrary dataset based on set of user conditions
-# Author: CK
-# Date: 01-03-2025
+#' Subset a Data Frame by Multiple Filter Conditions
+#'
+#' @description
+#' Filters a data frame based on one or more arbitrary logical expressions
+#' supplied via \code{...}, and optionally selects a specified subset of
+#' columns. All filter conditions are captured as quosures and spliced into
+#' \code{\link[dplyr]{filter}} using tidy evaluation. If \code{vars_to_select}
+#' is provided, the function checks that all named columns exist before
+#' selecting them (errors informatively if any are missing).
+#'
+#' @param data A data frame to filter and optionally column-select.
+#' @param ... Logical filter expressions (unquoted, tidy-eval), passed to
+#'   \code{\link[dplyr]{filter}}. Multiple conditions are combined with AND.
+#' @param vars_to_select Character vector of column names to retain after
+#'   filtering. Pass \code{NULL} (default) to keep all columns.
+#'
+#' @return A data frame (or tibble) containing only the rows that satisfy all
+#'   filter conditions, and only the columns in \code{vars_to_select} (if
+#'   provided).
 
 # Define function to subset data -----------------------------------------------
 

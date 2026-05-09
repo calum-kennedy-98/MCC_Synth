@@ -1,9 +1,27 @@
-# Name of script: make_data_scm_list
-# Description: Runs 'sim_data_scm' script 'n_iters' times to generate list of dataframes
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 26-02-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 26-02-2025
+#' Generate a List of Structural Causal Model Datasets
+#'
+#' @description
+#' Calls \code{\link{sim_data_scm}} \code{n_sims} times with incrementing
+#' seeds to produce a list of independently simulated datasets, each
+#' conforming to the assumed structural causal model (SCM). Within each
+#' simulation, data are immediately aggregated from the daily to weekly level.
+#'
+#' @param n_sims Integer. Number of independent simulation replicates to
+#'   generate.
+#' @param data A data frame of real MCC observations used as the structural
+#'   template (covariates, population sizes, etc.) for the SCM.
+#' @param id_var Bare (unquoted) name of the unit identifier column (tidy-eval).
+#' @param fire_pm_var Bare (unquoted) name of the fire PM2.5 variable used in
+#'   the SCM equations (tidy-eval).
+#' @param week_var Bare (unquoted) name of the week identifier used for
+#'   weekly aggregation (tidy-eval).
+#' @param time_var_mcc Bare (unquoted) name of the daily time identifier
+#'   passed to \code{\link{sim_data_scm}} (tidy-eval).
+#' @param seed Integer. Base random seed; each replicate uses seed \eqn{i}
+#'   for \eqn{i = 1, \ldots, n\_sims}.
+#'
+#' @return A list of \code{n_sims} data frames, each aggregated to the
+#'   city-week level.
 
 # Define function to generate simulated dataset of covariates ------------------
 

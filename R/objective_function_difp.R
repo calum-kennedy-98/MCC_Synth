@@ -1,35 +1,44 @@
-# Name of script: objective_function_difp
-# Description: Function to find optimal synthetic control predictions using the
-# elastic net penalty proposed by Doudchenko and Imbens. The hyperparameters are
-# selected via a modified cross validation procedure where each control unit is 
-# used as a pseudo-treated unit, an optimal synthetic control is found for each pseudo-control,
-# and the MSPE is evaluated in the post-treatment period. The hyperparameter values
-# are the values which minimise the average MSPE across all pseudo-treated units and
-# post-treatment periods
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 13-03-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 25-06-2025
-
-# Comments ---------------------------------------------------------------------
-
-# This function finds optimal parameters for the synthetic control estimator
-# in the style of Doudchenko and Imbens (2017). In particular, we consider only
-# pre-treatment outcomes Y as our predictors, and allow for a constant level shift
-# (intercept) between treated and synthetic control
-
-# @ param data, an input dataframe
-# @ param alpha, initial value for hyperparameter alpha
-# @ param lambda, initial value for hyperparameter lambda
-# @ param outcome_var, name of the outcome variable column
-# @ param treated_id_var, binary ID variable for the treated unit
-# @ param treated_time_var, binary ID variable for the treatment time
-# @ return a list with elements data, Y1, Y1_hat, W_opt, mu_opt (equal to 0), alpha_opt, lambda_opt, first_treated_period
-
-# We assume that the optimx function is performing minimisation, not maximisation
-
-# Define function to manually find optimal synth using optimx ------------------
-
+#' Doudchenko–Imbens Elastic Net Penalised Synthetic Control (DIFP)
+#'
+#' @description
+#' Implements the elastic net penalised synthetic control (DIFP) estimator of
+#' Doudchenko & Imbens (2017). Hyperparameters \eqn{\alpha} (elastic net
+#' mixing) and \eqn{\lambda} (penalty strength) are jointly tuned by
+#' minimising the LOO cross-validation MSPE via
+#' \code{\link{get_hyperparam_loss_elastic_net}} and
+#' \code{\link[optimx]{optimx}} with L-BFGS-B. At the optimal
+#' hyperparameters, \code{\link[glmnet]{glmnet}} is fitted on the full
+#' pre-treatment data to obtain final weights and an intercept. Unlike the ADH
+#' method, weights are unconstrained (can be negative) and an intercept
+#' \code{mu_opt} is estimated.
+#'
+#' @param Y_treated_pre Numeric vector of length \eqn{T_{\text{pre}}}. Observed
+#'   pre-treatment outcome series for the treated unit.
+#' @param Y_controls_pre Numeric matrix of dimensions
+#'   \eqn{T_{\text{pre}} \times N}. Pre-treatment outcome series for the
+#'   control units.
+#' @param Y_controls_post Numeric matrix of dimensions
+#'   \eqn{T_{\text{post}} \times N}. Post-treatment outcome series for the
+#'   control units (used only for hyperparameter tuning via LOO-CV).
+#' @param alpha_init Numeric in \eqn{[0, 1]}. Initial value for the elastic
+#'   net mixing parameter \eqn{\alpha} (0 = ridge, 1 = lasso).
+#' @param lambda_init Numeric (\eqn{> 0}). Initial value for the penalty
+#'   strength \eqn{\lambda}.
+#'
+#' @return A named list with four elements:
+#' \describe{
+#'   \item{W_opt}{A sparse coefficient vector (dgCMatrix) of length \eqn{N}.
+#'     Elastic net weights for the control units.}
+#'   \item{mu_opt}{Numeric scalar. Estimated intercept from the fitted glmnet
+#'     model.}
+#'   \item{alpha_opt}{Numeric. Optimised \eqn{\alpha} value.}
+#'   \item{lambda_opt}{Numeric. Optimised \eqn{\lambda} value.}
+#' }
+#'
+#' @references
+#' Doudchenko, N. & Imbens, G.W. (2017). Balancing, regression, difference-in-
+#' differences and synthetic control methods: A synthesis. NBER Working Paper
+#' No. 22791.
 objective_function_difp <- function(Y_treated_pre,
                                     Y_controls_pre,
                                     Y_controls_post,

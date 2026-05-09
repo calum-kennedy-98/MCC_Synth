@@ -1,16 +1,29 @@
-# Name of script: make_data_mcc_lfs_monthly
-# Description: Function to aggregate MCC data to monthly level
-# Created by: Calum Kennedy (calum.kennedy.25@ucl.ac.uk)
-# Created on: 24-03-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 24-03-2025
-
-# Args: MCC LFS pollution raw data, mortality variables to summarise
-# Description: Aggregate data to monthly level taking sum of deaths and mean of pollution/temperature
-#              If all observations NA, return NA in the sum/mean functions. Sets 'treated' = 1
-#              if any observation is classed as 'treated' in the daily data
-# Values: Data frame at week-year-city level
-
+#' Aggregate Daily MCC-LFS Data to Monthly Level
+#'
+#' @description
+#' Collapses a daily MCC-LFS panel data frame to the month level. Climatic and
+#' pollution variables are summarised by their mean; mortality variables are
+#' summed. If all daily values within a month are \code{NA}, the aggregated
+#' value is also \code{NA}. A month is flagged as treated (\code{treated = 1})
+#' if any day within it carries a treatment indicator of 1 in the daily data.
+#'
+#' @param data_mcc_lfs A data frame of daily MCC-LFS observations containing
+#'   at minimum a \code{date} column (class \code{Date}), a \code{treated}
+#'   column, and all columns named in \code{climatic_vars},
+#'   \code{mortality_vars}, and \code{group_vars}.
+#' @param climatic_vars Character vector of column names for climatic and
+#'   pollution variables to aggregate by mean.
+#' @param mortality_vars Character vector of column names for mortality
+#'   variables to aggregate by sum.
+#' @param group_vars Unquoted variable names (or a character vector) passed to
+#'   \code{.by} in \code{\link[dplyr]{summarise}} to define grouping (e.g.
+#'   city and month identifiers).
+#'
+#' @return A tibble aggregated to the city-month level, containing all
+#'   \code{group_vars}, the summarised \code{climatic_vars} and
+#'   \code{mortality_vars}, \code{treated}, \code{month}, \code{year},
+#'   \code{date} (first day of the month), and a \code{month_id} integer
+#'   (months since dataset start).
 make_data_mcc_lfs_monthly <- function(data_mcc_lfs,
                                      climatic_vars,
                                      mortality_vars,

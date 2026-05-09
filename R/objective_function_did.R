@@ -1,19 +1,31 @@
-# Name of script: objective_function_did
-# Description: Function to find optimal counterfactual predictions using 
-# difference-in-differences. As for the ADH_subset method, we choose a set of 'n_controls'
-# control units which are closest (in terms of L2 norm) to the treated unit in the
-# pre-treatment period
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 07-07-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 07-07-2025
-
-# Comments ---------------------------------------------------------------------
-
-# @ param ...
-
-# Function ---------------------------------------------------------------------
-
+#' Difference-in-Differences Counterfactual
+#'
+#' @description
+#' Constructs a difference-in-differences (DiD) counterfactual by selecting
+#' the \code{n_controls} control units closest to the treated unit in
+#' pre-treatment Euclidean (L2) distance, assigning them equal weights of
+#' \eqn{1 / \texttt{n\_controls}}, and estimating an intercept (\code{mu_opt})
+#' equal to the mean pre-treatment level difference between the treated unit
+#' and the average of the selected controls. Control units outside the selected
+#' subset receive a weight of zero.
+#'
+#' @param Y_treated_pre Numeric vector of length \eqn{T_{\text{pre}}}. Observed
+#'   pre-treatment outcome series for the treated unit.
+#' @param Y_controls_pre Numeric matrix of dimensions
+#'   \eqn{T_{\text{pre}} \times N}. Pre-treatment outcome series for all
+#'   \eqn{N} control units.
+#' @param n_controls Integer. Number of nearest control units (by L2 norm) to
+#'   include in the DiD comparison group.
+#'
+#' @return A named list with two elements:
+#' \describe{
+#'   \item{W_opt}{Numeric vector of length \eqn{N}. Equal weights
+#'     (\eqn{1/\texttt{n\_controls}}) for the selected controls and 0
+#'     elsewhere.}
+#'   \item{mu_opt}{Numeric scalar. Estimated mean pre-treatment level
+#'     difference between the treated unit and the equally-weighted control
+#'     average.}
+#' }
 objective_function_did <- function(Y_treated_pre,
                                    Y_controls_pre,
                                    n_controls){

@@ -1,22 +1,30 @@
-# Name of script: get_penalised_sc_weights
-# Description: Function to find optimal penalised synthetic control weights
-# using the LowRankQP solver. This code adapted from L'Hour (2021)
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 02-06-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 02-06-2025
-
-# Comments ---------------------------------------------------------------------
-
-# At present, not using weight vector V - in future could look to incorporate
-
-# @ param X1, m x 1 vector of predictors for the treated unit
-# @ param X0, m x n matrix of predictors for the control units
-# @ param lambda, L1 penalty parameter
-# @ output W_opt, n x 1 vector of optimal penalised SC weights 
-
-# Function ---------------------------------------------------------------------
-
+#' Solve for Optimal Penalised Synthetic Control Weights
+#'
+#' @description
+#' Finds the convex combination of control unit pre-treatment outcomes that
+#' best approximates the treated unit's pre-treatment outcomes, subject to an
+#' L1 penalty on pairwise discrepancies between the treated unit and each
+#' control. The quadratic programme is solved using \code{\link[LowRankQP]{LowRankQP}}.
+#' Very small weights are subsequently trimmed and the remaining weights are
+#' rescaled to sum to one via \code{\link{rescale_small_weights}}. Adapted
+#' from L'Hour (2021).
+#'
+#' @param X1 Numeric vector of length \eqn{m}. Pre-treatment outcome series
+#'   (or predictor vector) for the treated unit.
+#' @param X0 Numeric matrix of dimensions \eqn{m \times n}. Pre-treatment
+#'   outcome series (or predictor matrix) for the \eqn{n} control units.
+#' @param lambda Numeric scalar (\eqn{\geq 0}). L1 penalty parameter
+#'   controlling the degree to which the algorithm discourages placing weight
+#'   on controls that are dissimilar to the treated unit.
+#'
+#' @return A numeric vector of length \eqn{n} containing the optimal
+#'   penalised synthetic control weights. Weights sum to one and are
+#'   non-negative.
+#'
+#' @references
+#' Abadie, A. & L'Hour, J. (2021). A penalized synthetic control estimator
+#' for disaggregated data. \emph{Journal of the American Statistical
+#' Association}, 116(536), 1817–1834.
 get_penalised_sc_weights <- function(X1, X0, lambda){
   
   # Extract number of control units

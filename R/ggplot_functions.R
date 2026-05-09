@@ -1,10 +1,30 @@
-# Name: ggplot_functions
-# Description: ggplot functions for main MCC project manuscript
-# Author: CK
-# Date: 03-03-2025
+# ggplot helper functions for the MCC synthetic control project.
 
-# Define functions -------------------------------------------------------------
-
+#' Plot Observed vs Simulated Outcome Data
+#'
+#' @description
+#' Filters each data frame in \code{list_data} to a single location and
+#' produces a \code{ggplot2} line plot overlaying the observed outcome series
+#' (bold) with all simulated replicates (faint, semi-transparent). Useful for
+#' visually assessing how well the simulation data-generating process reproduces
+#' the observed distribution.
+#'
+#' @param list_data A list of data frames, each containing the same structure
+#'   with observed and simulated outcome columns.
+#' @param location_var Bare (unquoted) name of the location identifier column
+#'   (tidy-eval).
+#' @param location_string Character string. The specific location value to
+#'   filter on (matched against \code{location_var}).
+#' @param time_var Bare (unquoted) name of the time variable used for the
+#'   x-axis (tidy-eval).
+#' @param min_time_var Numeric. Minimum value of \code{time_var} to include in
+#'   the plot (earlier periods are excluded).
+#' @param outcome_var Bare (unquoted) name of the observed outcome variable
+#'   (tidy-eval).
+#' @param outcome_sim_var Bare (unquoted) name of the simulated outcome variable
+#'   (tidy-eval).
+#'
+#' @return A \code{ggplot2} object.
 make_line_plot_real_vs_sim_data <- function(list_data,
                                             location_var,
                                             location_string,
@@ -50,8 +70,23 @@ make_line_plot_real_vs_sim_data <- function(list_data,
   
 }
 
-# Define function to produce patchwork of ggplot objects using 'reduce' --------
-
+#' Combine ggplot Objects into a Patchwork Layout
+#'
+#' @description
+#' Reduces a list of \code{ggplot2} objects into a single
+#' \code{\link[patchwork]{patchwork}} composition using the \code{+} operator,
+#' and applies a shared layout and legend position across all panels.
+#'
+#' @param list A list of \code{ggplot2} objects to combine.
+#' @param legend_position Character string passed to
+#'   \code{\link[ggplot2]{theme}} specifying the legend position (e.g.
+#'   \code{"bottom"}, \code{"none"}). Default is \code{NULL} (use each plot's
+#'   own legend position).
+#' @param ... Additional arguments passed to
+#'   \code{\link[patchwork]{plot_layout}} (e.g. \code{ncol}, \code{nrow},
+#'   \code{guides}).
+#'
+#' @return A \code{patchwork} object.
 make_patchwork_plot <- function(list, 
                                 legend_position = NULL,
                                 ...){

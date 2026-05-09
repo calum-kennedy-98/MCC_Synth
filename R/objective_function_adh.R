@@ -1,22 +1,38 @@
-# Name of script: objective_function_adh
-# Description: Function to find optimal synthetic control predictions using the
-# classical synthetic control method proposed by Abadie, Diamond, and Hainmueller (ADH)
-# The ADH synthetic control finds a convex combination of control units which best approximates
-# the pre-treatment trend in the treated units. Here, we do not allow an intercept term
-# and we constrain the weights to lie in the unit interval and sum to 1. The synthetic control
-# unit is therefore a projection of the treated unit outcomes onto the convex hull of the control
-# unit outcomes. 
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 01-05-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 25-06-2025
-
-# Comments ---------------------------------------------------------------------
-
-# @ param ...
-
-# Function ---------------------------------------------------------------------
-
+#' Classical ADH Synthetic Control
+#'
+#' @description
+#' Implements the classical Abadie–Diamond–Hainmueller (ADH) synthetic control
+#' method using the full donor pool. Finds a convex combination of control
+#' units that best approximates the treated unit's pre-treatment outcome series
+#' by minimising the pre-treatment mean squared prediction error subject to
+#' non-negativity and sum-to-one constraints on the weights (no intercept).
+#' The quadratic programme is solved via \code{\link{retry_synth}}, which
+#' retries with increasing \code{Margin.ipop} values if the optimiser fails to
+#' converge.
+#'
+#' @param Y_treated_pre Numeric vector of length \eqn{T_{\text{pre}}}. Observed
+#'   pre-treatment outcome series for the treated unit.
+#' @param Y_controls_pre Numeric matrix of dimensions
+#'   \eqn{T_{\text{pre}} \times N}. Pre-treatment outcome series for all
+#'   \eqn{N} control units.
+#' @param initial_margin Numeric. Initial value of \code{Margin.ipop} for the
+#'   ipop solver; controls the convergence tolerance.
+#' @param max_attempts Integer. Maximum number of optimisation re-attempts,
+#'   each with an incremented margin.
+#' @param margin_increment Numeric. Amount added to \code{Margin.ipop} after
+#'   each failed attempt.
+#'
+#' @return A named list with two elements:
+#' \describe{
+#'   \item{W_opt}{Numeric vector of length \eqn{N}. Optimal convex weights
+#'     over the full donor pool. \code{NA} if optimisation fails.}
+#'   \item{mu_opt}{Numeric scalar, always 0 (no intercept by design).}
+#' }
+#'
+#' @references
+#' Abadie, A., Diamond, A. & Hainmueller, J. (2010). Synthetic control methods
+#' for comparative case studies. \emph{Journal of the American Statistical
+#' Association}, 105(490), 493–505.
 objective_function_adh <- function(Y_treated_pre,
                                    Y_controls_pre,
                                    initial_margin,

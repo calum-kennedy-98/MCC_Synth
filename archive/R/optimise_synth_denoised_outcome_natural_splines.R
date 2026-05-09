@@ -1,19 +1,47 @@
-# Name of script: optimise_synth_denoised_outcome_natural_splines
-# Description: FUnction which estimates optimal SC weights (using preferred method)
-# on outcome series denoised using natural splines
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 24-04-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 24-04-2025
-
-# Comments ---------------------------------------------------------------------
-
-
-
-# Function ---------------------------------------------------------------------
-
-# @ param ...
-
+#' Penalised Synthetic Control on Spline-Denoised Outcome Series
+#'
+#' @description
+#' Estimates optimal PSC weights on outcome series that have been smoothed
+#' (denoised) by fitting a quasi-Poisson GLM with a natural cubic spline time
+#' trend to each unit's outcome series. The spline-fitted values for each
+#' control unit are used in the optimisation step (replacing raw outcomes),
+#' which reduces the influence of idiosyncratic noise when selecting the
+#' synthetic control weights. Final counterfactual predictions are then
+#' computed using the original (non-denoised) outcomes for the control units
+#' at the optimal weights.
+#'
+#' @param data A data frame in long format containing all units and time
+#'   periods.
+#' @param unit_id_var Bare (unquoted) name of the unit identifier column
+#'   (tidy-eval).
+#' @param time_id_var Bare (unquoted) name of the continuous time index column
+#'   used as the spline argument (tidy-eval).
+#' @param outcome_var Bare (unquoted) name of the outcome variable (tidy-eval).
+#' @param spline_df Integer. Degrees of freedom for the natural cubic spline
+#'   used in the denoising step.
+#' @param lambda_init Numeric. Initial value for the PSC L1 penalty parameter
+#'   \eqn{\lambda}.
+#' @param lower_bound_lambda Numeric. Lower bound on \eqn{\lambda} during
+#'   optimisation.
+#' @param treated_id_var Bare (unquoted) name of the binary treated-unit
+#'   indicator (1 = treated; tidy-eval).
+#' @param treated_time_var Bare (unquoted) name of the binary post-treatment
+#'   period indicator (1 = post; tidy-eval).
+#' @param n_periods_pre Integer. Number of pre-treatment periods to include.
+#' @param n_periods_post Integer. Number of post-treatment periods to include.
+#'
+#' @return A named list with elements:
+#' \describe{
+#'   \item{Y_treated}{Numeric vector. Observed outcomes for the treated unit.}
+#'   \item{Y0_treated_hat}{Numeric vector. Counterfactual predictions using
+#'     denoised control outcomes and optimal weights.}
+#'   \item{post}{Integer vector (0/1). Post-treatment period indicator.}
+#'   \item{W_opt}{Numeric vector. Optimal PSC weights.}
+#'   \item{mu_opt}{Numeric scalar, always 0.}
+#'   \item{lambda_opt}{Numeric. Optimised \eqn{\lambda}.}
+#'   \item{first_treated_period}{Time index of the first treated period.}
+#'   \item{method}{Character string \code{"penalised_sc_denoised"}.}
+#' }
 optimise_synth_denoised_outcome_natural_splines <- function(data,
                                                             unit_id_var,
                                                             time_id_var,

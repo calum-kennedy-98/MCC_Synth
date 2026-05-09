@@ -1,20 +1,25 @@
-# Name of script: extract_synth_results_main
-# Description: Function to extract estimated tau hats from list of main synthetic control
-# model outputs. Appends the geographic region from the 'list_data_for_synth' 
-# argument
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 05-03-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 05-03-2025
-
-# Comments ---------------------------------------------------------------------
-
-
-
-# Function ---------------------------------------------------------------------
-
-# @ param ...
-
+#' Extract Treatment Effect Estimates from Main Synthetic Control Results
+#'
+#' @description
+#' Processes a list of synthetic control model outputs and returns a tidy
+#' tibble of per-period treatment effect estimates (\eqn{\hat\tau_t}), aligned
+#' to a common event-time index. Geographic metadata (region, country, city
+#' label) is appended by joining against the corresponding input datasets.
+#'
+#' @param list_data_for_synth A list of data frames, one per treatment event,
+#'   each containing the panel data used as input to the synthetic control
+#'   optimisation. Each data frame must include columns \code{treated},
+#'   \code{region}, \code{countryname}, and \code{column_label}.
+#' @param list_results_synth A list of synthetic control result objects
+#'   (as returned by \code{optimise_synth}), one per treatment event. Each
+#'   element must contain named fields \code{method}, \code{Y_treated},
+#'   \code{Y0_treated_hat}, and \code{post}.
+#'
+#' @return A tibble with one row per event-period combination and the following
+#'   columns: \code{method}, \code{event_id}, \code{t} (event-time index,
+#'   zero-indexed from treatment onset), \code{post}, \code{tau_hat},
+#'   \code{Y_treated}, \code{Y0_treated_hat}, \code{region},
+#'   \code{countryname}, \code{column_label}.
 extract_synth_results_main <- function(list_data_for_synth,
                                        list_results_synth){
   

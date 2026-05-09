@@ -1,19 +1,24 @@
-# Name of script: make_density_plot_synth_results
-# Description: Function to produce density plot of results from synthetic control
-# simulations
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 11-06-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 11-06-2025
-
-# Comments ---------------------------------------------------------------------
-
-
-
-# Function ---------------------------------------------------------------------
-
-# @ param ...
-
+#' Density Plot of Synthetic Control Simulation Results by Method
+#'
+#' @description
+#' Produces a \code{ggplot2} density plot of a user-specified variable (e.g.
+#' \eqn{\hat\tau - \tau}) for each synthetic control method, with a vertical
+#' dashed reference line at zero. Useful for comparing the bias and spread of
+#' estimators across simulation replicates.
+#'
+#' @param data A data frame of simulation results, typically as returned by
+#'   \code{\link{extract_tau_hat_synth_results}}.
+#' @param density_var Bare (unquoted) name of the variable to plot on the
+#'   x-axis of the density (tidy-eval).
+#' @param method_var Bare (unquoted) name of the SC method identifier column
+#'   used to colour the densities (tidy-eval).
+#' @param model_run_var Bare (unquoted) name of the simulation run identifier
+#'   column (tidy-eval; accepted but not directly used in the current plot
+#'   aesthetics).
+#' @param palette Character vector of colour hex codes or named colours passed
+#'   to \code{\link[ggplot2]{scale_colour_manual}}.
+#'
+#' @return A \code{ggplot2} object.
 make_density_plot_synth_results <- function(data,
                                             density_var,
                                             method_var,

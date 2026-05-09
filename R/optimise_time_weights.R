@@ -1,16 +1,22 @@
-# Name of script: optimise_time_weights
-# Description: ***
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 13-03-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 13-03-2025
-
-# Comments ---------------------------------------------------------------------
+#' Optimise Time-Period Weights for Synthetic Control
+#'
+#' @description
+#' Finds optimal time-period weights for use in the synthetic difference-in-
+#' differences (SDiD) framework. Outcomes are first de-meaned across units
+#' within each time period. The weights are chosen to minimise the discrepancy
+#' between the weighted pre-treatment average of control outcomes and the
+#' post-treatment average of control outcomes, using \code{\link[LowRankQP]{LowRankQP}}.
+#' The resulting weights sum to one and are non-negative.
+#'
+#' @param Y_controls Numeric matrix of dimensions \eqn{T \times N}, with rows
+#'   indexing time periods and columns indexing control units.
+#' @param post Integer or logical vector of length \eqn{T}. Post-treatment
+#'   indicator (0 = pre-treatment, 1 = post-treatment).
+#'
+#' @return A numeric vector of length \eqn{T_{\text{pre}}} containing the
+#'   optimal time-period weights.
 
 # Define function find optimal synth -------------------------------------------
-
-# @ param Y_controls (T x N) matrix of outcomes for control units (rows time periods, columns units)
-# @ post, (T x 1) vector of indicators for pre-treatment (post == 0) and post-treatment (post == 1)
 
 optimise_time_weights <- function(Y_controls,
                                   post){

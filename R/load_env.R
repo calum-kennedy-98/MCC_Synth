@@ -1,9 +1,13 @@
-# Name of script: 0_LoadEnv
-# Description:  Loads plot options, palette, etc
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 04-02-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 04-02-2025
+# load_env.R
+#
+# Sets up shared plot aesthetics used throughout the MCC synthetic control
+# project. Source this file at the start of any analysis script to ensure
+# consistent styling.
+#
+# Objects defined here:
+#   scatter_plot_opts  - A list of ggplot2 theme elements applied to all plots.
+#   cbbPalette         - A 10-colour, colorblind-friendly palette (character
+#                        vector of hex codes).
 
 # Set global plot options ------------------------------------------------------
 

@@ -1,18 +1,37 @@
-# Name of script: make_list_sim_data_factor_model
-# Description: Generates list of simulated outcomes using a low-rank factor model
-# and an AR(2) process for the error matrix. Currently based on the simulations
-# used in Synthetic Difference-in-Differences paper (arkhangelsky et al., 2021)
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 03-06-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 03-06-2025
-
-# Comments ---------------------------------------------------------------------
-
-# @ param ...
-
-# Function ---------------------------------------------------------------------
-
+#' Generate Simulated Outcome Vectors from a Low-Rank Factor Model with AR(2) Errors
+#'
+#' @description
+#' Produces \code{n_sims} independent draws of simulated untreated potential
+#' outcomes using a factor model DGP. The systematic component \eqn{L} is
+#' estimated from the real data via \code{\link{estimate_factor_model}} at the
+#' specified rank. Error matrices are drawn from a multivariate normal
+#' distribution whose covariance is estimated from the empirical AR(2)
+#' correlation structure (via \code{\link{fit_ar_2}} and
+#' \code{\link{ar2_correlation_matrix}}) and scaled by location-specific
+#' standard deviations. Negative simulated outcomes are set to zero. The
+#' approach follows Arkhangelsky et al. (2021).
+#'
+#' @param n_sims Integer. Number of simulation replicates to generate.
+#' @param data A data frame in long format, used to estimate the factor model
+#'   parameters. Rows must be sorted by unit then time.
+#' @param unit_id_var Bare (unquoted) name of the unit identifier column
+#'   (tidy-eval).
+#' @param time_id_var Bare (unquoted) name of the time identifier column
+#'   (tidy-eval).
+#' @param outcome_var Bare (unquoted) name of the outcome variable (tidy-eval).
+#' @param week_id_var Bare (unquoted) name of the week identifier column
+#'   (tidy-eval; accepted for API consistency, not used here).
+#' @param treated_var Bare (unquoted) name of the treatment indicator column
+#'   (tidy-eval; accepted for API consistency, not used here).
+#' @param rank Integer. Rank of the factor model.
+#'
+#' @return A list of \code{n_sims} integer vectors, each of length
+#'   \eqn{n \times T}, containing simulated outcomes ordered by unit then time.
+#'
+#' @references
+#' Arkhangelsky, D., Athey, S., Hirshberg, D.A., Imbens, G.W. & Wager, S.
+#' (2021). Synthetic difference-in-differences. \emph{American Economic
+#' Review}, 111(12), 4088–4118.
 make_list_sim_data_factor_model <- function(n_sims,
                                         data,
                                         unit_id_var,

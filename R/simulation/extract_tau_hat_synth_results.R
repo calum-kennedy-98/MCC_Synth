@@ -1,19 +1,39 @@
-# Name of script: extract_tau_hat_synth_results
-# Description: Function to extract estimated tau hats from a list of synthetic control
-# model outputs. The function takes inputs from a generic synthetic control model
-# class, assuming that the true observed outcome is "Y1", the predicted outcome
-# is "Y1_hat" and the first treated period is "first_treated_period"
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 05-03-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 05-03-2025
-
-# Comments ---------------------------------------------------------------------
-
-
-
-# Function ---------------------------------------------------------------------
-
+#' Extract Treatment Effect Estimates from Simulation Results
+#'
+#' @description
+#' Processes a list of synthetic control model outputs from a simulation study
+#' and returns a tidy tibble of per-period true treatment effects (\eqn{\tau_t})
+#' and estimated effects (\eqn{\hat\tau_t}). The true effects are constructed
+#' from the untreated potential outcomes stored in each result object, according
+#' to the specified data-generating process (\code{treatment_effect_type}).
+#' Supported DGPs are: placebo (zero effect), constant additive, constant
+#' multiplicative, and dynamic Cauchy-shaped.
+#'
+#' @param results_synth_model_simulated A list of synthetic control result
+#'   objects (as returned by \code{optimise_synth}), one per simulation run.
+#'   Each must contain named fields \code{method}, \code{Y_treated},
+#'   \code{Y0_treated_hat}, and \code{post}.
+#' @param treatment_effect_type Character string. One of \code{"placebo"},
+#'   \code{"constant additive"}, \code{"constant multiplicative"}, or
+#'   \code{"dynamic"}.
+#' @param constant_additive_effect Numeric scalar. Required when
+#'   \code{treatment_effect_type = "constant additive"}. The fixed additive
+#'   treatment effect applied to post-treatment periods.
+#' @param constant_multiplicative_effect Numeric scalar. Required when
+#'   \code{treatment_effect_type = "constant multiplicative"}. The
+#'   multiplicative factor applied to post-treatment potential outcomes.
+#' @param peak_height_param Numeric scalar. Required when
+#'   \code{treatment_effect_type = "dynamic"}. Scales the peak height of the
+#'   Cauchy-shaped effect relative to the pre-treatment mean outcome.
+#' @param peak_scale_param Numeric scalar. Required when
+#'   \code{treatment_effect_type = "dynamic"}. Controls the spread (scale) of
+#'   the Cauchy-shaped dynamic effect relative to the pre-treatment mean.
+#'
+#' @return A tibble with one row per simulation-run / period combination
+#'   containing columns: \code{method}, \code{model_run}, \code{t}
+#'   (event-time index), \code{post}, \code{tau} (true effect), \code{tau_hat}
+#'   (estimated effect), \code{tau_hat_normalised}, \code{Y1_treated},
+#'   \code{Y0_treated}, \code{Y0_treated_hat}.
 extract_tau_hat_synth_results <- function(results_synth_model_simulated,
                                           treatment_effect_type,
                                           constant_additive_effect = NULL,

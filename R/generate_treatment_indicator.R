@@ -1,23 +1,36 @@
-# Name of script: generate_treatment_indicator
-# Description: Function to generate treated status for MCC cities
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 23-04-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 23-04-2025
-
-# Comments ---------------------------------------------------------------------
-
-# Args - R dataframe, identifiers for ID variable and fire PM variables, threshold to set
-# cutoff for acute LFS pollution exposure
-# Function - Generates an indicator variable for whether a city is defined as 'treated'
-# by an acute LFS pollution episode at time t. The indicator is defined as follows:
-# 1. Set 'treated' equal to 1 if the 3-day moving avg LFS pollution exceeds 'fire_PM25_threshold'
-# for 'n_days_above_threshold' consecutive days
-# 2. Treated stays equal to 1 until there are 'n_days_below_threshold' where the moving avg
-# LFS pollution is less than 'fire_PM25_threshold', when it is reset to 0
-
-# Function ---------------------------------------------------------------------
-
+#' Generate a Treatment Indicator for Acute Fire PM2.5 Exposure Episodes
+#'
+#' @description
+#' Creates a binary \code{treated} column that flags city-days affected by an
+#' acute landscape-fire smoke (LFS) PM2.5 episode. Treatment onset is triggered
+#' when the moving-average fire PM2.5 concentration exceeds a data-driven
+#' threshold for \code{n_days_above_threshold} consecutive days. Treatment
+#' ends once the moving average falls back below the threshold for
+#' \code{n_days_below_threshold} consecutive days. The threshold is computed as
+#' the \code{quantile_threshold} quantile of the pooled empirical distribution
+#' of raw fire PM2.5 across all units.
+#'
+#' @param data A data frame containing at minimum the unit identifier, a
+#'   moving-average fire PM2.5 variable, and a raw fire PM2.5 variable. Data
+#'   must be sorted by unit then date.
+#' @param id_var Bare (unquoted) name of the unit (city) identifier column
+#'   (tidy-eval).
+#' @param fire_pm_ma_var Bare (unquoted) name of the fire PM2.5 moving-average
+#'   variable used to determine within-episode treated status (tidy-eval).
+#' @param fire_pm_var Bare (unquoted) name of the raw fire PM2.5 variable used
+#'   to compute the quantile threshold (tidy-eval).
+#' @param quantile_threshold Numeric in \eqn{[0, 1]}. Quantile of the pooled
+#'   fire PM2.5 distribution used as the exposure threshold.
+#' @param n_days_above_threshold Integer. Number of consecutive days the
+#'   moving-average must exceed the threshold before treatment onset is
+#'   declared.
+#' @param n_days_below_threshold Integer. Number of consecutive days the
+#'   moving-average must remain below the threshold before treatment is
+#'   considered to have ended.
+#'
+#' @return The input data frame with an additional integer column \code{treated}
+#'   (1 = treated, 0 = untreated) and an intermediate logical column
+#'   \code{above_threshold}.
 generate_treatment_indicator <- function(data,
                                          id_var,
                                          fire_pm_ma_var,

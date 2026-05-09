@@ -1,24 +1,42 @@
-# Name of script: objective_function_adh_subset
-# Description: Function to find optimal synthetic control predictions using the
-# classical synthetic control method proposed by Abadie, Diamond, and Hainmueller (ADH) with
-# pre-optimisation subset selection to reduce the size of the donor pool.
-# The ADH synthetic control finds a convex combination of control units which best approximates
-# the pre-treatment trend in the treated units. Here, we do not allow an intercept term
-# and we constrain the weights to lie in the unit interval and sum to 1. The synthetic control
-# unit is therefore a projection of the treated unit outcomes onto the convex hull of the control
-# unit outcomes. The subset of controls is determined by taking the 'n_controls' units with the smallest
-# L2 norm with respect to the treated unit in the pre-treatment period.
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 01-05-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 25-06-2025
-
-# Comments ---------------------------------------------------------------------
-
-# @ param ...
-
-# Function ---------------------------------------------------------------------
-
+#' ADH Synthetic Control with Pre-Optimisation Donor Pool Subset Selection
+#'
+#' @description
+#' Implements the Abadie–Diamond–Hainmueller (ADH) synthetic control method
+#' on a pre-selected subset of the donor pool. Before running the ADH
+#' quadratic programme, the \code{n_controls} control units with the smallest
+#' pre-treatment Euclidean (L2) distance to the treated unit are selected.
+#' The ADH optimisation is then run on this reduced pool using
+#' \code{\link{retry_synth}}. Weights for units outside the subset are set to
+#' zero; the remaining weights are rescaled to sum to one via
+#' \code{\link{rescale_small_weights}}.
+#'
+#' @param Y_treated_pre Numeric vector of length \eqn{T_{\text{pre}}}. Observed
+#'   pre-treatment outcome series for the treated unit.
+#' @param Y_controls_pre Numeric matrix of dimensions
+#'   \eqn{T_{\text{pre}} \times N}. Pre-treatment outcome series for the full
+#'   donor pool of \eqn{N} control units.
+#' @param n_controls Integer. Number of nearest control units (by L2 norm) to
+#'   retain for the ADH optimisation.
+#' @param initial_margin Numeric. Initial value of \code{Margin.ipop} passed
+#'   to \code{\link{retry_synth}}; controls the convergence tolerance of the
+#'   ipop quadratic programme solver.
+#' @param max_attempts Integer. Maximum number of re-attempts allowed if the
+#'   optimisation fails, each time incrementing the margin.
+#' @param margin_increment Numeric. Amount added to \code{Margin.ipop} on each
+#'   failed optimisation attempt.
+#'
+#' @return A named list with two elements:
+#' \describe{
+#'   \item{W_opt}{Numeric vector of length \eqn{N}. Optimal ADH weights over
+#'     the full donor pool (zero for units outside the selected subset).
+#'     \code{NA} if optimisation fails.}
+#'   \item{mu_opt}{Numeric scalar, always 0 (no intercept by design).}
+#' }
+#'
+#' @references
+#' Abadie, A., Diamond, A. & Hainmueller, J. (2010). Synthetic control methods
+#' for comparative case studies. \emph{Journal of the American Statistical
+#' Association}, 105(490), 493–505.
 objective_function_adh_subset <- function(Y_treated_pre,
                                    Y_controls_pre,
                                    n_controls,
