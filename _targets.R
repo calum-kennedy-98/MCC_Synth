@@ -1,4 +1,136 @@
-# Comments here
+# =============================================================================
+# _targets.R — Analysis Pipeline for MCC Synthetic Control Study
+# =============================================================================
+#
+# Author:  Calum Kennedy (calum.kennedy.25@ucl.ac.uk)
+# Project: Estimating the causal effect of acute landscape fire smoke (LFS)
+#          PM2.5 exposure on mortality using synthetic control methods.
+#          Data: Multi-Country Multi-City (MCC) Collaborative Research Network.
+#
+# -----------------------------------------------------------------------------
+# OVERVIEW
+# -----------------------------------------------------------------------------
+# This file defines the targets pipeline (via the {targets} package) for the
+# full analysis. It is the single entry point for running all data preparation,
+# simulation, and empirical estimation steps. Running `targets::tar_make()`
+# from the project root executes the pipeline; `targets::tar_visnetwork()`
+# renders the dependency graph.
+#
+# All R functions called here are defined in R/ and R/simulation/, and are
+# loaded via `tar_source("functions.R")`. Parallel execution uses {furrr}
+# (multisession) for simulation loops and is configured at the top of this
+# file.
+#
+# -----------------------------------------------------------------------------
+# DATA SOURCES
+# -----------------------------------------------------------------------------
+# Both datasets are stored in the data/ folder (not tracked by git).
+#
+# - MCC mortality data:
+#     Daily city-level mortality counts (all-cause, CVD, respiratory,
+#     non-external), mean temperature, and city metadata for cities in the
+#     MCC network. Access is restricted to MCC network collaborators.
+#
+# - LFS pollution data:
+#     Daily city-level predicted fire and non-fire PM2.5 concentrations
+#     (and total PM2.5, O3), matched to MCC cities.
+#
+# -----------------------------------------------------------------------------
+# KEY ANALYSIS PARAMETERS
+# -----------------------------------------------------------------------------
+# Treatment definition (acute LFS episode onset):
+#   - Threshold:      99th percentile of predicted fire PM2.5 (city-specific)
+#   - Onset rule:     >= 3 consecutive days above threshold
+#   - Offset rule:    >= 28 consecutive days below threshold
+#
+# Temporal aggregation: daily -> weekly (primary), daily -> monthly (secondary)
+#
+# Simulation study sample:
+#   - Region:         Eastern Asia only (excludes Taiwan; Korea truncated
+#                     at 2018-12-22 to avoid missing data)
+#   - Date range:     2000-01-01 to 2018-12-22
+#   - Eligibility:    mean weekly mortality > 100 deaths, complete tmean data
+#   - Replicates:     500 simulations per DGP
+#   - Pre/post window: 26 weeks each
+#
+# Empirical case study:
+#   - Episode ID:     "567" from list_data_for_synth
+#   - Eligibility:    mean weekly mortality > 100 deaths
+#   - CI method:      conformal inference (block permutation, L1 norm, alpha = 0.05)
+#   - Null grid:      seq(-200, 200, length.out = 100)
+#
+# -----------------------------------------------------------------------------
+# PIPELINE STAGES
+# -----------------------------------------------------------------------------
+#
+# Stage 1 — Data ingestion and preprocessing
+#   Loads MCC and LFS data, merges them (with 2-lag moving averages for fire
+#   PM2.5 and all pollutants), generates weekly treatment indicators, and
+#   aggregates to weekly and monthly panels.
+#   Key targets: data_mcc_cleaned, data_mcc_lfs, data_mcc_lfs_with_treatment,
+#                data_mcc_lfs_weekly, data_mcc_lfs_monthly
+#
+# Stage 2 — SC data partitioning
+#   Splits the weekly and monthly panels into a named list of per-episode
+#   datasets, applying eligibility filters (minimum pre-treatment periods,
+#   minimum control units, minimum weekly mortality).
+#   Key targets: list_data_for_synth, list_data_for_synth_monthly
+#
+# Stage 3 — Simulation study: DGP fitting and outcome simulation
+#   Restricts to the Eastern Asia simulation sample and fits two DGPs:
+#   (1) Negative binomial GLM with natural spline time trend and temperature
+#       (7 df/year, 4 df temperature), non-fire PM2.5 as linear predictor.
+#   (2) Low-rank factor model (rank 4) on the pre-/post-treatment panel.
+#   Draws 500 independent outcome replicates from each DGP, and constructs
+#   simulation datasets under both empirical and uniform-random treatment
+#   assignment. Also extracts the DGP-implied expected values for the treated
+#   unit in each replicate (used as the truth benchmark).
+#   Key targets: list_outcome_sim_neg_binomial, list_outcome_sim_factor,
+#                list_data_simulated, list_data_simulated_random_assignment,
+#                outcome_exp_val_neg_binom, outcome_exp_val_factor,
+#                outcome_exp_val_neg_binom_treated_units,
+#                outcome_exp_val_factor_treated_units
+#
+# Stage 4 — Simulation study: SC estimation
+#   Runs all six SC estimators across every simulation replicate, DGP, and
+#   assignment scheme, under both raw and de-meaned outcomes. Each combination
+#   is a separate target, parallelised via future_map().
+#   Estimators: ADH, ADH subset, DIFP, PSC, DID, 1-NN matching
+#   DGPs:       Negative binomial, Factor model
+#   Assignment: Empirical distribution, Uniform random
+#   Demeaning:  Raw outcomes, De-meaned outcomes
+#   (48 results_synth_* targets in total)
+#
+# Stage 5 — Simulation study: result extraction and diagnostics
+#   Extracts estimated and true treatment effects from all simulation results,
+#   merges in DGP-implied expected values, and computes a normalised treatment
+#   effect estimate. Also fits a negative binomial model to factor-model
+#   outcomes to assess misspecification (data_coef_pred_fire_PM25_*).
+#   Key targets: data_tau_hat_neg_binom, data_tau_hat_factor,
+#                data_tau_hat_*_demeaned, data_tau_hat_*_random_assignment
+#
+# Stage 6 — Simulation study: plots and tables
+#   Produces all simulation output figures and LaTeX tables:
+#   - Line plots comparing real vs. simulated outcome trajectories
+#   - Density plots of normalised tau-hat by method and DGP
+#   - Scatter plots of absolute bias vs. mean outcome level
+#   - Scatter plots of pre- vs. post-treatment RMSPE
+#   - Summary tables of ATT bias/SD and per-period bias/SD (saved as .tex)
+#   Output directory: Output/Figures/Simulation/, Output/Tables/Simulation/
+#
+# Stage 7 — Empirical case study
+#   Applies all six SC estimators to episode "567" (filtered to cities with
+#   mean weekly mortality > 100). Constructs conformal inference confidence
+#   intervals for each method by inverting a null hypothesis grid over the
+#   post-treatment period. Produces the main results figure showing per-period
+#   treatment effect estimates with confidence bands.
+#   Key targets: data_for_case_study, results_case_study_*,
+#                df_confidence_intervals_case_study_*,
+#                data_results_case_study_conf_int,
+#                plot_results_case_study_diff
+#   Output directory: Output/Figures/Main/
+#
+# =============================================================================
 
 # Load packages required to define the pipeline
 library(targets)
