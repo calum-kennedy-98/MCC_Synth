@@ -1,32 +1,38 @@
-# Name of script: get_coefficient_pred_fire_pm25_sim_data_neg_binom
-# Description: Function to extract dataframe of point estimates and upper/lower confidence intervals
-# for the coefficient on predicted LFS PM2.5 exposure using a negative binomial model
-# from the simulated outcome data. By construction, the true effect of predicted fire PM2.5
-# in any simulated data is zero, so this function allows us to check how well a `wrong` model
-# recovers the true effect of zero.
-# Created by: Calum Kennedy (calum.kennedy.25@ucl.ac.uk)
-# Created on: 05-11-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 05-11-2025
-
-# Comments ---------------------------------------------------------------------
-
-# @ param `data` - simulated outcome data
-# @ param `unit_id_var` - name of unit ID variable
-# @ param `time_id_var` - name of time ID variable
-# @ param `week_id_var` - name of week ID variable
-# @ param `treated_var` - name of treated variable
-# @ param `outcome_var` - name of outcome variable
-# @ param `year_var` - name of year ID variable
-# @ param `linear_predictors` - name of predictors OTHER than "pred_fire_PM25" that we wish to include
-# @ param `temp_var` - name of temperature variable
-# @ param `spline_df_per_year` - number of degrees of freedom for natural spline of time in the negative binomial model
-# @ param `spline_df_temp` - degrees of freedom for natural spline of temperature in the negative binomial model
-# @ return `result` - tibble with four columns: mean, q05, q95, column_label
-
-# Function ---------------------------------------------------------------------
-
-
+#' Extract Fire PM2.5 Coefficients from Negative Binomial Models Fitted to Simulated Data
+#'
+#' @description
+#' Fits a negative binomial regression model (via
+#' \code{\link{estimate_neg_binomial_model}}) to each city's simulated
+#' outcome series, including fire PM2.5 as a covariate, and extracts the
+#' estimated coefficient and 95% confidence interval for fire PM2.5 from each
+#' city-level model. Because fire PM2.5 has no causal role in the simulation
+#' DGPs, the true coefficient is zero; this function enables a check on whether
+#' the regression-based approach correctly recovers a zero effect.
+#'
+#' @param data A data frame of simulated outcome data containing all variables
+#'   referenced by the other arguments.
+#' @param unit_id_var Bare (unquoted) name of the unit (city) identifier column
+#'   (tidy-eval).
+#' @param time_id_var Bare (unquoted) name of the continuous time index column
+#'   used as the spline argument (tidy-eval).
+#' @param week_id_var Bare (unquoted) name of the week identifier column
+#'   (tidy-eval; accepted but not directly used in this function).
+#' @param treated_var Bare (unquoted) name of the treatment indicator column
+#'   (tidy-eval; accepted but not directly used in this function).
+#' @param outcome_var Bare (unquoted) name of the count outcome variable
+#'   (tidy-eval).
+#' @param year_var Bare (unquoted) name of the year variable (tidy-eval).
+#' @param linear_predictors Character vector of covariate names to include as
+#'   linear terms (in addition to \code{"pred_fire_PM25"}, which is appended
+#'   automatically).
+#' @param temp_var Bare (unquoted) name of the temperature variable (tidy-eval).
+#' @param spline_df_per_year Numeric. Degrees of freedom per year for the
+#'   time-trend spline.
+#' @param spline_df_temp Numeric. Degrees of freedom for the temperature spline.
+#'
+#' @return A tibble with one row per city containing columns \code{term} (city
+#'   name), \code{estimate} (fire PM2.5 coefficient), \code{lower}, and
+#'   \code{upper} (95% confidence interval bounds).
 get_coefficient_pred_fire_pm25_sim_data_neg_binom <- function(data,
                                                               unit_id_var,
                                                               time_id_var,

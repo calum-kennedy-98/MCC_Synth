@@ -1,9 +1,28 @@
-# Name of script: sim_data_scm
-# Description: Generates simulated dataset conforming to the assumed Structural Causal Model
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 26-02-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 26-02-2025
+#' Simulate a Dataset Conforming to the Assumed Structural Causal Model
+#'
+#' @description
+#' Generates a single synthetic dataset by simulating the structural causal
+#' model (SCM) for mortality. For each city, an at-risk population \eqn{u_t}
+#' and death count \eqn{y_t} evolve according to a dynamic model driven by
+#' temperature-squared deviations and fire PM2.5 levels, using real observed
+#' covariate series from the MCC data. The first city in the panel is
+#' designated the treated unit. The simulated outcomes are combined with the
+#' original covariate data and returned as a single data frame.
+#'
+#' @param data_mcc_scm A data frame of real MCC observations providing the
+#'   covariate series (temperature, fire PM2.5) and the panel structure
+#'   (units, time periods).
+#' @param id_var Bare (unquoted) name of the unit identifier column (tidy-eval).
+#' @param time_var Bare (unquoted) name of the time identifier column
+#'   (tidy-eval).
+#' @param fire_pm_var Bare (unquoted) name of the fire PM2.5 column used in
+#'   the SCM growth rate equation (tidy-eval).
+#' @param seed Integer. Random seed for reproducibility of the simulation.
+#'
+#' @return A data frame with the same structure as \code{data_mcc_scm} plus
+#'   simulated columns \code{treated_unit} (1/0), \code{y} (simulated deaths),
+#'   \code{u} (at-risk population), \code{fire_pm_25}, \code{growth_rate},
+#'   and \code{temp_squared_deviation}.
 
 # Define function to generate simulated dataset of covariates ------------------
 

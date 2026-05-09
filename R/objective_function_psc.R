@@ -1,21 +1,40 @@
-# Name of script: objective_function_psc
-# Description: Function to find optimal penalised synthetic control using the
-# penalised SC method proposed by Abadie and L'Hour (2021). We first optimise the
-# L1 penalty parameter lambda using leave-one-out cross-validation on predictions for
-# the control units in the post-treatment period
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 02-06-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 02-06-2025
-
-# Comments ---------------------------------------------------------------------
-
-# At present, not using weight vector V - in future could look to incorporate
-
-# @ param ...
-
-# Function ---------------------------------------------------------------------
-
+#' Penalised Synthetic Control (PSC) — Abadie & L'Hour (2021)
+#'
+#' @description
+#' Implements the penalised synthetic control estimator of Abadie & L'Hour
+#' (2021). The L1 penalty parameter \eqn{\lambda} is selected by minimising
+#' the LOO cross-validation MSPE via
+#' \code{\link{get_hyperparam_loss_penalised_sc}} and
+#' \code{\link[optimx]{optimx}} with L-BFGS-B. At the optimal \eqn{\lambda},
+#' the final weights are obtained by \code{\link{get_penalised_sc_weights}}.
+#' The estimator encourages weights to be placed on controls that are similar
+#' to the treated unit by penalising pairwise discrepancies.
+#'
+#' @param Y_treated_pre Numeric vector of length \eqn{T_{\text{pre}}}. Observed
+#'   pre-treatment outcome series for the treated unit.
+#' @param Y_controls_pre Numeric matrix of dimensions
+#'   \eqn{T_{\text{pre}} \times N}. Pre-treatment outcome series for the
+#'   control units.
+#' @param Y_controls_post Numeric matrix of dimensions
+#'   \eqn{T_{\text{post}} \times N}. Post-treatment outcome series for the
+#'   control units (used for hyperparameter tuning via LOO-CV only).
+#' @param lambda_init Numeric (\eqn{> 0}). Initial value for the L1 penalty
+#'   parameter \eqn{\lambda}.
+#' @param lower_bound_lambda Numeric. Lower bound on \eqn{\lambda} during
+#'   optimisation (prevents degenerate solutions).
+#'
+#' @return A named list with three elements:
+#' \describe{
+#'   \item{W_opt}{Numeric vector of length \eqn{N}. Optimal penalised SC
+#'     weights summing to one.}
+#'   \item{mu_opt}{Numeric scalar, always 0 (no intercept by design).}
+#'   \item{lambda_opt}{Numeric. Optimised penalty parameter \eqn{\lambda}.}
+#' }
+#'
+#' @references
+#' Abadie, A. & L'Hour, J. (2021). A penalized synthetic control estimator
+#' for disaggregated data. \emph{Journal of the American Statistical
+#' Association}, 116(536), 1817–1834.
 objective_function_psc <- function(Y_treated_pre,
                                    Y_controls_pre,
                                    Y_controls_post,

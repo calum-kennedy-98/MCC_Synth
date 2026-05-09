@@ -1,18 +1,31 @@
-# Name of script: objective_function_1NN_matching
-# Description: Function to find optimal counterfactual predictions using 1-nearest neighbour
-# matching. Nearest neighbour selected to minimise L2 norm between treated unit and 
-# control in pre-treatment period
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 01-05-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 25-06-2025
-
-# Comments ---------------------------------------------------------------------
-
-# @ param ...
-
-# Function ---------------------------------------------------------------------
-
+#' 1-Nearest Neighbour Matching Counterfactual
+#'
+#' @description
+#' Identifies the single control unit whose pre-treatment outcome series is
+#' closest to the treated unit in terms of the Euclidean (L2) norm, and
+#' assigns it a weight of 1. All other control units receive a weight of 0.
+#' The function signature mirrors that of the other \code{objective_function_*}
+#' helpers so that \code{optimise_synth} can call any of them
+#' interchangeably; the arguments \code{n_controls}, \code{initial_margin},
+#' \code{max_attempts}, and \code{margin_increment} are accepted but not used
+#' in this method.
+#'
+#' @param Y_treated_pre Numeric vector of length \eqn{T_{\text{pre}}}. Observed
+#'   pre-treatment outcome series for the treated unit.
+#' @param Y_controls_pre Numeric matrix of dimensions
+#'   \eqn{T_{\text{pre}} \times N}. Pre-treatment outcome series for all
+#'   \eqn{N} control units.
+#' @param n_controls Integer. Not used; present for API consistency.
+#' @param initial_margin Numeric. Not used; present for API consistency.
+#' @param max_attempts Integer. Not used; present for API consistency.
+#' @param margin_increment Numeric. Not used; present for API consistency.
+#'
+#' @return A named list with two elements:
+#' \describe{
+#'   \item{W_opt}{Numeric vector of length \eqn{N}. Weight vector with 1 for
+#'     the nearest-neighbour control unit and 0 for all others.}
+#'   \item{mu_opt}{Numeric scalar, always 0 (no intercept shift).}
+#' }
 objective_function_1NN_matching <- function(Y_treated_pre,
                                           Y_controls_pre,
                                           n_controls,

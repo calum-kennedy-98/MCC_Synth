@@ -1,18 +1,28 @@
-# Name of script: estimate_factor_model
-# Description: Estimates low-rank factor model on arbitrary matrix of outcomes
-# and returns matrix of systematic components (W) and error matrix (E).
-# Adapted from `SynthDID` GitHub repo (https://github.com/synth-inference/synthdid/blob/master/R/placebo-simulations.R)
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 03-06-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 03-06-2025
-
-# Comments ---------------------------------------------------------------------
-
-# @ param data, ...
-
-# Function ---------------------------------------------------------------------
-
+#' Estimate a Low-Rank Factor Model
+#'
+#' @description
+#' Decomposes an outcome matrix into a low-rank systematic component \eqn{L}
+#' and a residual error matrix \eqn{E} using singular value decomposition (SVD).
+#' Adapted from the \href{https://github.com/synth-inference/synthdid}{SynthDID}
+#' GitHub repository.
+#'
+#' @param data A data frame in long format containing the outcome variable and
+#'   unit and time identifiers. Rows must be sorted by unit then time.
+#' @param unit_id_var Bare (unquoted) name of the column identifying units
+#'   (tidy-eval).
+#' @param time_id_var Bare (unquoted) name of the column identifying time
+#'   periods (tidy-eval).
+#' @param outcome_var Bare (unquoted) name of the outcome variable (tidy-eval).
+#' @param rank Integer. The number of singular vectors retained in the
+#'   decomposition, i.e. the rank \eqn{r} of the factor model.
+#'
+#' @return A named list with two elements:
+#' \describe{
+#'   \item{L}{An \eqn{n \times T} matrix containing the low-rank systematic
+#'     component.}
+#'   \item{E}{An \eqn{n \times T} residual error matrix
+#'     (\code{outcome\_matrix - L}).}
+#' }
 estimate_factor_model <- function(data,
                                   unit_id_var,
                                   time_id_var,

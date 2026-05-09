@@ -1,17 +1,38 @@
-# Name of script: partition_data_for_synth
-# Description: Function to partition main MCC-LFS data into small subsets for
-# synthetic control analysis
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 14-07-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 14-07-2025
-
-# Comments ---------------------------------------------------------------------
-
-# @ param ... 
-
-# Function ---------------------------------------------------------------------
-
+#' Partition MCC-LFS Data into Treatment Episode Subsets for Synthetic Control
+#'
+#' @description
+#' Identifies each distinct treatment episode for each city (defined as a
+#' contiguous block of treated periods bracketed by untreated intervals) and
+#' constructs one panel data subset per episode. For each episode, control
+#' units are restricted to cities in the same geographic region that had no
+#' treated observations during the episode window. Subsets are then filtered
+#' to retain only those with sufficient pre-treatment data, enough control
+#' units, and adequate mean pre-treatment mortality (signal-to-noise).
+#'
+#' @param data A data frame in long format containing all units and time
+#'   periods, including a treatment indicator column.
+#' @param unit_id_var Bare (unquoted) name of the unit (city) identifier column
+#'   (tidy-eval).
+#' @param time_id_var Bare (unquoted) name of the time identifier column
+#'   (tidy-eval).
+#' @param region_id_var Bare (unquoted) name of the geographic region column
+#'   used to define the donor pool for each episode (tidy-eval).
+#' @param treated_var Bare (unquoted) name of the binary treatment indicator
+#'   column (tidy-eval).
+#' @param outcome_var Bare (unquoted) name of the outcome variable used to
+#'   apply the minimum mortality filter (tidy-eval).
+#' @param min_periods_pre Integer. Minimum number of pre-treatment periods
+#'   required for an episode to be retained.
+#' @param min_control_units Integer. Minimum number of valid control units
+#'   required for an episode to be retained.
+#' @param min_weekly_mortality Numeric. Minimum mean pre-treatment outcome
+#'   (e.g. weekly mortality) for the treated unit; episodes below this
+#'   threshold are excluded.
+#'
+#' @return A list of data frames, one per retained treatment episode. Each
+#'   data frame contains the treated unit and its regional control units for
+#'   the episode window, with \code{treated} (1/0) and \code{post} (1/0)
+#'   columns added.
 partition_data_for_synth <- function(data,
                                      unit_id_var,
                                      time_id_var,

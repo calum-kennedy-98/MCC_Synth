@@ -1,19 +1,49 @@
-# Name of script: optimise_synth
-# Description: Function to optimise synthetic control weights, given an input
-# dataframe, data pre-processing steps, and objective function
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 24-04-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 24-04-2025
-
-# Comments ---------------------------------------------------------------------
-
-
-
-# Function ---------------------------------------------------------------------
-
-# @ param ...
-
+#' Unified Synthetic Control Optimisation Wrapper
+#'
+#' @description
+#' A single entry point for estimating synthetic control weights under any of
+#' the supported methods. Calls \code{\link{prepare_data_for_synth}} to
+#' structure the input data and then dispatches to the appropriate
+#' \code{objective_function_*} helper based on \code{objective_function}.
+#' Optionally de-means and/or spline-denoises outcomes before optimisation.
+#' Counterfactual predictions are recovered on the original scale.
+#'
+#' @param data A data frame in long format containing all units and time
+#'   periods.
+#' @param demean_outcomes Logical. If \code{TRUE}, subtract each unit's
+#'   pre-treatment mean from its outcome series before optimisation (allows an
+#'   implicit intercept).
+#' @param denoise_outcomes Logical. If \code{TRUE}, replace control unit
+#'   outcomes with natural-spline-fitted values before optimisation. Requires
+#'   \code{spline_df} to be specified.
+#' @param objective_function Character string. The SC method to use. One of
+#'   \code{"ADH"}, \code{"ADH subset"}, \code{"PSC"}, \code{"DIFP"},
+#'   \code{"DID"}, or \code{"1NN matching"}.
+#' @param n_periods_pre Integer. Number of pre-treatment periods.
+#' @param n_periods_post Integer. Number of post-treatment periods.
+#' @param outcome_var Bare (unquoted) name of the outcome variable (tidy-eval).
+#' @param treated_id_var Bare (unquoted) name of the binary treated-unit
+#'   indicator (1 = treated; tidy-eval).
+#' @param treated_time_var Bare (unquoted) name of the binary post-treatment
+#'   period indicator (1 = post; tidy-eval).
+#' @param time_var Bare (unquoted) name of the time identifier column
+#'   (tidy-eval).
+#' @param spline_df Integer or \code{NULL}. Degrees of freedom for the natural
+#'   spline used when \code{denoise_outcomes = TRUE}. Must be provided if
+#'   \code{denoise_outcomes = TRUE}.
+#'
+#' @return A named list with elements:
+#' \describe{
+#'   \item{Y_treated}{Numeric vector. Observed outcomes for the treated unit
+#'     (on the original scale).}
+#'   \item{Y0_treated_hat}{Numeric vector. Counterfactual predictions
+#'     (\code{NA} per period if optimisation fails).}
+#'   \item{post}{Integer vector (0/1). Post-treatment period indicator.}
+#'   \item{W_opt}{Optimal weights (\code{NA} if optimisation fails).}
+#'   \item{mu_opt}{Intercept estimate (0 for methods without an intercept).}
+#'   \item{first_treated_period}{Time index of the first treated period.}
+#'   \item{method}{Character string matching \code{objective_function}.}
+#' }
 optimise_synth <- function(data,
                            demean_outcomes,
                            denoise_outcomes,

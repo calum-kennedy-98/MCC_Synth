@@ -1,26 +1,50 @@
-# Name of script: optimise_synth_demeaned
-# Description: Function to find optimal synthetic control predictions using the
-# classical synthetic control method proposed by Abadie, Diamond, and Hainmueller,
-# on demeaned pre-treatment data (this is equivalent to adding an intercept to
-# the original ADH method, proposed by Ferman and Pinto / Doudchenko and Imbens)
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 18-05-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 18-05-2025
-
-# Comments ---------------------------------------------------------------------
-
-# @ param data, an input dataframe
-# @ param id_var, unit ID column
-# @ param outcome_var, name of the outcome variable column
-# @ param time_var, column name for time variable
-# @ param treated_id_var, binary ID variable for the treated unit
-# @ param treated_time_var, binary ID variable for the treatment time
-# @ param predictors, vector of quoted variables to use as predictors in synth
-# @ return a list with elements data, Y1, Y1_hat, W_opt, mu_opt (equal to 0), first_treated_period
-
-# Function ---------------------------------------------------------------------
-
+#' ADH Synthetic Control on De-meaned Outcomes (Intercept-Adjusted)
+#'
+#' @description
+#' Fits the ADH synthetic control on de-meaned pre-treatment outcomes, which
+#' is equivalent to allowing an additive intercept shift between the treated
+#' and synthetic control units. The approach follows Ferman & Pinto (2021) and
+#' Doudchenko & Imbens (2017). Outcomes for each unit are de-meaned by
+#' subtracting the unit's own pre-treatment mean before the quadratic programme
+#' is solved; the pre-treatment mean of the treated unit is then added back to
+#' recover counterfactual predictions on the original scale.
+#'
+#' @param data A data frame in long format containing all units and time
+#'   periods.
+#' @param id_var Bare (unquoted) name of the unit identifier column (tidy-eval).
+#' @param outcome_var Bare (unquoted) name of the outcome variable (tidy-eval).
+#' @param time_var Bare (unquoted) name of the time identifier column
+#'   (tidy-eval).
+#' @param treated_id_var Bare (unquoted) name of the binary indicator for the
+#'   treated unit (1 = treated, 0 = control; tidy-eval).
+#' @param treated_time_var Bare (unquoted) name of the binary indicator for
+#'   the post-treatment period (1 = post, 0 = pre; tidy-eval).
+#' @param n_periods_pre Integer. Number of pre-treatment periods to include.
+#' @param n_periods_post Integer. Number of post-treatment periods to include.
+#' @param optimxmethod Character string. Optimisation method passed to
+#'   \code{\link[optimx]{optimx}} inside \code{\link[Synth]{synth}}.
+#' @param initial_margin Numeric. Initial \code{Margin.ipop} value for the
+#'   ipop solver.
+#' @param max_attempts Integer. Maximum optimisation re-attempts.
+#' @param margin_increment Numeric. Increment added to \code{Margin.ipop}
+#'   after each failed attempt.
+#'
+#' @return A named list with elements:
+#' \describe{
+#'   \item{data}{The subsetted input data frame.}
+#'   \item{Y1}{Numeric vector. Observed outcomes for the treated unit.}
+#'   \item{Y1_hat}{Numeric vector. Counterfactual predictions on the original
+#'     scale (\code{NA} if optimisation fails).}
+#'   \item{W_opt}{Optimal ADH weights (\code{NA} if optimisation fails).}
+#'   \item{mu_opt}{Numeric scalar. Pre-treatment mean of the treated unit
+#'     (used as the intercept).}
+#'   \item{first_treated_period}{The time index of the first treated period.}
+#'   \item{method}{Character string \code{"adh_demeaned"}.}
+#' }
+#'
+#' @references
+#' Ferman, B. & Pinto, C. (2021). Synthetic controls with imperfect
+#' pre-treatment fit. \emph{Quantitative Economics}, 12(4), 1197–1221.
 optimise_synth_demeaned <- function(data,
                                     id_var,
                                     outcome_var,

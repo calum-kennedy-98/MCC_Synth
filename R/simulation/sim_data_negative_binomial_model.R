@@ -1,17 +1,21 @@
-# Name of script: sim_data_negative_binomial_model
-# Description: Simulates mortality data based on fitted negative binomial time
-# series models
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 24-04-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 24-04-2025
-
-# Comments ---------------------------------------------------------------------
-
-
-
-# Function ---------------------------------------------------------------------
-
+#' Simulate Outcomes from a Fitted Negative Binomial Model
+#'
+#' @description
+#' Draws one realisation of the outcome variable from a fitted
+#' \code{glm.nb} model by computing expected values from the linear predictor
+#' (on the response scale) and then sampling from the corresponding negative
+#' binomial distribution for each observation. Used as the inner function
+#' inside the parallelised loop in
+#' \code{\link{make_list_data_negative_binomial_model}}.
+#'
+#' @param data A data frame containing the covariate values at which to
+#'   generate predictions from \code{model}.
+#' @param model A fitted \code{glm.nb} model object (as returned by
+#'   \code{\link{estimate_neg_binomial_model}}).
+#'
+#' @return A numeric vector of length \code{nrow(data)} containing integer
+#'   counts drawn from the negative binomial distribution with the model-
+#'   implied mean and dispersion.
 sim_data_negative_binomial_model <- function(data,
                                         model){
     

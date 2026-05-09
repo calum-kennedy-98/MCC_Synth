@@ -1,17 +1,34 @@
-# Name of script: make_list_data_simulated_random_assignment
-# Description: Function to generate final datasets including outcomes from the
-# specified DGP, under random treatment assignment
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 21-06-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 21-06-2025
-
-# Comments ---------------------------------------------------------------------
-
-# Function ---------------------------------------------------------------------
-
-# @ param...
-
+#' Generate Simulated Datasets with Uniformly Random Treatment Assignment
+#'
+#' @description
+#' Creates a list of analysis-ready data frames by attaching simulated
+#' untreated potential outcomes (from both the negative binomial and factor
+#' model DGPs) to the real MCC panel, then randomly drawing a treated unit
+#' and treatment time with equal probability for each replicate. This produces
+#' a placebo-style simulation under random (rather than empirically
+#' distributed) assignment, useful for assessing size control.
+#'
+#' @param data A data frame in long format containing all units and time
+#'   periods; used as the structural template.
+#' @param unit_id_var Bare (unquoted) name of the unit identifier column
+#'   (tidy-eval).
+#' @param time_id_var Bare (unquoted) name of the time identifier column
+#'   (tidy-eval).
+#' @param list_outcome_sim_neg_binomial A list of numeric vectors (length =
+#'   number of simulation replicates), each containing simulated outcomes from
+#'   the negative binomial DGP for all unit-periods.
+#' @param list_outcome_sim_factor A list of numeric vectors (length = number
+#'   of simulation replicates), each containing simulated outcomes from the
+#'   factor model DGP for all unit-periods.
+#' @param n_periods_pre Integer. Minimum number of pre-treatment periods
+#'   required; restricts the set of eligible treatment times.
+#' @param n_periods_post Integer. Minimum number of post-treatment periods
+#'   required; restricts the set of eligible treatment times.
+#'
+#' @return A list of data frames, one per simulation replicate, each subsetted
+#'   to the treatment window and augmented with \code{treated} (1/0),
+#'   \code{post} (1/0), \code{Y0_treated_neg_binom}, and
+#'   \code{Y0_treated_factor} columns.
 make_list_data_simulated_random_assignment <- function(data,
                                      unit_id_var,
                                      time_id_var,

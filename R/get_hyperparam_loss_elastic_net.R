@@ -1,17 +1,28 @@
-# Name of script: get_hyperparam_loss_elastic_net
-# Description: Function which iterates over control units as 'pseudo-treated' units
-# to determine the (optimal) loss associated with given hyperparameter settings
-# for the elastic net loss
-# and an intercept term 
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 13-03-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 13-03-2025
-
-# Comments ---------------------------------------------------------------------
-
-# Function to find optimal synthetic control params iterating over all control units (used to 
-# determine optimal elastic net parameters in Doudchenko-Imbens estimator)
+#' Leave-One-Out Cross-Validation Loss for Elastic Net Hyperparameters
+#'
+#' @description
+#' Evaluates the leave-one-out (LOO) cross-validation loss for a given pair of
+#' elastic net hyperparameters (\eqn{\lambda}, \eqn{\alpha}). Each control
+#' unit is held out in turn as a pseudo-treated unit; elastic net weights are
+#' estimated on the remaining controls during the pre-treatment period, and the
+#' mean squared prediction error (MSPE) on the pseudo-post-treatment outcomes
+#' is computed. The function returns the average MSPE across all pseudo-treated
+#' units. Intended for use as the objective passed to a numerical optimiser
+#' (e.g. \code{\link[optimx]{optimx}}) when tuning the Doudchenko–Imbens
+#' DIFP estimator.
+#'
+#' @param par Named numeric vector with elements \code{"lambda"} (penalty
+#'   strength, \eqn{\geq 0}) and \code{"alpha"} (mixing parameter,
+#'   \eqn{[0, 1]}, where 0 = ridge and 1 = lasso).
+#' @param Y_controls_pre Numeric matrix of dimensions
+#'   \eqn{T_{\text{pre}} \times N}, containing pre-treatment outcome series
+#'   for all \eqn{N} control units.
+#' @param Y_controls_post Numeric matrix of dimensions
+#'   \eqn{T_{\text{post}} \times N}, containing post-treatment outcome series
+#'   for all \eqn{N} control units.
+#'
+#' @return A scalar numeric value: the average LOO-CV MSPE across all
+#'   pseudo-treated control units.
 get_hyperparam_loss_elastic_net <- function(par,
                                            Y_controls_pre,
                                            Y_controls_post){

@@ -1,16 +1,30 @@
-# Name of script: optimise_synth_random_forest
-# Description: ***
-# Created by: Calum Kennedy (calum.kennedy.20@ucl.ac.uk)
-# Created on: 13-03-2025
-# Latest update by: Calum Kennedy
-# Latest update on: 13-03-2025
-
-# Comments ---------------------------------------------------------------------
-
-
-
-# Function ---------------------------------------------------------------------
-
+#' Random Forest Counterfactual via Tidymodels
+#'
+#' @description
+#' Generates post-treatment counterfactual predictions for the treated unit
+#' using a random forest model trained on control units' pre-treatment outcome
+#' series (pivoted to wide format). Hyperparameters (\code{trees},
+#' \code{mtry}, \code{min_n}) are tuned via 10-fold cross-validation using
+#' the \pkg{tidymodels} / \pkg{ranger} framework. The model is trained on
+#' pre-treatment data and applied to the post-treatment period to generate
+#' out-of-sample predictions.
+#'
+#' @param data A data frame in long format containing all units and time
+#'   periods.
+#' @param id_var Bare (unquoted) name of the unit identifier column (tidy-eval).
+#' @param outcome_var Bare (unquoted) name of the outcome variable (tidy-eval).
+#' @param time_var Bare (unquoted) name of the time identifier column
+#'   (tidy-eval). Must be named \code{week_id} in the underlying data (used as
+#'   an ID role in the recipe).
+#' @param treated_id_var Bare (unquoted) name of the binary treated-unit
+#'   indicator (1 = treated; tidy-eval).
+#' @param treated_time_var Bare (unquoted) name of the binary post-treatment
+#'   period indicator (1 = post; tidy-eval).
+#' @param n_periods_pre Integer. Number of pre-treatment periods to include.
+#' @param n_periods_post Integer. Number of post-treatment periods to include.
+#'
+#' @return A tibble of post-treatment period predictions, containing the
+#'   predicted values (\code{.pred}) bound to the test-set columns.
 optimise_synth_random_forest <- function(data,
                                          id_var,
                                          outcome_var,
