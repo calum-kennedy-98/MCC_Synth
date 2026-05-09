@@ -92,4 +92,4 @@ Citation will be added upon publication.
 
 ## Contact
 
-For questions about the analysis or issues running the code, please open a [GitHub issue](https://github.com/calum-kennedy-98/MCC_Synth/issues) or contact [calum.kennedy.20@ucl.ac.uk](mailto:calum.kennedy.20@ucl.ac.uk).
+For questions about the analysis or issues running the code, please open a [GitHub issue](https://github.com/calum-kennedy-98/MCC_Synth/issues) or contact [calum.kennedy.25@ucl.ac.uk](mailto:calum.kennedy.25@ucl.ac.uk).
